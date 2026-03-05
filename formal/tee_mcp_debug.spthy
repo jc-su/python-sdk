@@ -1,0 +1,641 @@
+/*
+ * TEE-MCP Hybrid Attestation Protocol — Tamarin Model (v2)
+ *
+ * Formally verifies the TEE-MCP protocol that combines:
+ *   - Background-Check bootstrap with server-chosen challenge
+ *   - Passport-model per-call attestation with cached quotes + PSS signatures
+ *   - Session-bound HMAC-derived sig_data with monotonic counters
+ *   - Optional TLS channel binding via Exported Keying Material (EKM)
+ *
+ * Attacker model: Dolev-Yao (full network control, no TEE compromise)
+ *   - Attacker can run own TEE (different measurement)
+ *   - Attacker can compromise long-term keys (LTK reveal rules)
+ *
+ * Reference implementation:
+ *   - secure_channel.py:     SecureEndpoint, establish_session, derive_sig_data
+ *   - tee_envelope.py:       create_request_envelope, open_request_envelope
+ *   - attestation_cache.py:  CachedAttestationEvidence, PSS nonce signatures
+ *   - tls_ekm.py:            TLS Exported Keying Material extraction
+ *
+ * Security properties proved:
+ *   L1  executable              — protocol can complete (sanity)
+ *   L2  session_key_agreement   — mutual key agreement on session parameters
+ *   L3  injective_agreement_S2C — server→client injective agreement
+ *   L4  injective_agreement_C2S — client→server injective agreement
+ *   L5  secrecy                 — encrypted payloads secret (unless LTK compromise)
+ *   L6  measurement_integrity   — accepted calls require honest TEE measurement
+ *   L7  session_binding         — session ID binds keys, nonces, and EKM
+ *   L8  fresh_attestation       — distinct calls use distinct counters
+ *
+ * Authors: TEE-MCP project
+ */
+
+theory TEE_MCP
+begin
+
+builtins: hashing, asymmetric-encryption, signing
+
+/*
+ * ==========================================================================
+ * Function symbols
+ * ==========================================================================
+ */
+
+functions:
+  /* AES-256-GCM authenticated encryption */
+  aes_enc/2, aes_dec/2,
+
+  /* HMAC-SHA256 keyed hash */
+  hmac/2,
+
+  /* TDX quote generation — hardware primitive.
+   * tdx_quote(reportdata, measurement) -> quote
+   * Only callable inside a genuine TDX VM. */
+  tdx_quote/2,
+
+  /* Extract fields from a TDX quote */
+  get_reportdata/1,
+  get_measurement/1
+
+equations:
+  aes_dec(key, aes_enc(key, m)) = m,
+  get_reportdata(tdx_quote(rd, meas)) = rd,
+  get_measurement(tdx_quote(rd, meas)) = meas
+
+
+/*
+ * ==========================================================================
+ * Restrictions — model implementation-enforced checks
+ * ==========================================================================
+ */
+
+/* Equality assertion (used in rules for computed value checks). */
+restriction Eq:
+  "All x y #i. Eq(x, y) @ #i ==> x = y"
+
+/* Measurement allowlist: only honest measurements pass verification.
+ * Models: allowed_rtmr3 check in _verify_evidence(). */
+restriction MeasurementAllowed:
+  "All meas #i. MeasurementChecked(meas) @ #i
+    ==> Ex #j. HonestMeasurement(meas) @ #j"
+
+/* Counter uniqueness within a session: models verify_derived_sig_data()
+ * check that counter >= peer_call_counter, combined with counter increment
+ * (peer_call_counter = counter + 1). Each counter value accepted at most once. */
+restriction CounterOnce:
+  "All sid ctr #i #j. CounterAccepted(sid, ctr) @ #i
+    & CounterAccepted(sid, ctr) @ #j ==> #i = #j"
+
+/* Session established at most once per (sid, role). */
+restriction SessionUnique:
+  "All sid role #i #j. SessionCreated(sid, role) @ #i
+    & SessionCreated(sid, role) @ #j ==> #i = #j"
+
+
+/*
+ * ==========================================================================
+ * TEE Hardware Model
+ * ==========================================================================
+ *
+ * Honest parties run inside TDX VMs with honest measurements.
+ * The attacker can run their own TDX VM (different measurement).
+ * Quote generation binds reportdata + measurement.
+ */
+
+/* Generate an honest TEE measurement (per-container RTMR3). */
+rule TEE_Provision:
+  [ Fr(~meas) ]
+  --[ HonestMeasurement(~meas) ]->
+  [ !TEE(~meas) ]
+
+/* Attacker can produce TDX quotes for their own (non-honest) measurement.
+ * They choose the reportdata freely but CANNOT use an honest measurement. */
+rule Attacker_TEE:
+  [ Fr(~meas_a), In(reportdata) ]
+  --[ AttackerQuote(~meas_a) ]->
+  [ Out(tdx_quote(reportdata, ~meas_a)) ]
+
+
+/*
+ * ==========================================================================
+ * TLS Channel Model (for EKM binding)
+ * ==========================================================================
+ *
+ * When TLS is present, both client and server share a secret EKM value
+ * derived from the TLS master secret (RFC 5705/8446). The attacker cannot
+ * learn the EKM without breaking TLS.
+ *
+ * Models: tls_ekm.py extract_ekm(), establish_session(tls_ekm=ekm)
+ */
+
+/* TLS connection provides shared EKM to both endpoints. */
+rule TLS_Channel:
+  [ Fr(~ekm) ]
+  --[ TLSEstablished(~ekm) ]->
+  [ TLS_Client(~ekm), TLS_Server(~ekm) ]
+
+
+/*
+ * ==========================================================================
+ * Long-Term Key Compromise Rules
+ * ==========================================================================
+ *
+ * Model the adversary's ability to compromise private keys.
+ * Security properties hold ONLY when keys are not compromised.
+ */
+
+rule Reveal_Client_SK:
+  [ !ClientLTK(~sk) ]
+  --[ RevealLTK(pk(~sk)) ]->
+  [ Out(~sk) ]
+
+rule Reveal_Server_SK:
+  [ !ServerLTK(~sk) ]
+  --[ RevealLTK(pk(~sk)) ]->
+  [ Out(~sk) ]
+
+
+/*
+ * ==========================================================================
+ * PHASE 1: Bootstrap — Background-Check Model
+ * ==========================================================================
+ *
+ * Three-message handshake for mutual attestation and key exchange.
+ *
+ * Msg 1 (C → S): E_C(sd_C), pk_C
+ *   - Cached attestation: TDX quote with reportdata = h(<ts_C, pk_C>)
+ *   - PSS signature: sign(h(<sd_C, pk_C>), sk_C)
+ *   - sd_C is random 32 bytes (sig_data)
+ *
+ * Msg 2 (S → C): E_S(sd_S), pk_S, challenge
+ *   - Same cached attestation structure
+ *   - challenge is random 32 bytes (Background-Check nonce)
+ *
+ * Msg 3 (C → S): E_C(ch), ch
+ *   - Proves C received challenge and possesses sk_C inside TDX
+ */
+
+/*
+ * Rule: Client_Init
+ * Code: TrustedClientSession.initialize()
+ *   - sig_data = secrets.token_bytes(32)
+ *   - evidence = endpoint.create_evidence(sig_data)
+ *     For cached mode (attestation_cache.py):
+ *       reportdata = H(timestamp) || H(pk_C)  [in TDX quote, reused]
+ *       nonce_sig  = PSS_SIGN(sk_C, H(sig_data || pk_C))  [fresh per call]
+ *
+ * In the abstract model, we collapse the reportdata binding into h(<ts, pk>)
+ * and model the PSS nonce signature explicitly via the signing builtin.
+ */
+rule Client_Init:
+  let
+    pk_C = pk(~sk_C)
+    /* Cached quote: reportdata binds timestamp + public key */
+    reportdata_C = h(<~ts_C, pk_C>)
+    quote_C = tdx_quote(reportdata_C, ~meas_C)
+    /* Fresh PSS signature binds sig_data + public key */
+    nonce_binding_C = h(<~sd_C, pk_C>)
+    nonce_sig_C = sign(nonce_binding_C, ~sk_C)
+  in
+  [ Fr(~sk_C), Fr(~sd_C), Fr(~ts_C), !TEE(~meas_C) ]
+  --[ ClientInitSent(pk_C, ~sd_C)
+    , HonestClient(pk_C)
+    ]->
+  [ Out(<quote_C, pk_C, ~sd_C, ~ts_C, nonce_sig_C>)
+  , St_Client_WaitResp(~sk_C, pk_C, ~sd_C, ~meas_C)
+  , !ClientLTK(~sk_C)
+  ]
+
+
+/*
+ * Rule: Server_Init
+ * Code: TrustedServerSession._handle_initialize_request()
+ *   - Verifies client evidence: checks reportdata, measurement, PSS signature
+ *   - Generates own evidence + bootstrap challenge
+ *   - Sends response with challenge
+ *
+ * Verification (maps to _verify_evidence in secure_channel.py):
+ *   - parse quote, extract reportdata
+ *   - check reportdata = h(<ts_C, pk_C>)
+ *   - verify TDX quote (DCAP/ITA)
+ *   - check measurement in allowed list
+ *   - verify PSS signature: verify(sig, h(<sd_C, pk_C>), pk_C) = true
+ */
+rule Server_Init:
+  let
+    pk_S = pk(~sk_S)
+    /* Verify client's cached quote: reportdata matches <ts_C, pk_C> */
+    reportdata_C_expected = h(<ts_C, pk_C>)
+    /* Verify client's PSS nonce signature */
+    nonce_binding_C_expected = h(<sd_C, pk_C>)
+    /* Server's own cached attestation */
+    reportdata_S = h(<~ts_S, pk_S>)
+    quote_S = tdx_quote(reportdata_S, ~meas_S)
+    nonce_binding_S = h(<~sd_S, pk_S>)
+    nonce_sig_S = sign(nonce_binding_S, ~sk_S)
+  in
+  [ Fr(~sk_S), Fr(~sd_S), Fr(~ts_S), Fr(~challenge)
+  , !TEE(~meas_S)
+  , In(<quote_C, pk_C, sd_C, ts_C, nonce_sig_C>)
+  ]
+  --[ /* Verify client's TDX quote reportdata */
+      Eq(get_reportdata(quote_C), reportdata_C_expected)
+    , /* Verify client's measurement is honest */
+      MeasurementChecked(get_measurement(quote_C))
+    , /* Verify client's PSS nonce signature */
+      Eq(verify(nonce_sig_C, nonce_binding_C_expected, pk_C), true)
+    , ServerVerifiedClient(pk_C, pk_S)
+    , HonestServer(pk_S)
+    ]->
+  [ Out(<quote_S, pk_S, ~sd_S, ~ts_S, nonce_sig_S, ~challenge>)
+  , St_Server_WaitChallenge(~sk_S, pk_S, ~sd_S, pk_C, sd_C, ~challenge, ~meas_S)
+  , !ServerLTK(~sk_S)
+  ]
+
+
+/*
+ * Rule: Client_Bootstrap
+ * Code: TrustedClientSession.initialize() — processes server response
+ *   - Verifies server evidence (quote + PSS signature)
+ *   - Extracts challenge from server_tee["challenge"]
+ *   - Computes session_id via establish_session()
+ *   - Sends initialized notification with challenge response
+ *
+ * Session establishment (secure_channel.py establish_session):
+ *   sid = SHA256(pk_C || pk_S || sd_C || sd_S || ekm)
+ *   where ekm is TLS EKM when available
+ */
+rule Client_Bootstrap:
+  let
+    pk_C = pk(sk_C)
+    /* Verify server's cached quote: reportdata = h(<ts_S, pk_S>) */
+    reportdata_S_expected = h(<ts_S, pk_S>)
+    /* Verify server's PSS nonce signature */
+    nonce_binding_S_expected = h(<sd_S, pk_S>)
+
+    /* Session ID includes TLS EKM for channel binding.
+     * Maps to: establish_session(peer_pk, my_sd, peer_sd, tls_ekm=ekm)
+     * sid = SHA256(pk_C || pk_S || sd_C || sd_S || ekm) */
+    sid = h(<pk_C, pk_S, sd_C, sd_S, ekm>)
+
+    /* Challenge response: evidence binding the server's challenge */
+    ch_binding = h(<challenge, pk_C>)
+    ch_sig = sign(ch_binding, sk_C)
+  in
+  [ St_Client_WaitResp(sk_C, pk_C, sd_C, meas_C)
+  , In(<quote_S, pk_S, sd_S, ts_S, nonce_sig_S, challenge>)
+  , TLS_Client(ekm)
+  ]
+  --[ Eq(get_reportdata(quote_S), reportdata_S_expected)
+    , MeasurementChecked(get_measurement(quote_S))
+    , Eq(verify(nonce_sig_S, nonce_binding_S_expected, pk_S), true)
+    , ClientVerifiedServer(pk_C, pk_S)
+    , SessionEstablished(sid, pk_C, pk_S)
+    , SessionCreated(sid, 'client')
+    , SessionWithEKM(sid, pk_C, pk_S, ekm)
+    ]->
+  [ Out(<challenge, ch_sig>)
+  , !St_Client(sk_C, pk_C, pk_S, sid, meas_C)
+  ]
+
+
+/*
+ * Rule: Server_Bootstrap_Complete
+ * Code: TrustedServerSession._handle_initialized_tee()
+ *   - Verifies challenge_response matches stored challenge
+ *   - Verifies challenge evidence PSS signature
+ *   - Calls establish_session(client_pk, client_sd, server_sd, tls_ekm=ekm)
+ */
+rule Server_Bootstrap_Complete:
+  let
+    pk_S = pk(sk_S)
+    sid = h(<pk_C, pk_S, sd_C, sd_S, ekm>)
+    ch_binding_expected = h(<challenge, pk_C>)
+  in
+  [ St_Server_WaitChallenge(sk_S, pk_S, sd_S, pk_C, sd_C, challenge, meas_S)
+  , In(<challenge_resp, ch_sig>)
+  , TLS_Server(ekm)
+  ]
+  --[ Eq(challenge_resp, challenge)
+    , Eq(verify(ch_sig, ch_binding_expected, pk_C), true)
+    , ServerBootstrapDone(sid, pk_C, pk_S)
+    , SessionEstablished(sid, pk_C, pk_S)
+    , SessionCreated(sid, 'server')
+    , SessionWithEKM(sid, pk_C, pk_S, ekm)
+    ]->
+  [ !St_Server(sk_S, pk_S, pk_C, sid, meas_S)
+  ]
+
+
+/*
+ * ==========================================================================
+ * PHASE 2: Per-Call Protocol — Passport Model, Session-Bound
+ * ==========================================================================
+ *
+ * After bootstrap, each tool call carries:
+ *   - Session-bound sig_data: sigma = HMAC(sid, <entropy, counter>)
+ *   - Cached TDX quote (reused from attestation_cache.py)
+ *   - Fresh PSS signature proving current key possession
+ *   - RSA-OAEP + AES-GCM encrypted payload
+ *
+ * The server verifies HMAC sigma, PSS signature, and decrypts.
+ * The response reuses the AES key (ResponseKey pattern).
+ *
+ * Counter modeling: Fresh nonces represent counter values. The
+ * CounterOnce restriction models verify_derived_sig_data() which
+ * ensures each counter is accepted at most once per session.
+ */
+
+/*
+ * Rule: Client_ToolCall
+ * Code: TrustedClientSession._attested_call_tool()
+ *   - entropy = secrets.token_bytes(32)
+ *   - sig_data, counter = endpoint.derive_sig_data(entropy)
+ *     -> HMAC(session_id, entropy || counter.to_bytes(8, 'big'))
+ *   - evidence = create_cached_evidence(private_key, ..., peer_nonce=sig_data)
+ *     -> nonce_sig = PSS_SIGN(sk, H(sig_data || pk))
+ *   - (enc_msg, response_key) = envelope_encrypt(peer.public_key, plaintext)
+ */
+rule Client_ToolCall:
+  let
+    pk_C = pk(sk_C)
+    /* Session-bound sig_data (maps to derive_sig_data) */
+    sigma = hmac(sid, <~epsilon, ~ctr>)
+    /* Cached attestation: PSS signature on nonce binding */
+    nonce_binding = h(<sigma, pk_C>)
+    nonce_sig = sign(nonce_binding, sk_C)
+    /* RSA-OAEP + AES-GCM envelope encryption */
+    ciphertext = aenc(<~aes_key, ~params>, pk_S)
+  in
+  [ !St_Client(sk_C, pk_C, pk_S, sid, meas_C)
+  , Fr(~epsilon), Fr(~aes_key), Fr(~params), Fr(~ctr)
+  ]
+  --[ ClientSentCall(sid, pk_C, pk_S, ~ctr, ~params)
+    , Secret(sid, ~params)
+    , Secret(sid, ~aes_key)
+    ]->
+  [ Out(<pk_C, ~epsilon, ~ctr, ciphertext, sigma, nonce_sig>)
+  , St_Client_WaitResp2(sk_C, pk_C, pk_S, sid, meas_C, ~aes_key, ~ctr)
+  ]
+
+
+/*
+ * Rule: Server_ToolResponse
+ * Code: TrustedServerSession._verify_and_decrypt_request() +
+ *       TrustedServerSession._send_response()
+ *
+ * Verification:
+ *   1. Recompute sigma' = HMAC(sid, <epsilon, ctr>)
+ *   2. Check sigma == sigma' (HMAC binding)
+ *   3. Verify PSS signature: verify(sig, h(<sigma, pk_C>), pk_C)
+ *   4. Check counter not previously accepted (CounterOnce)
+ *   5. Decrypt: (aes_key, params) = RSA-OAEP-decrypt(sk_S, ciphertext)
+ *
+ * Response:
+ *   6. Derive server sigma_S = HMAC(sid, <epsilon_S, ctr_S>)
+ *   7. PSS sign server nonce binding
+ *   8. Encrypt result with client's AES key (ResponseKey reuse)
+ */
+rule Server_ToolResponse:
+  let
+    pk_S = pk(sk_S)
+    /* Recompute client's HMAC sigma */
+    sigma_expected = hmac(sid, <epsilon_C, ctr_C>)
+    /* Verify PSS signature on nonce binding */
+    nonce_binding_expected = h(<sigma_expected, pk_C>)
+
+    /* Decrypt request payload */
+    plaintext_pair = adec(ciphertext, sk_S)
+
+    /* Server's own attestation for the response */
+    sigma_S = hmac(sid, <~epsilon_S, ~ctr_S>)
+    nonce_binding_S = h(<sigma_S, pk_S>)
+    nonce_sig_S = sign(nonce_binding_S, sk_S)
+
+    /* Encrypt response with same AES key (ResponseKey reuse) */
+    resp_ciphertext = aes_enc(fst(plaintext_pair), ~result)
+  in
+  [ !St_Server(sk_S, pk_S, pk_C, sid, meas_S)
+  , In(<pk_C_in, epsilon_C, ctr_C, ciphertext, sigma_C, nonce_sig_C>)
+  , Fr(~epsilon_S), Fr(~ctr_S), Fr(~result)
+  ]
+  --[ /* Verify sender's public key matches session peer */
+      Eq(pk_C_in, pk_C)
+    , /* Verify HMAC sigma matches */
+      Eq(sigma_C, sigma_expected)
+    , /* Verify PSS nonce signature */
+      Eq(verify(nonce_sig_C, nonce_binding_expected, pk_C), true)
+    , /* Counter uniqueness (models verify_derived_sig_data counter check) */
+      CounterAccepted(sid, ctr_C)
+    , /* Action facts for security lemmas */
+      ServerAcceptedCall(sid, pk_C, pk_S, ctr_C, snd(plaintext_pair))
+    , ServerSentResp(sid, pk_S, ~ctr_S, ~result)
+    , Secret(sid, ~result)
+    ]->
+  [ Out(<pk_S, ~epsilon_S, ~ctr_S, resp_ciphertext, sigma_S, nonce_sig_S>)
+  ]
+
+
+/*
+ * Rule: Client_ToolResponse
+ * Code: TrustedClientSession._attested_call_tool() — response processing
+ *   - Recompute sigma_S' = HMAC(sid, <epsilon_S, ctr_S>)
+ *   - Verify sigma_S == sigma_S'
+ *   - Verify PSS signature on server's nonce binding
+ *   - Decrypt response: result = AES-GCM-decrypt(aes_key, ciphertext)
+ */
+rule Client_ToolResponse:
+  let
+    pk_C = pk(sk_C)
+    /* Recompute server's HMAC sigma */
+    sigma_S_expected = hmac(sid, <epsilon_S, ctr_S>)
+    /* Verify PSS signature */
+    nonce_binding_S_expected = h(<sigma_S_expected, pk_S>)
+    /* Decrypt response */
+    result = aes_dec(aes_key, resp_ciphertext)
+  in
+  [ St_Client_WaitResp2(sk_C, pk_C, pk_S, sid, meas_C, aes_key, ctr_req)
+  , In(<pk_S_in, epsilon_S, ctr_S, resp_ciphertext, sigma_S, nonce_sig_S>)
+  ]
+  --[ Eq(pk_S_in, pk_S)
+    , Eq(sigma_S, sigma_S_expected)
+    , Eq(verify(nonce_sig_S, nonce_binding_S_expected, pk_S), true)
+    , CounterAccepted(sid, ctr_S)
+    , ClientReceivedResp(sid, pk_C, pk_S, ctr_req, result)
+    ]->
+  [ ]
+
+
+/*
+ * ==========================================================================
+ * SECURITY LEMMAS
+ * ==========================================================================
+ */
+
+
+/*
+ * L1: Executable (sanity check)
+ *
+ * There exists a valid trace where a client completes a full tool call
+ * (bootstrap + encrypted call + verified response). This ensures the
+ * model is not vacuously true due to unsatisfiable constraints.
+ */
+lemma executable:
+  exists-trace
+  "Ex sid pkC pkS ctr result #i.
+    ClientReceivedResp(sid, pkC, pkS, ctr, result) @ #i
+  "
+
+
+/*
+ * L2: Session Key Agreement
+ *
+ * If both client and server establish a session with the same sid,
+ * they agree on both public keys.
+ *
+ * Maps to: establish_session() in secure_channel.py
+ *   sid = SHA256(pk_C || pk_S || sd_C || sd_S || ekm)
+ *   → collision-free hash ensures agreement on all inputs.
+ */
+lemma session_key_agreement:
+  "All sid pkC1 pkS1 pkC2 pkS2 #i #j.
+    SessionEstablished(sid, pkC1, pkS1) @ #i
+    & SessionEstablished(sid, pkC2, pkS2) @ #j
+    ==> pkC1 = pkC2 & pkS1 = pkS2
+  "
+
+
+/*
+ * L3: Injective Agreement — Server to Client
+ *
+ * If the server accepts a tool call with specific parameters in session sid,
+ * then the honest client sent exactly that call (same sid, ctr, params),
+ * and no other server acceptance matches these parameters.
+ *
+ * This is Lowe's injective agreement: each server acceptance maps to
+ * exactly one unique client send. Subsumes non-injective agreement
+ * and replay protection.
+ *
+ * Requires: neither client nor server key compromised.
+ *
+ * Maps to: open_request_envelope() verification in tee_envelope.py
+ *   - HMAC sigma proves knowledge of sid (INV-4)
+ *   - PSS signature proves possession of sk_C (INV-5)
+ *   - TDX quote proves TEE identity (INV-1)
+ */
+lemma injective_agreement_S2C:
+  "All sid pkC pkS ctr params #i.
+    ServerAcceptedCall(sid, pkC, pkS, ctr, params) @ #i
+    & not(Ex #r. RevealLTK(pkC) @ #r)
+    & not(Ex #r. RevealLTK(pkS) @ #r)
+    ==>
+    (Ex #j. ClientSentCall(sid, pkC, pkS, ctr, params) @ #j & #j < #i)
+    & not(Ex #k. ServerAcceptedCall(sid, pkC, pkS, ctr, params) @ #k
+                 & not(#k = #i))
+  "
+
+
+/*
+ * L4: Injective Agreement — Client to Server
+ *
+ * If the client accepts a tool response in session sid, then the server
+ * sent a response in that session, and no other client acceptance matches.
+ *
+ * Maps to: open_response_envelope() verification in tee_envelope.py
+ */
+lemma injective_agreement_C2S:
+  "All sid pkC pkS ctr result #i.
+    ClientReceivedResp(sid, pkC, pkS, ctr, result) @ #i
+    & not(Ex #r. RevealLTK(pkC) @ #r)
+    & not(Ex #r. RevealLTK(pkS) @ #r)
+    ==>
+    (Ex ctr_S #j. ServerSentResp(sid, pkS, ctr_S, result) @ #j & #j < #i)
+    & not(Ex ctr2 result2 #k. ClientReceivedResp(sid, pkC, pkS, ctr2, result2) @ #k
+                              & not(#k = #i))
+  "
+
+
+/*
+ * L5: Secrecy
+ *
+ * Encrypted tool parameters and results remain secret from the
+ * Dolev-Yao attacker, unless a long-term key in the session is
+ * compromised.
+ *
+ * Maps to: RSA-OAEP + AES-256-GCM in envelope.py (P10, P11)
+ */
+lemma secrecy:
+  "All sid x #i.
+    Secret(sid, x) @ #i
+    ==> not(Ex #j. K(x) @ #j)
+      | (Ex pkC pkS #e.
+           SessionEstablished(sid, pkC, pkS) @ #e
+           & (Ex #r. RevealLTK(pkC) @ #r)
+        )
+      | (Ex pkC pkS #e.
+           SessionEstablished(sid, pkC, pkS) @ #e
+           & (Ex #r. RevealLTK(pkS) @ #r)
+        )
+  "
+
+
+/*
+ * L6: Measurement Integrity
+ *
+ * Every server acceptance of a tool call in an uncompromised session
+ * implies the client was initialized with an honest TEE measurement.
+ *
+ * Maps to: allowed_rtmr3 check in _verify_evidence(), RTMR3 verification
+ */
+lemma measurement_integrity:
+  "All sid pkC pkS ctr params #i.
+    ServerAcceptedCall(sid, pkC, pkS, ctr, params) @ #i
+    & not(Ex #r. RevealLTK(pkC) @ #r)
+    & not(Ex #r. RevealLTK(pkS) @ #r)
+    ==>
+    Ex #j. HonestClient(pkC) @ #j
+  "
+
+
+/*
+ * L7: Session Binding (with EKM)
+ *
+ * If both client and server establish a session with the same sid,
+ * they used the same TLS EKM value. This prevents relay attacks
+ * across TLS connections.
+ *
+ * Maps to: establish_session(tls_ekm=ekm) in secure_channel.py
+ *   sid = SHA256(pk_C || pk_S || sd_C || sd_S || ekm)
+ */
+lemma session_binding:
+  "All sid pkC pkS ekm1 ekm2 #i #j.
+    SessionWithEKM(sid, pkC, pkS, ekm1) @ #i
+    & SessionWithEKM(sid, pkC, pkS, ekm2) @ #j
+    ==> ekm1 = ekm2
+  "
+
+
+/*
+ * L8: Fresh Attestation
+ *
+ * If the server accepts two distinct tool calls in the same session,
+ * they must use different counter values. Combined with session-bound
+ * HMAC derivation, this ensures each attestation is fresh.
+ *
+ * Proof: Follows from CounterOnce restriction + the fact that
+ * ServerAcceptedCall emits CounterAccepted(sid, ctr).
+ * Unlike the v1 model's circular no_replay, this is a derived
+ * property: injective agreement (L3) proves the stronger result
+ * that each acceptance matches a unique client send. This lemma
+ * is an additional explicit statement of counter freshness.
+ */
+lemma fresh_attestation:
+  "All sid pkC pkS ctr1 params1 ctr2 params2 #i #j.
+    ServerAcceptedCall(sid, pkC, pkS, ctr1, params1) @ #i
+    & ServerAcceptedCall(sid, pkC, pkS, ctr2, params2) @ #j
+    & not(#i = #j)
+    ==> not(ctr1 = ctr2)
+  "
+
+
+end

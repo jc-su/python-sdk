@@ -853,6 +853,11 @@ class MCPServer(Generic[LifespanResultT]):
         sse_path: str = "/sse",
         message_path: str = "/messages/",
         transport_security: TransportSecuritySettings | None = None,
+        ssl_certfile: str | None = None,
+        ssl_keyfile: str | None = None,
+        ssl_keyfile_password: str | None = None,
+        ssl_ca_certs: str | None = None,
+        ssl_ciphers: str | None = None,
     ) -> None:
         """Run the server using SSE transport."""
         import uvicorn
@@ -866,9 +871,15 @@ class MCPServer(Generic[LifespanResultT]):
 
         config = uvicorn.Config(
             starlette_app,
-            host=host,
-            port=port,
-            log_level=self.settings.log_level.lower(),
+            **self._build_uvicorn_kwargs(
+                host=host,
+                port=port,
+                ssl_certfile=ssl_certfile,
+                ssl_keyfile=ssl_keyfile,
+                ssl_keyfile_password=ssl_keyfile_password,
+                ssl_ca_certs=ssl_ca_certs,
+                ssl_ciphers=ssl_ciphers,
+            ),
         )
         server = uvicorn.Server(config)
         await server.serve()
@@ -884,6 +895,11 @@ class MCPServer(Generic[LifespanResultT]):
         event_store: EventStore | None = None,
         retry_interval: int | None = None,
         transport_security: TransportSecuritySettings | None = None,
+        ssl_certfile: str | None = None,
+        ssl_keyfile: str | None = None,
+        ssl_keyfile_password: str | None = None,
+        ssl_ca_certs: str | None = None,
+        ssl_ciphers: str | None = None,
     ) -> None:
         """Run the server using StreamableHTTP transport."""
         import uvicorn
@@ -900,12 +916,53 @@ class MCPServer(Generic[LifespanResultT]):
 
         config = uvicorn.Config(
             starlette_app,
-            host=host,
-            port=port,
-            log_level=self.settings.log_level.lower(),
+            **self._build_uvicorn_kwargs(
+                host=host,
+                port=port,
+                ssl_certfile=ssl_certfile,
+                ssl_keyfile=ssl_keyfile,
+                ssl_keyfile_password=ssl_keyfile_password,
+                ssl_ca_certs=ssl_ca_certs,
+                ssl_ciphers=ssl_ciphers,
+            ),
         )
         server = uvicorn.Server(config)
         await server.serve()
+
+    def _build_uvicorn_kwargs(
+        self,
+        *,
+        host: str,
+        port: int,
+        ssl_certfile: str | None = None,
+        ssl_keyfile: str | None = None,
+        ssl_keyfile_password: str | None = None,
+        ssl_ca_certs: str | None = None,
+        ssl_ciphers: str | None = None,
+    ) -> dict[str, Any]:
+        """Build shared Uvicorn config kwargs for HTTP transports."""
+        uvicorn_kwargs: dict[str, Any] = {
+            "host": host,
+            "port": port,
+            "log_level": self.settings.log_level.lower(),
+        }
+
+        if ssl_certfile is None and ssl_keyfile is None:
+            return uvicorn_kwargs
+
+        if ssl_certfile is None or ssl_keyfile is None:
+            raise ValueError("Both ssl_certfile and ssl_keyfile must be provided together")
+
+        uvicorn_kwargs["ssl_certfile"] = ssl_certfile
+        uvicorn_kwargs["ssl_keyfile"] = ssl_keyfile
+        if ssl_keyfile_password is not None:
+            uvicorn_kwargs["ssl_keyfile_password"] = ssl_keyfile_password
+        if ssl_ca_certs is not None:
+            uvicorn_kwargs["ssl_ca_certs"] = ssl_ca_certs
+        if ssl_ciphers is not None:
+            uvicorn_kwargs["ssl_ciphers"] = ssl_ciphers
+
+        return uvicorn_kwargs
 
     def sse_app(
         self,
@@ -921,7 +978,14 @@ class MCPServer(Generic[LifespanResultT]):
             transport_security = TransportSecuritySettings(
                 enable_dns_rebinding_protection=True,
                 allowed_hosts=["127.0.0.1:*", "localhost:*", "[::1]:*"],
-                allowed_origins=["http://127.0.0.1:*", "http://localhost:*", "http://[::1]:*"],
+                allowed_origins=[
+                    "http://127.0.0.1:*",
+                    "http://localhost:*",
+                    "http://[::1]:*",
+                    "https://127.0.0.1:*",
+                    "https://localhost:*",
+                    "https://[::1]:*",
+                ],
             )
 
         sse = SseServerTransport(message_path, security_settings=transport_security)

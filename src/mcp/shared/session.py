@@ -189,6 +189,7 @@ class BaseSession(
         self._read_stream = read_stream
         self._write_stream = write_stream
         self._response_streams = {}
+        self._response_metadata: dict[RequestId, MessageMetadata] = {}
         self._request_id = 0
         self._session_read_timeout_seconds = read_timeout_seconds
         self._in_flight = {}
@@ -251,20 +252,29 @@ class BaseSession(
         response_stream, response_stream_reader = anyio.create_memory_object_stream[JSONRPCResponse | JSONRPCError](1)
         self._response_streams[request_id] = response_stream
 
-        # Set up progress token if progress callback is provided
-        request_data = request.model_dump(by_alias=True, mode="json", exclude_none=True)
-        if progress_callback is not None:
-            # Use request_id as progress token
-            if "params" not in request_data:  # pragma: lax no cover
-                request_data["params"] = {}
-            if "_meta" not in request_data["params"]:  # pragma: lax no cover
-                request_data["params"]["_meta"] = {}
-            request_data["params"]["_meta"]["progressToken"] = request_id
-            # Store the callback for this request
-            self._progress_callbacks[request_id] = progress_callback
-
         try:
-            jsonrpc_request = JSONRPCRequest(jsonrpc="2.0", id=request_id, **request_data)
+            # Set up progress token if progress callback is provided
+            request_data = request.model_dump(by_alias=True, mode="json", exclude_none=True)
+            prepared_request_data = self._prepare_request_data(request_id, request_data)
+            if not isinstance(prepared_request_data, dict):
+                raise TypeError("_prepare_request_data() must return a dict")
+            request_data = prepared_request_data
+            if progress_callback is not None:  # pragma: no cover
+                # Use request_id as progress token
+                if "params" not in request_data:
+                    request_data["params"] = {}
+                if "_meta" not in request_data["params"]:  # pragma: no branch
+                    request_data["params"]["_meta"] = {}
+                request_data["params"]["_meta"]["progressToken"] = request_id
+                # Store the callback for this request
+                self._progress_callbacks[request_id] = progress_callback
+
+            jsonrpc_request = JSONRPCRequest(
+                jsonrpc="2.0",
+                id=request_id,
+                **request_data,
+            )
+
             await self._write_stream.send(SessionMessage(message=jsonrpc_request, metadata=metadata))
 
             # request read timeout takes precedence over session read timeout
@@ -281,11 +291,14 @@ class BaseSession(
             if isinstance(response_or_error, JSONRPCError):
                 raise MCPError.from_jsonrpc_error(response_or_error)
             else:
-                return result_type.model_validate(response_or_error.result, by_name=False)
+                raw_result = self._process_raw_response(request_id, response_or_error.result)
+                return result_type.model_validate(raw_result, by_name=False)
 
         finally:
             self._response_streams.pop(request_id, None)
+            self._response_metadata.pop(request_id, None)
             self._progress_callbacks.pop(request_id, None)
+            self._finalize_request(request_id)
             await response_stream.aclose()
             await response_stream_reader.aclose()
 
@@ -306,6 +319,59 @@ class BaseSession(
             metadata=ServerMessageMetadata(related_request_id=related_request_id) if related_request_id else None,
         )
         await self._write_stream.send(session_message)
+
+    def _prepare_request_data(self, request_id: int, request_data: Any) -> Any:
+        """Hook for subclasses to modify request data before sending.
+
+        Called after model_dump() and before JSONRPCRequest construction.
+        Default is identity (no-op).
+        """
+        return request_data
+
+    def _process_raw_response(self, request_id: int, result: Any) -> Any:
+        """Hook for subclasses to process raw response before model validation.
+
+        Called after receiving response and before result_type.model_validate().
+        Default is identity (no-op).
+        """
+        return result
+
+    def _finalize_request(self, request_id: int) -> None:
+        """Hook for subclasses to clean up per-request state.
+
+        Called in send_request() finally block to guarantee cleanup on success,
+        response error, timeout, or processing exception.
+        """
+        return
+
+    def _get_response_metadata(self, request_id: RequestId) -> MessageMetadata:
+        """Get metadata associated with a pending response, if any."""
+        return self._response_metadata.get(request_id)
+
+    def _preprocess_incoming_request_data(
+        self,
+        request_data: dict,
+        message_metadata: MessageMetadata = None,
+    ) -> dict:
+        """Hook for subclasses to preprocess incoming request dicts.
+
+        Called before request model validation in _receive_loop(). Subclasses
+        may rewrite request_data to support custom transport/session behaviors.
+        Default is identity (no-op).
+        """
+        return request_data
+
+    def _on_request_validation_error(
+        self,
+        request_id: RequestId,
+        error: Exception,
+    ) -> None:
+        """Hook for subclasses to clean up state on request validation failure.
+
+        Called when incoming JSON-RPC request parsing/validation fails in
+        _receive_loop() before dispatch. Default is no-op.
+        """
+        return
 
     async def _send_response(self, request_id: RequestId, response: SendResultT | ErrorData) -> None:
         if isinstance(response, ErrorData):
@@ -338,9 +404,19 @@ class BaseSession(
                         await self._handle_incoming(message)
                     elif isinstance(message.message, JSONRPCRequest):
                         try:
+                            raw_request = message.message.model_dump(
+                                by_alias=True,
+                                mode="json",
+                                exclude_none=True,
+                            )
+                            prepared_request = self._preprocess_incoming_request_data(
+                                raw_request,
+                                message.metadata,
+                            )
+                            if not isinstance(prepared_request, dict):
+                                raise TypeError("_preprocess_incoming_request_data() must return a dict")
                             validated_request = self._receive_request_adapter.validate_python(
-                                message.message.model_dump(by_alias=True, mode="json", exclude_none=True),
-                                by_name=False,
+                                prepared_request, by_name=False
                             )
                             responder = RequestResponder(
                                 request_id=message.message.id,
@@ -355,10 +431,11 @@ class BaseSession(
 
                             if not responder._completed:  # type: ignore[reportPrivateUsage]
                                 await self._handle_incoming(responder)
-                        except Exception:
+                        except Exception as e:
                             # For request validation errors, send a proper JSON-RPC error
                             # response instead of crashing the server
-                            logging.warning("Failed to validate request", exc_info=True)
+                            self._on_request_validation_error(message.message.id, e)
+                            logging.warning(f"Failed to validate request: {e}")
                             logging.debug(f"Message that failed validation: {message.message}")
                             error_response = JSONRPCError(
                                 jsonrpc="2.0",
@@ -485,9 +562,10 @@ class BaseSession(
 
         # Fall back to normal response streams
         stream = self._response_streams.pop(response_id, None)
-        if stream:
+        if stream:  # pragma: no cover
+            self._response_metadata[response_id] = message.metadata
             await stream.send(message.message)
-        else:
+        else:  # pragma: no cover
             await self._handle_incoming(RuntimeError(f"Received response with an unknown request ID: {message}"))
 
     async def _received_request(self, responder: RequestResponder[ReceiveRequestT, SendResultT]) -> None:

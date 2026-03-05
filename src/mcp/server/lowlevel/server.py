@@ -536,7 +536,14 @@ class Server(Generic[LifespanResultT]):
             transport_security = TransportSecuritySettings(
                 enable_dns_rebinding_protection=True,
                 allowed_hosts=["127.0.0.1:*", "localhost:*", "[::1]:*"],
-                allowed_origins=["http://127.0.0.1:*", "http://localhost:*", "http://[::1]:*"],
+                allowed_origins=[
+                    "http://127.0.0.1:*",
+                    "http://localhost:*",
+                    "http://[::1]:*",
+                    "https://127.0.0.1:*",
+                    "https://localhost:*",
+                    "https://[::1]:*",
+                ],
             )
 
         session_manager = StreamableHTTPSessionManager(

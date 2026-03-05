@@ -46,6 +46,7 @@ dependencies = [
 rich = ["rich>=13.9.4"]
 cli = ["typer>=0.16.0", "python-dotenv>=1.0.0"]
 ws = ["websockets>=15.0.1"]
+trust = ["grpcio>=1.62.0", "protobuf>=4.25.0"]
 
 [project.scripts]
 mcp = "mcp.cli:app [cli]"
@@ -184,6 +185,9 @@ filterwarnings = [
     "ignore:Returning str or bytes.*:DeprecationWarning:mcp.server.lowlevel",
     # pywin32 internal deprecation warning
     "ignore:getargs.*The 'u' format is deprecated:DeprecationWarning",
+    # anyio memory streams emit ResourceWarning in __del__ on Python 3.13
+    # when sessions are tested without full lifecycle (no __aenter__/__aexit__)
+    "ignore:Exception ignored in.*MemoryObject:pytest.PytestUnraisableExceptionWarning",
 ]
 
 [tool.markdown.lint]

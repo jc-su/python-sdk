@@ -4,17 +4,13 @@ Tests the upstream_tokens mechanism in tee_envelope and its integration
 with client and server sessions.
 """
 
-import base64
-import json
 import time
 from dataclasses import dataclass
-from unittest.mock import MagicMock
 
 import anyio
 import pytest
 
-from mcp.shared.tee_envelope import create_tool_request_envelope
-
+from mcp.shared.tee_envelope import create_encrypted_envelope
 
 # =============================================================================
 # Mock helpers
@@ -36,35 +32,56 @@ class MockSecureEndpoint:
     def __init__(self, role: str = "client"):
         self.role = role
         self.session_id: bytes | None = b"x" * 32
-        self.session_key: bytes | None = b"session_key_32bytes_for_testing!"
+        self.kek: bytes | None = None
         self.mac_key: bytes | None = None
-        self._counter = 0
+        self._send_counter = 0
+        self._recv_counter = 0
         self._peers: dict[str, MockPeer] = {}
+        self._initial_rtmr3: bytes | None = None
+        # Generate a real kek for envelope encryption
+        import secrets
 
-    def derive_sig_data(self, entropy: bytes) -> tuple[bytes, int]:
+        self.kek = secrets.token_bytes(32)
+
+    def next_send_counter(self) -> int:
+        counter = self._send_counter
+        self._send_counter += 1
+        return counter
+
+    def verify_recv_counter(self, counter: int) -> None:
+        if counter < self._recv_counter:
+            raise ValueError(f"Stale counter: got {counter}, expected >= {self._recv_counter}")
+        self._recv_counter = counter + 1
+
+    def create_session_auth(self, counter: int) -> bytes:
         import hashlib
         import hmac
 
-        counter = self._counter
-        self._counter += 1
-        counter_bytes = counter.to_bytes(8, "big")
-        sig = hmac.new(b"x" * 32, entropy + counter_bytes, hashlib.sha256).digest()
-        return sig, counter
+        key = self.mac_key or b"mock_mac_key"
+        return hmac.new(key, counter.to_bytes(8, "big"), hashlib.sha256).digest()
 
-    def verify_derived_sig_data(self, entropy: bytes, counter: int) -> bytes:
+    def verify_session_auth(self, counter: int, auth_tag: bytes) -> bool:
         import hashlib
         import hmac
 
-        counter_bytes = counter.to_bytes(8, "big")
-        return hmac.new(b"x" * 32, entropy + counter_bytes, hashlib.sha256).digest()
+        if self.mac_key is None:
+            return False
+        expected = hmac.new(self.mac_key, counter.to_bytes(8, "big"), hashlib.sha256).digest()
+        return hmac.compare_digest(expected, auth_tag)
 
-    def encrypt_message(self, plaintext: bytes) -> tuple[bytes, bytes]:
-        # Simple mock encryption: just return nonce + plaintext as "ciphertext"
-        nonce = b"\x00" * 12
-        return nonce, plaintext
+    def wrap_and_encrypt(self, plaintext: bytes, *, aad: bytes | None = None) -> "EnvelopePayload":
+        from mcp.shared.crypto.envelope import envelope_encrypt
 
-    def decrypt_message(self, nonce: bytes, ciphertext: bytes) -> bytes:
-        return ciphertext
+        if self.kek is None:
+            raise ValueError("KEK not established")
+        return envelope_encrypt(self.kek, plaintext, aad=aad)
+
+    def unwrap_and_decrypt(self, payload: "EnvelopePayload", *, aad: bytes | None = None) -> bytes:
+        from mcp.shared.crypto.envelope import envelope_decrypt
+
+        if self.kek is None:
+            raise ValueError("KEK not established")
+        return envelope_decrypt(self.kek, payload, aad=aad)
 
     def get_peer(self, role: str) -> MockPeer | None:
         return self._peers.get(role)
@@ -95,7 +112,7 @@ class MockJWTVerifier:
 
 
 class TestUpstreamTokensEnvelope:
-    """Test upstream_tokens in create_tool_request_envelope."""
+    """Test upstream_tokens in create_encrypted_envelope."""
 
     def test_upstream_tokens_included_when_present(self) -> None:
         """upstream_tokens are included in the envelope when provided."""
@@ -104,7 +121,7 @@ class TestUpstreamTokensEnvelope:
             {"token": "eyJ.client.jwt", "role": "client", "subject": "cgroup:///docker/client-abc"},
         ]
 
-        tee_dict = create_tool_request_envelope(
+        tee_dict = create_encrypted_envelope(
             endpoint,
             {"name": "test_tool", "arguments": {}},
             upstream_tokens=tokens,
@@ -120,14 +137,14 @@ class TestUpstreamTokensEnvelope:
         """upstream_tokens field is omitted when list is empty or None."""
         endpoint = MockSecureEndpoint()
 
-        tee_dict_none = create_tool_request_envelope(
+        tee_dict_none = create_encrypted_envelope(
             endpoint,
             {"name": "test_tool", "arguments": {}},
             upstream_tokens=None,
         )
         assert "upstream_tokens" not in tee_dict_none
 
-        tee_dict_empty = create_tool_request_envelope(
+        tee_dict_empty = create_encrypted_envelope(
             endpoint,
             {"name": "test_tool", "arguments": {}},
             upstream_tokens=[],
@@ -142,7 +159,7 @@ class TestUpstreamTokensEnvelope:
             {"token": "eyJ.serverA.jwt", "role": "server", "subject": "cgroup:///docker/serverA"},
         ]
 
-        tee_dict = create_tool_request_envelope(
+        tee_dict = create_encrypted_envelope(
             endpoint,
             {"name": "test_tool", "arguments": {}},
             upstream_tokens=tokens,
@@ -161,8 +178,6 @@ class TestServerUpstreamTokenVerification:
 
     def test_server_verifies_upstream_tokens(self) -> None:
         """Server verifies upstream tokens when jwt_verifier is configured."""
-        from mcp.server.trusted_session import TrustedServerSession
-        from mcp.shared.tee_helpers import extract_tee_dict
 
         verifier = MockJWTVerifier(valid=True)
 
@@ -323,10 +338,9 @@ class TestServerClientAttestationToken:
 
     def test_initial_client_attestation_token_empty(self) -> None:
         """client_attestation_token is empty initially."""
-        from mcp.server.trusted_session import TrustedServerSession
-        from mcp.server.models import InitializationOptions
-
         import mcp.types as types
+        from mcp.server.models import InitializationOptions
+        from mcp.server.trusted_session import TrustedServerSession
 
         init_options = InitializationOptions(
             server_name="test",

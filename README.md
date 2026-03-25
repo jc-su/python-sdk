@@ -46,7 +46,7 @@
     - [Sampling](#sampling)
     - [Logging and Notifications](#logging-and-notifications)
     - [Authentication](#authentication)
-    - [FastMCP Properties](#fastmcp-properties)
+    - [MCPServer Properties](#fastmcp-properties)
     - [Session Properties and Methods](#session-properties-and-methods)
     - [Request Context Properties](#request-context-properties)
   - [Running Your Server](#running-your-server)
@@ -138,16 +138,16 @@ Let's create a simple MCP server that exposes a calculator tool and some data:
 <!-- snippet-source examples/snippets/servers/fastmcp_quickstart.py -->
 ```python
 """
-FastMCP quickstart example.
+MCPServer quickstart example.
 
 Run from the repository root:
     uv run examples/snippets/servers/fastmcp_quickstart.py
 """
 
-from mcp.server.fastmcp import FastMCP
+from mcp.server.mcpserver import MCPServer
 
 # Create an MCP server
-mcp = FastMCP("Demo", json_response=True)
+mcp = MCPServer("Demo")
 
 
 # Add an addition tool
@@ -179,7 +179,7 @@ def greet_user(name: str, style: str = "friendly") -> str:
 
 # Run with streamable HTTP transport
 if __name__ == "__main__":
-    mcp.run(transport="streamable-http")
+    mcp.run(transport="streamable-http", json_response=True)
 ```
 
 _Full example: [examples/snippets/servers/fastmcp_quickstart.py](https://github.com/modelcontextprotocol/python-sdk/blob/main/examples/snippets/servers/fastmcp_quickstart.py)_
@@ -218,7 +218,7 @@ The [Model Context Protocol (MCP)](https://modelcontextprotocol.io) lets you bui
 
 ### Server
 
-The FastMCP server is your core interface to the MCP protocol. It handles connection management, protocol compliance, and message routing:
+The MCPServer server is your core interface to the MCP protocol. It handles connection management, protocol compliance, and message routing:
 
 <!-- snippet-source examples/snippets/servers/lifespan_example.py -->
 ```python
@@ -228,7 +228,7 @@ from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
 from dataclasses import dataclass
 
-from mcp.server.fastmcp import Context, FastMCP
+from mcp.server.mcpserver import Context, MCPServer
 from mcp.server.session import ServerSession
 
 
@@ -258,7 +258,7 @@ class AppContext:
 
 
 @asynccontextmanager
-async def app_lifespan(server: FastMCP) -> AsyncIterator[AppContext]:
+async def app_lifespan(server: MCPServer) -> AsyncIterator[AppContext]:
     """Manage application lifecycle with type-safe context."""
     # Initialize on startup
     db = await Database.connect()
@@ -270,7 +270,7 @@ async def app_lifespan(server: FastMCP) -> AsyncIterator[AppContext]:
 
 
 # Pass lifespan to server
-mcp = FastMCP("My App", lifespan=app_lifespan)
+mcp = MCPServer("My App", lifespan=app_lifespan)
 
 
 # Access type-safe lifespan context in tools
@@ -290,9 +290,9 @@ Resources are how you expose data to LLMs. They're similar to GET endpoints in a
 
 <!-- snippet-source examples/snippets/servers/basic_resource.py -->
 ```python
-from mcp.server.fastmcp import FastMCP
+from mcp.server.mcpserver import MCPServer
 
-mcp = FastMCP(name="Resource Example")
+mcp = MCPServer(name="Resource Example")
 
 
 @mcp.resource("file://documents/{name}")
@@ -321,9 +321,9 @@ Tools let LLMs take actions through your server. Unlike resources, tools are exp
 
 <!-- snippet-source examples/snippets/servers/basic_tool.py -->
 ```python
-from mcp.server.fastmcp import FastMCP
+from mcp.server.mcpserver import MCPServer
 
-mcp = FastMCP(name="Tool Example")
+mcp = MCPServer(name="Tool Example")
 
 
 @mcp.tool()
@@ -342,14 +342,14 @@ def get_weather(city: str, unit: str = "celsius") -> str:
 _Full example: [examples/snippets/servers/basic_tool.py](https://github.com/modelcontextprotocol/python-sdk/blob/main/examples/snippets/servers/basic_tool.py)_
 <!-- /snippet-source -->
 
-Tools can optionally receive a Context object by including a parameter with the `Context` type annotation. This context is automatically injected by the FastMCP framework and provides access to MCP capabilities:
+Tools can optionally receive a Context object by including a parameter with the `Context` type annotation. This context is automatically injected by the MCPServer framework and provides access to MCP capabilities:
 
 <!-- snippet-source examples/snippets/servers/tool_progress.py -->
 ```python
-from mcp.server.fastmcp import Context, FastMCP
+from mcp.server.mcpserver import Context, MCPServer
 from mcp.server.session import ServerSession
 
-mcp = FastMCP(name="Progress Example")
+mcp = MCPServer(name="Progress Example")
 
 
 @mcp.tool()
@@ -397,7 +397,7 @@ validated data that clients can easily process.
 **Note:** For backward compatibility, unstructured results are also
 returned. Unstructured results are provided for backward compatibility
 with previous versions of the MCP specification, and are quirks-compatible
-with previous versions of FastMCP in the current version of the SDK.
+with previous versions of MCPServer in the current version of the SDK.
 
 **Note:** In cases where a tool function's return type annotation
 causes the tool to be classified as structured _and this is undesirable_,
@@ -416,10 +416,10 @@ from typing import Annotated
 
 from pydantic import BaseModel
 
-from mcp.server.fastmcp import FastMCP
+from mcp.server.mcpserver import MCPServer
 from mcp.types import CallToolResult, TextContent
 
-mcp = FastMCP("CallToolResult Example")
+mcp = MCPServer("CallToolResult Example")
 
 
 class ValidationModel(BaseModel):
@@ -467,9 +467,9 @@ from typing import TypedDict
 
 from pydantic import BaseModel, Field
 
-from mcp.server.fastmcp import FastMCP
+from mcp.server.mcpserver import MCPServer
 
-mcp = FastMCP("Structured Output Example")
+mcp = MCPServer("Structured Output Example")
 
 
 # Using Pydantic models for rich structured data
@@ -569,10 +569,10 @@ Prompts are reusable templates that help LLMs interact with your server effectiv
 
 <!-- snippet-source examples/snippets/servers/basic_prompt.py -->
 ```python
-from mcp.server.fastmcp import FastMCP
-from mcp.server.fastmcp.prompts import base
+from mcp.server.mcpserver import MCPServer
+from mcp.server.mcpserver.prompts import base
 
-mcp = FastMCP(name="Prompt Example")
+mcp = MCPServer(name="Prompt Example")
 
 
 @mcp.prompt(title="Code Review")
@@ -597,7 +597,7 @@ _Full example: [examples/snippets/servers/basic_prompt.py](https://github.com/mo
 MCP servers can provide icons for UI display. Icons can be added to the server implementation, tools, resources, and prompts:
 
 ```python
-from mcp.server.fastmcp import FastMCP, Icon
+from mcp.server.mcpserver import MCPServer, Icon
 
 # Create an icon from a file path or URL
 icon = Icon(
@@ -607,7 +607,7 @@ icon = Icon(
 )
 
 # Add icons to server
-mcp = FastMCP(
+mcp = MCPServer(
     "My Server",
     website_url="https://example.com",
     icons=[icon]
@@ -629,17 +629,17 @@ _Full example: [examples/fastmcp/icons_demo.py](https://github.com/modelcontextp
 
 ### Images
 
-FastMCP provides an `Image` class that automatically handles image data:
+MCPServer provides an `Image` class that automatically handles image data:
 
 <!-- snippet-source examples/snippets/servers/images.py -->
 ```python
-"""Example showing image handling with FastMCP."""
+"""Example showing image handling with MCPServer."""
 
 from PIL import Image as PILImage
 
-from mcp.server.fastmcp import FastMCP, Image
+from mcp.server.mcpserver import MCPServer, Image
 
-mcp = FastMCP("Image Example")
+mcp = MCPServer("Image Example")
 
 
 @mcp.tool()
@@ -662,9 +662,9 @@ The Context object is automatically injected into tool and resource functions th
 To use context in a tool or resource function, add a parameter with the `Context` type annotation:
 
 ```python
-from mcp.server.fastmcp import Context, FastMCP
+from mcp.server.mcpserver import Context, MCPServer
 
-mcp = FastMCP(name="Context Example")
+mcp = MCPServer(name="Context Example")
 
 
 @mcp.tool()
@@ -680,7 +680,7 @@ The Context object provides the following capabilities:
 
 - `ctx.request_id` - Unique ID for the current request
 - `ctx.client_id` - Client ID if available
-- `ctx.fastmcp` - Access to the FastMCP server instance (see [FastMCP Properties](#fastmcp-properties))
+- `ctx.mcp_server` - Access to the MCPServer server instance (see [MCPServer Properties](#fastmcp-properties))
 - `ctx.session` - Access to the underlying session for advanced communication (see [Session Properties and Methods](#session-properties-and-methods))
 - `ctx.request_context` - Access to request-specific data and lifespan resources (see [Request Context Properties](#request-context-properties))
 - `await ctx.debug(message)` - Send debug log message
@@ -694,10 +694,10 @@ The Context object provides the following capabilities:
 
 <!-- snippet-source examples/snippets/servers/tool_progress.py -->
 ```python
-from mcp.server.fastmcp import Context, FastMCP
+from mcp.server.mcpserver import Context, MCPServer
 from mcp.server.session import ServerSession
 
-mcp = FastMCP(name="Progress Example")
+mcp = MCPServer(name="Progress Example")
 
 
 @mcp.tool()
@@ -827,12 +827,12 @@ import uuid
 
 from pydantic import BaseModel, Field
 
-from mcp.server.fastmcp import Context, FastMCP
+from mcp.server.mcpserver import Context, MCPServer
 from mcp.server.session import ServerSession
 from mcp.shared.exceptions import UrlElicitationRequiredError
 from mcp.types import ElicitRequestURLParams
 
-mcp = FastMCP(name="Elicitation Example")
+mcp = MCPServer(name="Elicitation Example")
 
 
 class BookingPreferences(BaseModel):
@@ -934,11 +934,11 @@ Tools can interact with LLMs through sampling (generating text):
 
 <!-- snippet-source examples/snippets/servers/sampling.py -->
 ```python
-from mcp.server.fastmcp import Context, FastMCP
+from mcp.server.mcpserver import Context, MCPServer
 from mcp.server.session import ServerSession
 from mcp.types import SamplingMessage, TextContent
 
-mcp = FastMCP(name="Sampling Example")
+mcp = MCPServer(name="Sampling Example")
 
 
 @mcp.tool()
@@ -971,10 +971,10 @@ Tools can send logs and notifications through the context:
 
 <!-- snippet-source examples/snippets/servers/notifications.py -->
 ```python
-from mcp.server.fastmcp import Context, FastMCP
+from mcp.server.mcpserver import Context, MCPServer
 from mcp.server.session import ServerSession
 
-mcp = FastMCP(name="Notifications Example")
+mcp = MCPServer(name="Notifications Example")
 
 
 @mcp.tool()
@@ -1014,7 +1014,7 @@ from pydantic import AnyHttpUrl
 
 from mcp.server.auth.provider import AccessToken, TokenVerifier
 from mcp.server.auth.settings import AuthSettings
-from mcp.server.fastmcp import FastMCP
+from mcp.server.mcpserver import MCPServer
 
 
 class SimpleTokenVerifier(TokenVerifier):
@@ -1024,8 +1024,8 @@ class SimpleTokenVerifier(TokenVerifier):
         pass  # This is where you would implement actual token validation
 
 
-# Create FastMCP instance as a Resource Server
-mcp = FastMCP(
+# Create MCPServer instance as a Resource Server
+mcp = MCPServer(
     "Weather Service",
     json_response=True,
     # Token verifier for authentication
@@ -1067,15 +1067,15 @@ For a complete example with separate Authorization Server and Resource Server im
 
 See [TokenVerifier](src/mcp/server/auth/provider.py) for more details on implementing token validation.
 
-### FastMCP Properties
+### MCPServer Properties
 
-The FastMCP server instance accessible via `ctx.fastmcp` provides access to server configuration and metadata:
+The MCPServer server instance accessible via `ctx.mcp_server` provides access to server configuration and metadata:
 
-- `ctx.fastmcp.name` - The server's name as defined during initialization
-- `ctx.fastmcp.instructions` - Server instructions/description provided to clients
-- `ctx.fastmcp.website_url` - Optional website URL for the server
-- `ctx.fastmcp.icons` - Optional list of icons for UI display
-- `ctx.fastmcp.settings` - Complete server configuration object containing:
+- `ctx.mcp_server.name` - The server's name as defined during initialization
+- `ctx.mcp_server.instructions` - Server instructions/description provided to clients
+- `ctx.mcp_server.website_url` - Optional website URL for the server
+- `ctx.mcp_server.icons` - Optional list of icons for UI display
+- `ctx.mcp_server.settings` - Complete server configuration object containing:
   - `debug` - Debug mode flag
   - `log_level` - Current logging level
   - `host` and `port` - Server network configuration
@@ -1088,12 +1088,12 @@ The FastMCP server instance accessible via `ctx.fastmcp` provides access to serv
 def server_info(ctx: Context) -> dict:
     """Get information about the current server."""
     return {
-        "name": ctx.fastmcp.name,
-        "instructions": ctx.fastmcp.instructions,
-        "debug_mode": ctx.fastmcp.settings.debug,
-        "log_level": ctx.fastmcp.settings.log_level,
-        "host": ctx.fastmcp.settings.host,
-        "port": ctx.fastmcp.settings.port,
+        "name": ctx.mcp_server.name,
+        "instructions": ctx.mcp_server.instructions,
+        "debug_mode": ctx.mcp_server.settings.debug,
+        "log_level": ctx.mcp_server.settings.log_level,
+        "host": ctx.mcp_server.settings.host,
+        "port": ctx.mcp_server.settings.port,
     }
 ```
 
@@ -1208,9 +1208,9 @@ cd to the `examples/snippets` directory and run:
     python servers/direct_execution.py
 """
 
-from mcp.server.fastmcp import FastMCP
+from mcp.server.mcpserver import MCPServer
 
-mcp = FastMCP("My App")
+mcp = MCPServer("My App")
 
 
 @mcp.tool()
@@ -1239,7 +1239,7 @@ python servers/direct_execution.py
 uv run mcp run servers/direct_execution.py
 ```
 
-Note that `uv run mcp run` or `uv run mcp dev` only supports server using FastMCP and not the low-level server variant.
+Note that `uv run mcp run` or `uv run mcp dev` only supports server using MCPServer and not the low-level server variant.
 
 ### Streamable HTTP Transport
 
@@ -1252,17 +1252,17 @@ Run from the repository root:
     uv run examples/snippets/servers/streamable_config.py
 """
 
-from mcp.server.fastmcp import FastMCP
+from mcp.server.mcpserver import MCPServer
 
 # Stateless server with JSON responses (recommended)
-mcp = FastMCP("StatelessServer", stateless_http=True, json_response=True)
+mcp = MCPServer("StatelessServer")
 
 # Other configuration options:
 # Stateless server with SSE streaming responses
-# mcp = FastMCP("StatelessServer", stateless_http=True)
+# mcp = MCPServer("StatelessServer")
 
 # Stateful server with session persistence
-# mcp = FastMCP("StatefulServer")
+# mcp = MCPServer("StatefulServer")
 
 
 # Add a simple tool to demonstrate the server
@@ -1274,13 +1274,13 @@ def greet(name: str = "World") -> str:
 
 # Run server with streamable_http transport
 if __name__ == "__main__":
-    mcp.run(transport="streamable-http")
+    mcp.run(transport="streamable-http", stateless_http=True, json_response=True)
 ```
 
 _Full example: [examples/snippets/servers/streamable_config.py](https://github.com/modelcontextprotocol/python-sdk/blob/main/examples/snippets/servers/streamable_config.py)_
 <!-- /snippet-source -->
 
-You can mount multiple FastMCP servers in a Starlette application:
+You can mount multiple MCPServer servers in a Starlette application:
 
 <!-- snippet-source examples/snippets/servers/streamable_starlette_mount.py -->
 ```python
@@ -1294,10 +1294,10 @@ import contextlib
 from starlette.applications import Starlette
 from starlette.routing import Mount
 
-from mcp.server.fastmcp import FastMCP
+from mcp.server.mcpserver import MCPServer
 
 # Create the Echo server
-echo_mcp = FastMCP(name="EchoServer", stateless_http=True, json_response=True)
+echo_mcp = MCPServer(name="EchoServer")
 
 
 @echo_mcp.tool()
@@ -1307,7 +1307,7 @@ def echo(message: str) -> str:
 
 
 # Create the Math server
-math_mcp = FastMCP(name="MathServer", stateless_http=True, json_response=True)
+math_mcp = MCPServer(name="MathServer")
 
 
 @math_mcp.tool()
@@ -1328,16 +1328,16 @@ async def lifespan(app: Starlette):
 # Create the Starlette app and mount the MCP servers
 app = Starlette(
     routes=[
-        Mount("/echo", echo_mcp.streamable_http_app()),
-        Mount("/math", math_mcp.streamable_http_app()),
+        Mount("/echo", echo_mcp.streamable_http_app(stateless_http=True, json_response=True)),
+        Mount("/math", math_mcp.streamable_http_app(stateless_http=True, json_response=True)),
     ],
     lifespan=lifespan,
 )
 
 # Note: Clients connect to http://localhost:8000/echo/mcp and http://localhost:8000/math/mcp
 # To mount at the root of each path (e.g., /echo instead of /echo/mcp):
-# echo_mcp.settings.streamable_http_path = "/"
-# math_mcp.settings.streamable_http_path = "/"
+# Mount("/echo", echo_mcp.streamable_http_app(streamable_http_path="/", stateless_http=True, json_response=True))
+# Mount("/math", math_mcp.streamable_http_app(streamable_http_path="/", stateless_http=True, json_response=True))
 ```
 
 _Full example: [examples/snippets/servers/streamable_starlette_mount.py](https://github.com/modelcontextprotocol/python-sdk/blob/main/examples/snippets/servers/streamable_starlette_mount.py)_
@@ -1407,10 +1407,10 @@ import contextlib
 from starlette.applications import Starlette
 from starlette.routing import Mount
 
-from mcp.server.fastmcp import FastMCP
+from mcp.server.mcpserver import MCPServer
 
 # Create MCP server
-mcp = FastMCP("My App", json_response=True)
+mcp = MCPServer("My App")
 
 
 @mcp.tool()
@@ -1429,7 +1429,7 @@ async def lifespan(app: Starlette):
 # Mount the StreamableHTTP server to the existing ASGI server
 app = Starlette(
     routes=[
-        Mount("/", app=mcp.streamable_http_app()),
+        Mount("/", app=mcp.streamable_http_app(json_response=True)),
     ],
     lifespan=lifespan,
 )
@@ -1454,10 +1454,10 @@ import contextlib
 from starlette.applications import Starlette
 from starlette.routing import Host
 
-from mcp.server.fastmcp import FastMCP
+from mcp.server.mcpserver import MCPServer
 
 # Create MCP server
-mcp = FastMCP("MCP Host App", json_response=True)
+mcp = MCPServer("MCP Host App")
 
 
 @mcp.tool()
@@ -1476,7 +1476,7 @@ async def lifespan(app: Starlette):
 # Mount using Host-based routing
 app = Starlette(
     routes=[
-        Host("mcp.acme.corp", app=mcp.streamable_http_app()),
+        Host("mcp.acme.corp", app=mcp.streamable_http_app(json_response=True)),
     ],
     lifespan=lifespan,
 )
@@ -1501,11 +1501,11 @@ import contextlib
 from starlette.applications import Starlette
 from starlette.routing import Mount
 
-from mcp.server.fastmcp import FastMCP
+from mcp.server.mcpserver import MCPServer
 
 # Create multiple MCP servers
-api_mcp = FastMCP("API Server", json_response=True)
-chat_mcp = FastMCP("Chat Server", json_response=True)
+api_mcp = MCPServer("API Server")
+chat_mcp = MCPServer("Chat Server")
 
 
 @api_mcp.tool()
@@ -1520,12 +1520,6 @@ def send_message(message: str) -> str:
     return f"Message sent: {message}"
 
 
-# Configure servers to mount at the root of each path
-# This means endpoints will be at /api and /chat instead of /api/mcp and /chat/mcp
-api_mcp.settings.streamable_http_path = "/"
-chat_mcp.settings.streamable_http_path = "/"
-
-
 # Create a combined lifespan to manage both session managers
 @contextlib.asynccontextmanager
 async def lifespan(app: Starlette):
@@ -1538,8 +1532,8 @@ async def lifespan(app: Starlette):
 # Mount the servers
 app = Starlette(
     routes=[
-        Mount("/api", app=api_mcp.streamable_http_app()),
-        Mount("/chat", app=chat_mcp.streamable_http_app()),
+        Mount("/api", app=api_mcp.streamable_http_app(streamable_http_path="/", json_response=True)),
+        Mount("/chat", app=chat_mcp.streamable_http_app(streamable_http_path="/", json_response=True)),
     ],
     lifespan=lifespan,
 )
@@ -1553,7 +1547,7 @@ _Full example: [examples/snippets/servers/streamable_http_multiple_servers.py](h
 <!-- snippet-source examples/snippets/servers/streamable_http_path_config.py -->
 ```python
 """
-Example showing path configuration during FastMCP initialization.
+Example showing path configuration during MCPServer initialization.
 
 Run from the repository root:
     uvicorn examples.snippets.servers.streamable_http_path_config:app --reload
@@ -1562,11 +1556,11 @@ Run from the repository root:
 from starlette.applications import Starlette
 from starlette.routing import Mount
 
-from mcp.server.fastmcp import FastMCP
+from mcp.server.mcpserver import MCPServer
 
 # Configure streamable_http_path during initialization
 # This server will mount at the root of wherever it's mounted
-mcp_at_root = FastMCP(
+mcp_at_root = MCPServer(
     "My Server",
     json_response=True,
     streamable_http_path="/",
@@ -1599,10 +1593,10 @@ You can mount the SSE server to an existing ASGI server using the `sse_app` meth
 ```python
 from starlette.applications import Starlette
 from starlette.routing import Mount, Host
-from mcp.server.fastmcp import FastMCP
+from mcp.server.mcpserver import MCPServer
 
 
-mcp = FastMCP("My App")
+mcp = MCPServer("My App")
 
 # Mount the SSE server to the existing ASGI server
 app = Starlette(
@@ -1620,13 +1614,13 @@ When mounting multiple MCP servers under different paths, you can configure the 
 ```python
 from starlette.applications import Starlette
 from starlette.routing import Mount
-from mcp.server.fastmcp import FastMCP
+from mcp.server.mcpserver import MCPServer
 
 # Create multiple MCP servers
-github_mcp = FastMCP("GitHub API")
-browser_mcp = FastMCP("Browser")
-curl_mcp = FastMCP("Curl")
-search_mcp = FastMCP("Search")
+github_mcp = MCPServer("GitHub API")
+browser_mcp = MCPServer("Browser")
+curl_mcp = MCPServer("Curl")
+search_mcp = MCPServer("Search")
 
 # Method 1: Configure mount paths via settings (recommended for persistent configuration)
 github_mcp.settings.mount_path = "/github"

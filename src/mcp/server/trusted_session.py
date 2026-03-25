@@ -6,7 +6,7 @@ Bootstrap (key exchange via X25519 ECDH):
 3. initialized notif   — HMAC challenge-response (key possession proof)
 
 Post-bootstrap tool calls (session-key encryption, no TDX quotes):
-4+ tools/call only     — encrypted with session_key (AES-256-GCM)
+4+ tools/call only     — envelope encryption (AES Key Wrap + AES-256-GCM)
 
 Usage:
     # Usually created internally by TrustedMCP, but can be used directly:
@@ -15,9 +15,17 @@ Usage:
         print(f"Client verified: {session.client_cgroup}")
 """
 
+from __future__ import annotations
+
 import base64
 import logging
-from typing import Any
+from typing import TYPE_CHECKING, Any
+
+if TYPE_CHECKING:
+    from mcp.server.authorization import AuthorizationManager
+    from mcp.server.tool_trust import ToolTrustManager
+    from mcp.shared.attestation_policy import AttestationPolicy, PolicyRegistry
+    from mcp.shared.authority_jwt import AuthorityJWTVerifier
 
 from anyio.streams.memory import MemoryObjectReceiveStream, MemoryObjectSendStream
 
@@ -27,13 +35,14 @@ from mcp.server.session import InitializationState, ServerSession
 from mcp.shared.message import MessageMetadata, SessionMessage
 from mcp.shared.session import RequestResponder
 from mcp.shared.tee_envelope import (
-    create_response_envelope,
+    create_bootstrap_envelope,
+    create_encrypted_envelope,
     create_session_envelope,
-    create_tool_response_envelope,
-    open_request_envelope,
-    open_tool_request_envelope,
+    extract_tee,
+    inject_tee,
+    verify_bootstrap_envelope,
+    verify_encrypted_envelope,
 )
-from mcp.shared.tee_helpers import extract_tee_dict, inject_tee
 from mcp.types import (
     INVALID_REQUEST,
     ErrorData,
@@ -43,14 +52,10 @@ from mcp.types import (
 
 logger = logging.getLogger(__name__)
 
-# Import SecureEndpoint at module level for easier testing
 try:
     from mcp.shared.secure_channel import SecureEndpoint
-
-    _TEE_AVAILABLE = True
 except ImportError:
     SecureEndpoint = None  # type: ignore
-    _TEE_AVAILABLE = False
 
 
 def _extract_tool_subject(tool_data: dict[str, Any]) -> str:
@@ -112,11 +117,13 @@ class TrustedServerSession(ServerSession):
         require_client_attestation: bool = False,
         allowed_client_rtmr3: list[str] | None = None,
         rtmr3_transition_policy: str = "log_and_accept",
-        policy_registry: Any = None,
-        tool_trust_manager: Any = None,
+        policy_registry: PolicyRegistry | None = None,
+        tool_trust_manager: ToolTrustManager | None = None,
         # JWT verification for upstream tokens
-        jwt_verifier: Any = None,
+        jwt_verifier: AuthorityJWTVerifier | None = None,
         require_upstream_jwt: bool = False,
+        # Semantic authorization
+        authorization_manager: AuthorizationManager | None = None,
     ) -> None:
         super().__init__(read_stream, write_stream, init_options, stateless)
 
@@ -126,13 +133,14 @@ class TrustedServerSession(ServerSession):
         self._allowed_client_rtmr3 = allowed_client_rtmr3
         self._rtmr3_transition_policy = rtmr3_transition_policy
         self._policy_registry = policy_registry
-        self._active_policy: Any = None
-        self._tool_trust_manager = tool_trust_manager
-        self._jwt_verifier = jwt_verifier
+        self._active_policy: AttestationPolicy | None = None
+        self._tool_trust_manager: ToolTrustManager | None = tool_trust_manager
+        self._jwt_verifier: AuthorityJWTVerifier | None = jwt_verifier
         self._require_upstream_jwt = require_upstream_jwt
+        self._authorization_manager: AuthorizationManager | None = authorization_manager
 
         # TEE state
-        self._endpoint: Any = None
+        self._endpoint: SecureEndpoint | None = None
         self._client_attested = False
         self._peer_verified = False
         self._client_attestation_token: str = ""
@@ -149,7 +157,7 @@ class TrustedServerSession(ServerSession):
 
         # Initialize endpoint if TEE enabled
         if self._tee_enabled:
-            if _TEE_AVAILABLE and SecureEndpoint is not None:
+            if SecureEndpoint is not None:
                 from mcp.shared.secure_channel import RTMR3TransitionPolicy
 
                 policy_map = {
@@ -192,7 +200,7 @@ class TrustedServerSession(ServerSession):
     ) -> dict:
         """Preprocess encrypted tools/call before schema validation.
 
-        Post-bootstrap tools/call encrypts params with session_key. This hook
+        Post-bootstrap tools/call encrypts params with envelope encryption. This hook
         decrypts and restores params early so normal validation and routing work.
         """
         if not self._tee_enabled or self._endpoint is None:
@@ -215,9 +223,10 @@ class TrustedServerSession(ServerSession):
             return request_data
 
         # Use tool envelope (session-key decryption, no TDX quote)
-        decrypted_params, valid, error = open_tool_request_envelope(
+        decrypted_params, valid, error = verify_encrypted_envelope(
             self._endpoint,
             tee_dict,
+            self_check_rtmr3=True,
         )
         if not valid:
             logger.error("Client TEE verification failed before request validation: %s", error)
@@ -244,7 +253,7 @@ class TrustedServerSession(ServerSession):
 
     async def _received_request(self, responder: RequestResponder[types.ClientRequest, types.ServerResult]) -> None:
         """Handle incoming requests with TEE attestation on tool calls only."""
-        await self._maybe_send_tool_list_changed_for_revision()
+        await self._notify_trust_change()
 
         match responder.request:
             case types.InitializeRequest(params=params):
@@ -258,10 +267,11 @@ class TrustedServerSession(ServerSession):
                 await super()._received_request(responder)
 
             case types.CallToolRequest():
-                # Fast-path: check tool trust BEFORE expensive attestation
+                tool_name = getattr(responder.request.params, "name", "")
+
+                # Fast-path 1: check tool trust BEFORE expensive attestation
                 if self._tee_enabled and self._endpoint is not None and self._tool_trust_manager is not None:
-                    tool_name = getattr(responder.request.params, "name", "")
-                    trust_info = self._tool_trust_manager.get_tool_trust_info(
+                    trust_info = self._tool_trust_manager.get_tool_trust_state(
                         tool_name,
                         require_fresh=True,
                     )
@@ -292,6 +302,27 @@ class TrustedServerSession(ServerSession):
                             )
                         return
 
+                # Fast-path 2: semantic authorization check
+                if self._authorization_manager is not None and tool_name:
+                    client_subject = self._client_subject()
+                    auth_decision = self._authorization_manager.authorize(client_subject, tool_name)
+                    if not auth_decision.authorized:
+                        logger.warning(
+                            "Tool '%s' blocked by authorization: %s (rule=%s, subject=%s)",
+                            tool_name,
+                            auth_decision.reason,
+                            auth_decision.matched_rule,
+                            client_subject,
+                        )
+                        with responder:
+                            await responder.respond(
+                                ErrorData(
+                                    code=INVALID_REQUEST,
+                                    message=f"Authorization denied for tool '{tool_name}': {auth_decision.reason}",
+                                )
+                            )
+                        return
+
                 # Tool calls get per-call TEE attestation + encryption
                 if self._tee_enabled and self._endpoint is not None:
                     if not self._verify_and_decrypt_request(responder):
@@ -312,7 +343,7 @@ class TrustedServerSession(ServerSession):
             return True
 
         params = responder.request.params
-        tee_dict = extract_tee_dict(params)
+        tee_dict = extract_tee(params)
 
         if tee_dict is None:
             if self._require_client_attestation:
@@ -321,9 +352,10 @@ class TrustedServerSession(ServerSession):
             return True
 
         # Use tool envelope (session-key decryption, no TDX quote)
-        decrypted_params, valid, error = open_tool_request_envelope(
+        decrypted_params, valid, error = verify_encrypted_envelope(
             self._endpoint,
             tee_dict,
+            self_check_rtmr3=True,
         )
 
         if not valid:
@@ -340,16 +372,16 @@ class TrustedServerSession(ServerSession):
         # Verify upstream tokens (multi-hop propagation)
         upstream_tokens = tee_dict.get("upstream_tokens")
         if upstream_tokens and isinstance(upstream_tokens, list) and self._jwt_verifier is not None:
-            for ut in upstream_tokens:
-                if not isinstance(ut, dict):
+            for upstream_token in upstream_tokens:
+                if not isinstance(upstream_token, dict):
                     continue
-                token_str = ut.get("token", "")
+                token_str = upstream_token.get("token", "")
                 if token_str:
                     jwt_result = self._jwt_verifier.verify_attestation_token(token_str)
                     if not jwt_result.valid:
                         logger.warning(
                             "Upstream token invalid for role=%s: %s",
-                            ut.get("role"),
+                            upstream_token.get("role"),
                             jwt_result.error,
                         )
                         if self._require_upstream_jwt:
@@ -370,7 +402,7 @@ class TrustedServerSession(ServerSession):
         tools_cap = getattr(self._init_options.capabilities, "tools", None)
         return bool(getattr(tools_cap, "listChanged", False))
 
-    async def _maybe_send_tool_list_changed_for_revision(self) -> None:
+    async def _notify_trust_change(self) -> None:
         """Send tools/list_changed when trust revision changes after initial discovery."""
         if self._tool_trust_manager is None:
             return
@@ -387,7 +419,7 @@ class TrustedServerSession(ServerSession):
         self._last_notified_trust_revision = revision
         await self.send_tool_list_changed()
 
-    async def _maybe_notify_tool_visibility_change(self, visible_tools: set[str]) -> None:
+    async def _notify_visibility_change(self, visible_tools: set[str]) -> None:
         """Notify client when tool visibility has changed."""
         snapshot = frozenset(visible_tools)
         previous = self._visible_tools_snapshot
@@ -417,10 +449,20 @@ class TrustedServerSession(ServerSession):
 
             trust_metadata = None
             visible_tool_names: set[str] | None = None
+
+            # Register tools with authorization manager (analyze capabilities)
+            tools_payload = result_dict.get("tools")
+            if isinstance(tools_payload, list) and self._authorization_manager is not None:
+                for tool in tools_payload:
+                    if isinstance(tool, dict):
+                        name = tool.get("name")
+                        desc = tool.get("description", "")
+                        if isinstance(name, str) and name:
+                            self._authorization_manager.register_tool(name, desc or "")
+
             if self._tool_trust_manager is not None:
-                trust_info = self._tool_trust_manager.get_server_trust_info(require_fresh=True)
+                trust_info = self._tool_trust_manager.get_server_trust_state(require_fresh=True)
                 trust_metadata = trust_info.to_dict()
-                tools_payload = result_dict.get("tools")
                 if isinstance(tools_payload, list):
                     typed_tools = [tool for tool in tools_payload if isinstance(tool, dict)]
                     tool_subjects = _build_tool_subject_map(typed_tools)
@@ -432,7 +474,7 @@ class TrustedServerSession(ServerSession):
                         tool_name = tool.get("name")
                         if not isinstance(tool_name, str) or not tool_name:
                             continue
-                        tool_trust_info = self._tool_trust_manager.get_tool_trust_info(
+                        tool_trust_info = self._tool_trust_manager.get_tool_trust_state(
                             tool_name,
                             require_fresh=True,
                         )
@@ -450,6 +492,29 @@ class TrustedServerSession(ServerSession):
                             )
                     result_dict["tools"] = filtered_tools
 
+            # Authorization filtering: hide tools the client is not authorized to call
+            if self._authorization_manager is not None:
+                client_subject = self._client_subject()
+                if client_subject:
+                    current_tools = result_dict.get("tools")
+                    if isinstance(current_tools, list):
+                        auth_filtered: list[dict[str, Any]] = []
+                        if visible_tool_names is None:
+                            visible_tool_names = set()
+                        for tool in current_tools:
+                            if not isinstance(tool, dict):
+                                continue
+                            name = tool.get("name")
+                            if not isinstance(name, str) or not name:
+                                continue
+                            if self._authorization_manager.is_authorized(client_subject, name):
+                                auth_filtered.append(tool)
+                                visible_tool_names.add(name)
+                            else:
+                                visible_tool_names.discard(name)
+                                logger.debug("Hiding tool '%s' from client '%s': not authorized", name, client_subject)
+                        result_dict["tools"] = auth_filtered
+
             tee_dict = create_session_envelope(self._endpoint, trust_metadata=trust_metadata)
             inject_tee(result_dict, tee_dict)
 
@@ -462,17 +527,17 @@ class TrustedServerSession(ServerSession):
             if self._tool_trust_manager is not None:
                 self._last_notified_trust_revision = int(getattr(self._tool_trust_manager, "revision", 0))
             if visible_tool_names is not None:
-                await self._maybe_notify_tool_visibility_change(visible_tool_names)
+                await self._notify_visibility_change(visible_tool_names)
         elif is_tee_request and self._endpoint is not None and not isinstance(response, ErrorData):
             result_dict = response.model_dump(by_alias=True, mode="json", exclude_none=True)
 
-            # Post-bootstrap: encrypt response with session_key
-            if self._endpoint.session_key is not None:
-                tee_dict = create_tool_response_envelope(self._endpoint, result_dict)
+            # Post-bootstrap: encrypt response with envelope encryption
+            if self._endpoint.kek is not None:
+                tee_dict = create_encrypted_envelope(self._endpoint, result_dict)
                 result_dict = {"_meta": {"tee": tee_dict}}
             else:
-                # Bootstrap response (no session_key yet — plaintext + evidence)
-                tee_dict = create_response_envelope(self._endpoint, result_dict)
+                # Bootstrap response (no KEK yet — plaintext + evidence)
+                tee_dict = create_bootstrap_envelope(self._endpoint)
                 inject_tee(result_dict, tee_dict)
 
             jsonrpc_response = JSONRPCResponse(
@@ -497,7 +562,7 @@ class TrustedServerSession(ServerSession):
         self._client_params = params
 
         # Verify client TEE and extract binding material
-        client_binding = self._verify_init_client_tee(params)
+        client_binding = self._verify_client_bootstrap(params)
 
         # Build result
         server_capabilities = self._init_options.capabilities
@@ -518,7 +583,7 @@ class TrustedServerSession(ServerSession):
         # Inject _meta.tee into result (plaintext — client may not know us yet)
         if self._tee_enabled and self._endpoint is not None:
             result_data = result_dict.model_dump(by_alias=True, mode="json", exclude_none=True)
-            self._build_init_server_tee(result_data, client_binding)
+            self._build_server_bootstrap(result_data, client_binding)
 
             # Send manually with _meta.tee injected
             with responder:
@@ -533,15 +598,15 @@ class TrustedServerSession(ServerSession):
             with responder:
                 await responder.respond(result_dict)
 
-    def _verify_init_client_tee(self, params: types.InitializeRequestParams) -> tuple[bytes, bytes] | None:
+    def _verify_client_bootstrap(self, params: types.InitializeRequestParams) -> tuple[bytes, bytes] | None:
         """Verify client's _meta.tee from initialize request.
 
-        Returns (client_sig_data, client_pubkey_raw) on success, or None.
+        Returns (client_init_nonce, client_pubkey_raw) on success, or None.
         """
         if not self._tee_enabled or self._endpoint is None:
             return None
 
-        tee_dict = extract_tee_dict(params)
+        tee_dict = extract_tee(params)
         if not tee_dict:
             return None
 
@@ -556,7 +621,7 @@ class TrustedServerSession(ServerSession):
         if self._active_policy is not None and self._active_policy.allowed_rtmr3 is not None:
             allowed_rtmr3 = self._active_policy.allowed_rtmr3
 
-        _, _, valid, error = open_request_envelope(
+        valid, error = verify_bootstrap_envelope(
             self._endpoint,
             tee_dict,
             peer_role="client",
@@ -567,14 +632,14 @@ class TrustedServerSession(ServerSession):
             self._peer_verified = True
             logger.info("Client attested via initialize request")
 
-            client_init_sig_data = base64.b64decode(tee_dict["sig_data"])
+            client_init_nonce = base64.b64decode(tee_dict["sig_data"])
             client_pubkey_raw = base64.b64decode(tee_dict["public_key"])
-            return (client_init_sig_data, client_pubkey_raw)
+            return (client_init_nonce, client_pubkey_raw)
         else:
             logger.warning("Client TEE verification failed in initialize: %s", error)
             return None
 
-    def _build_init_server_tee(self, result_data: dict, client_binding: tuple[bytes, bytes] | None) -> None:
+    def _build_server_bootstrap(self, result_data: dict, client_binding: tuple[bytes, bytes] | None) -> None:
         """Create server TEE evidence, generate challenge, establish session.
 
         Mutates result_data to inject _meta.tee.
@@ -582,17 +647,16 @@ class TrustedServerSession(ServerSession):
         # Generate bootstrap challenge for Background-Check Model
         bootstrap_challenge = self._endpoint.generate_bootstrap_challenge()
 
-        tee_dict = create_response_envelope(
+        tee_dict = create_bootstrap_envelope(
             self._endpoint,
-            result_data,
             challenge=bootstrap_challenge,
         )
 
         # Establish session binding if client was attested (ECDH + HKDF)
         if client_binding is not None:
-            client_init_sig_data, client_pubkey_raw = client_binding
-            server_init_sig_data = base64.b64decode(tee_dict["sig_data"])
-            self._endpoint.establish_session(client_pubkey_raw, client_init_sig_data, server_init_sig_data)
+            client_init_nonce, client_pubkey_raw = client_binding
+            server_init_nonce = base64.b64decode(tee_dict["sig_data"])
+            self._endpoint.establish_session(client_pubkey_raw, client_init_nonce, server_init_nonce)
 
         inject_tee(result_data, tee_dict)
 
@@ -602,7 +666,7 @@ class TrustedServerSession(ServerSession):
             case types.InitializedNotification():
                 # Verify client's _meta.tee from initialized notification
                 if self._tee_enabled and self._endpoint is not None:
-                    if not self._handle_initialized_tee(notification):
+                    if not self._verify_challenge_response(notification):
                         raise RuntimeError("Client bootstrap challenge/attestation verification failed")
 
                 # Enforce attestation requirements
@@ -620,7 +684,7 @@ class TrustedServerSession(ServerSession):
             case _:
                 await super()._received_notification(notification)
 
-    def _handle_initialized_tee(self, notification: types.ClientNotification) -> bool:
+    def _verify_challenge_response(self, notification: types.ClientNotification) -> bool:
         """Verify client's _meta.tee from initialized notification.
 
         Message 3 uses HMAC-SHA256 for key possession proof.
@@ -629,7 +693,7 @@ class TrustedServerSession(ServerSession):
         by MACing the server's challenge with the shared mac_key.
         """
         params = notification.params
-        tee_dict = extract_tee_dict(params) if params is not None else None
+        tee_dict = extract_tee(params) if params is not None else None
 
         if params is None:
             logger.warning("No params in initialized notification")
@@ -751,3 +815,20 @@ class TrustedServerSession(ServerSession):
     def endpoint(self) -> Any:
         """Get the SecureEndpoint for advanced operations."""
         return self._endpoint
+
+    def _client_subject(self) -> str:
+        """Resolve the client's identity for authorization decisions.
+
+        Returns the authority subject or cgroup path of the connected client.
+        Used by the authorization manager to match access rules.
+        """
+        # Prefer attestation token subject if available
+        if self._client_attestation_token:
+            return self._client_attestation_token
+        # Fall back to attested cgroup
+        cgroup = self.client_cgroup
+        if cgroup:
+            from mcp.server.tool_trust import subject_for_cgroup
+
+            return subject_for_cgroup(cgroup)
+        return ""

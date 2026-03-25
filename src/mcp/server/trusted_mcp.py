@@ -2,7 +2,7 @@
 
 Extends MCPServer with hardware-attested communication support using
 TrustedServerSession for two-party mutual attestation during the
-MCP initialize handshake and per-call attestation on tool calls.
+MCP initialize handshake and session-bound protection on tool calls.
 
 Usage:
     from mcp.server.trusted_mcp import TrustedMCP
@@ -48,6 +48,7 @@ class TrustedMCP(MCPServer):
         rtmr3_transition_policy: str = "log_and_accept",
         policy_registry: Any = None,
         authority_subject: str | None = None,
+        authorization_manager: Any = None,
         **kwargs: Any,
     ):
         """Create TrustedMCP server.
@@ -62,6 +63,7 @@ class TrustedMCP(MCPServer):
             rtmr3_transition_policy: Policy for RTMR3 changes: accept/reject/log_and_accept
             policy_registry: PolicyRegistry for per-workload attestation policies
             authority_subject: Override attestation authority subject (default: cgroup://<cgroup>)
+            authorization_manager: AuthorizationManager for semantic tool authorization
             **kwargs: Additional MCPServer arguments
         """
         # Store TEE settings before calling super().__init__
@@ -72,6 +74,7 @@ class TrustedMCP(MCPServer):
         self._policy_registry = policy_registry
 
         self._authority_subject = authority_subject
+        self._authorization_manager = authorization_manager
 
         # Call parent init
         super().__init__(name=name, instructions=instructions, **kwargs)
@@ -103,6 +106,7 @@ class TrustedMCP(MCPServer):
                 "policy_registry": self._policy_registry,
                 "tool_trust_manager": tool_trust_manager,
                 "jwt_verifier": jwt_verifier,
+                "authorization_manager": self._authorization_manager,
             }
 
             old_server = self._lowlevel_server
@@ -138,10 +142,7 @@ class TrustedMCP(MCPServer):
             raise
 
     def _create_tool_trust_manager(self) -> Any:
-        """Create ToolTrustManager for tool trust management.
-
-        Returns None only when manager creation fails.
-        """
+        """Create ToolTrustManager for tool trust management."""
         try:
             from mcp.server.tool_trust import ToolTrustManager
             from mcp.shared.tdx import get_container_rtmr3, get_current_cgroup
@@ -183,8 +184,3 @@ class TrustedMCP(MCPServer):
     def tee_enabled(self) -> bool:
         """Check if TEE is enabled."""
         return self._tee_enabled
-
-
-def create_trusted_mcp(name: str, **kwargs: Any) -> TrustedMCP:
-    """Create a TrustedMCP server."""
-    return TrustedMCP(name=name, **kwargs)

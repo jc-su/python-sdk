@@ -1,4 +1,4 @@
-"""HTTPS integration tests for FastMCP Streamable HTTP transport."""
+"""HTTPS integration tests for MCPServer streamable HTTP transport."""
 
 from __future__ import annotations
 
@@ -6,8 +6,8 @@ import datetime
 import ipaddress
 import multiprocessing
 import os
-import ssl
 import socket
+import ssl
 import tempfile
 from collections.abc import Generator
 
@@ -20,7 +20,7 @@ from cryptography.x509.oid import NameOID
 
 from mcp.client.session import ClientSession
 from mcp.client.streamable_http import streamable_http_client
-from mcp.server.fastmcp import FastMCP
+from mcp.server.mcpserver import MCPServer
 from mcp.types import InitializeResult
 from tests.test_helpers import wait_for_server
 
@@ -73,25 +73,25 @@ def _generate_self_signed_cert_for_localhost() -> tuple[str, str]:
     return cert_file.name, key_file.name
 
 
-def _run_https_fastmcp_server(port: int, certfile: str, keyfile: str) -> None:  # pragma: no cover
-    """Run a minimal FastMCP server over HTTPS for integration testing."""
-    mcp = FastMCP(
-        name="HTTPSFastMCP",
+def _run_https_mcp_server(port: int, certfile: str, keyfile: str) -> None:  # pragma: no cover
+    """Run a minimal MCPServer over HTTPS for integration testing."""
+    mcp = MCPServer(name="HTTPSMCPServer")
+    mcp.run(
+        transport="streamable-http",
         host="127.0.0.1",
         port=port,
         ssl_certfile=certfile,
         ssl_keyfile=keyfile,
     )
-    mcp.run(transport="streamable-http")
 
 
 @pytest.fixture
 def https_server() -> Generator[tuple[int, str], None, None]:
-    """Start a temporary HTTPS FastMCP server and yield (port, cert_path)."""
+    """Start a temporary HTTPS MCPServer and yield (port, cert_path)."""
     port = _free_port()
     cert_path, key_path = _generate_self_signed_cert_for_localhost()
     proc = multiprocessing.Process(
-        target=_run_https_fastmcp_server,
+        target=_run_https_mcp_server,
         args=(port, cert_path, key_path),
         daemon=True,
     )
@@ -121,9 +121,8 @@ async def test_streamable_http_https_initialize_end_to_end(https_server: tuple[i
         async with streamable_http_client(endpoint, http_client=http_client) as (
             read_stream,
             write_stream,
-            _,
         ):
             async with ClientSession(read_stream, write_stream) as session:
                 result = await session.initialize()
                 assert isinstance(result, InitializeResult)
-                assert result.serverInfo.name == "HTTPSFastMCP"
+                assert result.server_info.name == "HTTPSMCPServer"

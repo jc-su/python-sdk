@@ -79,10 +79,13 @@ class MockSecureEndpoint:
     def __init__(self, role: str = "client"):
         self.role = role
         self.session_id: bytes | None = None
-        self.session_key: bytes | None = None
+        self.kek: bytes | None = None
         self.mac_key: bytes | None = None
+        self._send_counter = 0
+        self._recv_counter = 0
         self._peers: dict[str, MockPeer] = {}
         self._nonces: dict[str, bytes] = {}
+        self._initial_rtmr3: bytes | None = None
 
     @classmethod
     def create(cls, role: str = "client") -> "MockSecureEndpoint":
@@ -93,10 +96,10 @@ class MockSecureEndpoint:
         self._nonces[peer_role] = nonce
         return nonce
 
-    def create_evidence(self, nonce: bytes) -> MockAttestationEvidence:
+    def create_attestation(self, nonce: bytes) -> MockAttestationEvidence:
         return MockAttestationEvidence(role=self.role, nonce=nonce)
 
-    def verify_peer(
+    def verify_peer_attestation(
         self,
         evidence: MockAttestationEvidence,
         expected_nonce: bytes | None = None,
@@ -120,6 +123,46 @@ class MockSecureEndpoint:
 
         key = self.mac_key or b"mock_mac_key"
         return hmac.new(key, challenge, hashlib.sha256).digest()
+
+    def next_send_counter(self) -> int:
+        counter = self._send_counter
+        self._send_counter += 1
+        return counter
+
+    def verify_recv_counter(self, counter: int) -> None:
+        if counter < self._recv_counter:
+            raise ValueError(f"Stale counter: got {counter}, expected >= {self._recv_counter}")
+        self._recv_counter = counter + 1
+
+    def create_session_auth(self, counter: int) -> bytes:
+        import hashlib
+        import hmac
+
+        key = self.mac_key or b"mock_mac_key"
+        return hmac.new(key, counter.to_bytes(8, "big"), hashlib.sha256).digest()
+
+    def verify_session_auth(self, counter: int, auth_tag: bytes) -> bool:
+        import hashlib
+        import hmac
+
+        if self.mac_key is None:
+            return False
+        expected = hmac.new(self.mac_key, counter.to_bytes(8, "big"), hashlib.sha256).digest()
+        return hmac.compare_digest(expected, auth_tag)
+
+    def wrap_and_encrypt(self, plaintext: bytes, *, aad: bytes | None = None) -> "EnvelopePayload":
+        from mcp.shared.crypto.envelope import envelope_encrypt
+
+        if self.kek is None:
+            raise ValueError("KEK not established")
+        return envelope_encrypt(self.kek, plaintext, aad=aad)
+
+    def unwrap_and_decrypt(self, payload: "EnvelopePayload", *, aad: bytes | None = None) -> bytes:
+        from mcp.shared.crypto.envelope import envelope_decrypt
+
+        if self.kek is None:
+            raise ValueError("KEK not established")
+        return envelope_decrypt(self.kek, payload, aad=aad)
 
 
 # =============================================================================
@@ -332,7 +375,7 @@ class TestTrustedClientSession:
         def failing_verify(*args, **kwargs):
             return MockVerifyResult(valid=False, error="Bad attestation")
 
-        session._endpoint.verify_peer = failing_verify
+        session._endpoint.verify_peer_attestation = failing_verify
 
         result_holder = []
 
@@ -463,20 +506,7 @@ class TestToolsListTrustMetadata:
 
         session = create_test_session(read_stream, write_stream, tee_enabled=True)
         session._endpoint.session_id = b"x" * 32
-
-        import hashlib
-        import hmac
-
-        call_counter = [0]
-
-        def derive_sig_data(entropy):
-            counter = call_counter[0]
-            call_counter[0] += 1
-            counter_bytes = counter.to_bytes(8, "big")
-            sig = hmac.new(b"x" * 32, entropy + counter_bytes, hashlib.sha256).digest()
-            return sig, counter
-
-        session._endpoint.derive_sig_data = derive_sig_data
+        session._endpoint.mac_key = b"m" * 32
 
         # Prepare a tools/list request
         request_data = {
@@ -491,9 +521,12 @@ class TestToolsListTrustMetadata:
         assert "_meta" in prepared.get("params", {})
         assert "tee" in prepared["params"]["_meta"]
         tee = prepared["params"]["_meta"]["tee"]
-        assert "sig_data" in tee
-        assert "entropy" in tee
         assert "counter" in tee
+        assert "auth_tag" in tee
+        assert "timestamp_ms" in tee
+        # No sig_data or entropy in new format
+        assert "sig_data" not in tee
+        assert "entropy" not in tee
         assert 50 in session._tee_request_kinds
         assert session._tee_request_kinds[50] == "tools/list"
 
@@ -524,33 +557,17 @@ class TestToolsListTrustMetadata:
 
         session = create_test_session(read_stream, write_stream, tee_enabled=True)
         session._endpoint.session_id = b"x" * 32
-
-        import hashlib
-        import hmac
-
-        peer_counter = [0]
-
-        def verify_derived_sig_data(entropy, counter):
-            if counter < peer_counter[0]:
-                raise ValueError(f"Stale: {counter}")
-            peer_counter[0] = counter + 1
-            counter_bytes = counter.to_bytes(8, "big")
-            return hmac.new(b"x" * 32, entropy + counter_bytes, hashlib.sha256).digest()
-
-        session._endpoint.verify_derived_sig_data = verify_derived_sig_data
+        session._endpoint.mac_key = b"m" * 32
 
         # Mark request as tools/list
         session._tee_request_kinds[52] = "tools/list"
 
-        # Build response with trust metadata
-        import hashlib as _hashlib
-        import hmac as _hmac
-        import secrets
+        # Build response with trust metadata (new wire format: counter + auth_tag)
+        import hashlib
+        import hmac
 
-        entropy = secrets.token_bytes(32)
         counter = 0
-        counter_bytes = counter.to_bytes(8, "big")
-        sig_data = _hmac.new(b"x" * 32, entropy + counter_bytes, _hashlib.sha256).digest()
+        auth_tag = hmac.new(b"m" * 32, counter.to_bytes(8, "big"), hashlib.sha256).digest()
 
         trust_info = {
             "status": "trusted",
@@ -565,9 +582,8 @@ class TestToolsListTrustMetadata:
             "tools": [],
             "_meta": {
                 "tee": {
-                    "sig_data": base64.b64encode(sig_data).decode(),
-                    "entropy": base64.b64encode(entropy).decode(),
                     "counter": counter,
+                    "auth_tag": base64.b64encode(auth_tag).decode(),
                     "server_trust": trust_info,
                     "timestamp_ms": 1234567890000,
                 }
@@ -727,28 +743,15 @@ def _build_tools_list_response_with_jwt(session, *, attestation_token: str = "ey
     """
     import hashlib
     import hmac
-    import secrets
 
     session._endpoint.session_id = b"x" * 32
-
-    peer_counter = [0]
-
-    def verify_derived_sig_data(entropy, counter):
-        if counter < peer_counter[0]:
-            raise ValueError(f"Stale: {counter}")
-        peer_counter[0] = counter + 1
-        counter_bytes = counter.to_bytes(8, "big")
-        return hmac.new(b"x" * 32, entropy + counter_bytes, hashlib.sha256).digest()
-
-    session._endpoint.verify_derived_sig_data = verify_derived_sig_data
+    session._endpoint.mac_key = b"m" * 32
 
     request_id = 100
     session._tee_request_kinds[request_id] = "tools/list"
 
-    entropy = secrets.token_bytes(32)
     counter = 0
-    counter_bytes = counter.to_bytes(8, "big")
-    sig_data = hmac.new(b"x" * 32, entropy + counter_bytes, hashlib.sha256).digest()
+    auth_tag = hmac.new(b"m" * 32, counter.to_bytes(8, "big"), hashlib.sha256).digest()
 
     trust_info = {
         "status": "trusted",
@@ -761,9 +764,8 @@ def _build_tools_list_response_with_jwt(session, *, attestation_token: str = "ey
         "tools": [],
         "_meta": {
             "tee": {
-                "sig_data": base64.b64encode(sig_data).decode(),
-                "entropy": base64.b64encode(entropy).decode(),
                 "counter": counter,
+                "auth_tag": base64.b64encode(auth_tag).decode(),
                 "server_trust": trust_info,
                 "timestamp_ms": 1234567890000,
             }

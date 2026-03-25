@@ -6,7 +6,7 @@ Bootstrap (key exchange via X25519 ECDH):
 3. initialized notif   — HMAC challenge-response (key possession proof)
 
 Post-bootstrap tool calls (session-key encryption, no TDX quotes):
-4+ tools/call only     — encrypted with session_key (AES-256-GCM)
+4+ tools/call only     — envelope encryption (AES Key Wrap + AES-256-GCM)
 
 Usage:
     async with TrustedClientSession(read_stream, write_stream) as session:
@@ -41,27 +41,23 @@ from mcp.client.session import (
 from mcp.shared.exceptions import MCPError
 from mcp.shared.message import SessionMessage
 from mcp.shared.tee_envelope import (
-    create_request_envelope,
+    create_bootstrap_envelope,
+    create_encrypted_envelope,
     create_session_envelope,
-    create_tool_request_envelope,
-    open_response_envelope,
-    open_tool_response_envelope,
+    extract_tee_from_result,
+    inject_tee,
+    verify_bootstrap_envelope,
+    verify_encrypted_envelope,
     verify_session_envelope,
 )
-from mcp.shared.tee_helpers import extract_tee_from_result, inject_tee
 from mcp.types import JSONRPCNotification
 
 logger = logging.getLogger(__name__)
 
-# Import SecureEndpoint and AttestationEvidence at module level for easier testing
 try:
-    from mcp.shared.secure_channel import AttestationEvidence, SecureEndpoint
-
-    _TEE_AVAILABLE = True
+    from mcp.shared.secure_channel import SecureEndpoint
 except ImportError:
     SecureEndpoint = None  # type: ignore
-    AttestationEvidence = None  # type: ignore
-    _TEE_AVAILABLE = False
 
 
 class TrustedClientSession(ClientSession):
@@ -119,14 +115,14 @@ class TrustedClientSession(ClientSession):
         self._workload_id = workload_id
 
         # TEE state
-        self._endpoint: Any = None
+        self._endpoint: SecureEndpoint | None = None
         self._server_attested = False
         self._peer_verified = False
 
         # Per-request TEE request state
         self._tee_request_kinds: dict[int, str] = {}
-        # Per-request init sig_data for session binding
-        self._init_sig_data_by_request: dict[int, bytes] = {}
+        # Per-request init nonce for session binding
+        self._init_nonce_by_request: dict[int, bytes] = {}
         self._pending_challenge: bytes | None = None
         # Latest server trust info from tools/list response
         self._server_trust_info: dict[str, Any] | None = None
@@ -144,7 +140,7 @@ class TrustedClientSession(ClientSession):
 
         # Initialize endpoint if TEE enabled
         if self._tee_enabled:
-            if _TEE_AVAILABLE and SecureEndpoint is not None:
+            if SecureEndpoint is not None:
                 self._endpoint = SecureEndpoint.create(
                     role="client",
                 )
@@ -235,16 +231,9 @@ class TrustedClientSession(ClientSession):
 
         if method == "initialize":
             self._tee_request_kinds[request_id] = "initialize"
-            # Plaintext evidence only — don't know server key yet
-            tee_dict, _ = create_request_envelope(
-                self._endpoint,
-                params_dict,
-                peer_role="server",
-                workload_id=self._workload_id,
-            )
+            tee_dict = create_bootstrap_envelope(self._endpoint, workload_id=self._workload_id)
             inject_tee(request_data, tee_dict, params_level=True)
-            # Save our sig_data for session binding in _process_raw_response
-            self._init_sig_data_by_request[request_id] = base64.b64decode(tee_dict["sig_data"])
+            self._init_nonce_by_request[request_id] = base64.b64decode(tee_dict["sig_data"])
             logger.info("Added TEE evidence to initialize request")
 
         elif method == "tools/list":
@@ -255,23 +244,16 @@ class TrustedClientSession(ClientSession):
 
         elif method == "tools/call":
             self._tee_request_kinds[request_id] = "tools/call"
-            # Post-bootstrap: encrypt with session_key
-            if self._endpoint.session_key is not None:
-                tee_dict = create_tool_request_envelope(
+            if self._endpoint.kek is not None:
+                tee_dict = create_encrypted_envelope(
                     self._endpoint,
                     params_dict,
                     upstream_tokens=self._upstream_tokens or None,
                 )
                 inject_tee(request_data, tee_dict, params_level=True)
-                # Strip plaintext params, keep only _meta
                 request_data["params"] = {"_meta": params_dict["_meta"]}
             else:
-                # Fallback: plaintext evidence (pre-session)
-                tee_dict, _ = create_request_envelope(
-                    self._endpoint,
-                    params_dict,
-                    peer_role="server",
-                )
+                tee_dict = create_bootstrap_envelope(self._endpoint)
                 inject_tee(request_data, tee_dict, params_level=True)
 
         return request_data
@@ -307,12 +289,8 @@ class TrustedClientSession(ClientSession):
                 )
             return result
 
-        if is_tool_call and self._endpoint.session_key is not None:
-            # Post-bootstrap: decrypt with session_key
-            decrypted, valid, error = open_tool_response_envelope(
-                self._endpoint,
-                server_tee,
-            )
+        if is_tool_call and self._endpoint.kek is not None:
+            decrypted, valid, error = verify_encrypted_envelope(self._endpoint, server_tee)
             if not valid:
                 logger.error("Server per-call attestation failed: %s", error)
                 raise MCPError(
@@ -323,11 +301,9 @@ class TrustedClientSession(ClientSession):
                 result = {**result, **decrypted}
         elif is_tool_call:
             # Pre-session tool call (shouldn't normally happen)
-            decrypted, valid, error = open_response_envelope(
-                self._endpoint,
-                server_tee,
-                peer_role="server",
-                allowed_rtmr3=self._allowed_server_rtmr3,
+            valid, error = verify_bootstrap_envelope(
+                self._endpoint, server_tee,
+                peer_role="server", allowed_rtmr3=self._allowed_server_rtmr3,
             )
             if not valid:
                 logger.error("Server per-call attestation failed: %s", error)
@@ -337,18 +313,16 @@ class TrustedClientSession(ClientSession):
                 )
         else:
             # Initialize response: verify evidence and establish session
-            decrypted, valid, error = open_response_envelope(
-                self._endpoint,
-                server_tee,
-                peer_role="server",
-                allowed_rtmr3=self._allowed_server_rtmr3,
+            valid, error = verify_bootstrap_envelope(
+                self._endpoint, server_tee,
+                peer_role="server", allowed_rtmr3=self._allowed_server_rtmr3,
             )
             if valid:
                 self._server_attested = True
                 self._peer_verified = True
                 logger.info("Server attested via initialize response")
 
-                server_init_sig_data = base64.b64decode(server_tee["sig_data"])
+                server_init_nonce = base64.b64decode(server_tee["sig_data"])
                 server_pubkey_raw = base64.b64decode(server_tee["public_key"])
 
                 # Extract bootstrap challenge if present
@@ -357,9 +331,9 @@ class TrustedClientSession(ClientSession):
                     self._pending_challenge = base64.b64decode(challenge_b64)
 
                 # Establish session binding (ECDH + HKDF)
-                init_sig_data = self._init_sig_data_by_request.get(request_id)
-                if init_sig_data is not None:
-                    self._endpoint.establish_session(server_pubkey_raw, init_sig_data, server_init_sig_data)
+                init_nonce = self._init_nonce_by_request.get(request_id)
+                if init_nonce is not None:
+                    self._endpoint.establish_session(server_pubkey_raw, init_nonce, server_init_nonce)
             else:
                 logger.error("Server attestation failed: %s", error)
 
@@ -368,7 +342,7 @@ class TrustedClientSession(ClientSession):
     def _finalize_request(self, request_id: int) -> None:
         """Clean up per-request TEE state."""
         self._tee_request_kinds.pop(request_id, None)
-        self._init_sig_data_by_request.pop(request_id, None)
+        self._init_nonce_by_request.pop(request_id, None)
 
     # =========================================================================
     # Internal helpers

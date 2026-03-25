@@ -1,9 +1,9 @@
-"""X25519 ECDH key agreement + HKDF session key derivation.
+"""X25519 ECDH key agreement + HKDF key derivation.
 
 Provides:
 - X25519 ephemeral key pair generation
 - ECDH shared secret computation
-- HKDF-SHA256 derivation of session_key + mac_key
+- HKDF-SHA256 derivation of KEK (key-encryption key) + mac_key
 - HMAC-SHA256 challenge MAC for Message 3 key possession proof
 """
 
@@ -21,7 +21,7 @@ from cryptography.hazmat.primitives.kdf.hkdf import HKDF
 
 # Constants
 X25519_KEY_SIZE = 32  # raw key bytes
-SESSION_KEY_INFO = b"tee-mcp-session-key"
+KEK_INFO = b"tee-mcp-kek"
 MAC_KEY_INFO = b"tee-mcp-mac-key"
 
 
@@ -34,11 +34,11 @@ class X25519KeyPair:
 
 
 @dataclass
-class SessionKeys:
-    """Derived session keys from ECDH + HKDF."""
+class DerivedKeys:
+    """Keys derived from ECDH + HKDF."""
 
-    session_key: bytes  # 32 bytes, for AES-256-GCM encryption
-    mac_key: bytes  # 32 bytes, for HMAC-SHA256 challenge MAC
+    kek: bytes  # 32 bytes — key-encryption key for AES Key Wrap
+    mac_key: bytes  # 32 bytes — for HMAC-SHA256 challenge + session auth
 
 
 def generate_keypair() -> X25519KeyPair:
@@ -85,12 +85,12 @@ def compute_shared_secret(
     return private_key.exchange(peer_public_key)
 
 
-def derive_session_keys(
+def derive_keys(
     shared_secret: bytes,
     client_public_key: bytes,
     server_public_key: bytes,
-) -> SessionKeys:
-    """Derive session_key and mac_key from ECDH shared secret via HKDF-SHA256.
+) -> DerivedKeys:
+    """Derive KEK and mac_key from ECDH shared secret via HKDF-SHA256.
 
     Args:
         shared_secret: 32-byte X25519 shared secret.
@@ -98,16 +98,16 @@ def derive_session_keys(
         server_public_key: 32-byte raw server X25519 public key.
 
     Returns:
-        SessionKeys with session_key (AES-256) and mac_key (HMAC-SHA256).
+        DerivedKeys with kek (for AES Key Wrap) and mac_key (for HMAC-SHA256).
     """
     # Salt = SHA256(client_pk || server_pk) — canonical ordering
     salt = hashlib.sha256(client_public_key + server_public_key).digest()
 
-    session_key = HKDF(
+    kek = HKDF(
         algorithm=SHA256(),
         length=32,
         salt=salt,
-        info=SESSION_KEY_INFO,
+        info=KEK_INFO,
     ).derive(shared_secret)
 
     mac_key = HKDF(
@@ -117,7 +117,7 @@ def derive_session_keys(
         info=MAC_KEY_INFO,
     ).derive(shared_secret)
 
-    return SessionKeys(session_key=session_key, mac_key=mac_key)
+    return DerivedKeys(kek=kek, mac_key=mac_key)
 
 
 def hmac_challenge(mac_key: bytes, challenge: bytes) -> bytes:

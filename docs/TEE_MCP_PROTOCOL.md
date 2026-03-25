@@ -6,7 +6,7 @@ Hardware-attested, encrypted communication for MCP with mutual trust.
 
 TEE-MCP extends the Model Context Protocol with Intel TDX (Trust Domain Extensions) attestation, enabling mutual verification between MCP Client and MCP Server.
 
-**Key Design**: Every JSON-RPC `tools/call` request and response carries a `_meta.tee` field with attestation evidence and encryption. The `initialize` exchange bootstraps key exchange (plaintext + evidence); `tools/list` carries lightweight session-bound envelopes with trust metadata and performs **per-tool** trust filtering by authority subject; all `tools/call` messages are encrypted + attested. There is no separate session handshake — attestation is unified into the message flow itself.
+**Key Design**: Bootstrap attestation happens only during `initialize`. The `initialize` exchange carries TDX quote evidence and bootstraps a shared session; `tools/list` carries lightweight session-bound envelopes with trust metadata and performs **per-tool** trust filtering by authority subject; `tools/call` carries only session-bound AES-GCM encryption plus freshness metadata. There is no second quote exchange after bootstrap.
 
 ## Architecture
 
@@ -35,8 +35,8 @@ graph TB
         AS[attestation-service]
     end
 
-    CLIENT_APP <-->|"Encrypted Channel<br/>RSA+AES-GCM"| SERVER_APP
-    CLIENT_TEE <-.->|"TDX Quotes on<br/>tools/call messages"| SERVER_TEE
+    CLIENT_APP <-->|"Session-bound AES-GCM"| SERVER_APP
+    CLIENT_TEE <-.->|"TDX Quotes on<br/>initialize only"| SERVER_TEE
     TTM -.->|"GetLatestVerdict<br/>WatchVerdictUpdates"| AS
     CLIENT_APP -.->|"Unix socket"| TRUSTD
     SERVER_APP -.->|"Unix socket"| TRUSTD
@@ -60,9 +60,9 @@ Implementation note:
 
 ## Protocol Flow
 
-### Unified Per-Call TEE Attestation
+### Three-Phase Flow
 
-TEE-MCP integrates attestation into the message flow via the `_meta.tee` field. No capability negotiation or separate handshake is required. The `initialize` exchange bootstraps mutual key exchange; `tools/list` carries lightweight session envelopes with trust metadata; `tools/call` carries full evidence and encryption.
+TEE-MCP integrates attestation into the MCP message flow via `_meta.tee`. The `initialize` exchange performs the only quote verification in the protocol. After bootstrap, `tools/list` and `tools/call` use session-bound envelopes derived from the established session keys.
 
 ```mermaid
 sequenceDiagram
@@ -87,15 +87,13 @@ sequenceDiagram
     Client->>AS: VerifyContainerEvidence(quote_S)
     AS-->>Client: verdict=trusted
     Client->>Client: Store server public key
-    Client->>Client: session_id = SHA256(pk_C ‖ pk_S ‖ sig_data_C ‖ sig_data_S [‖ EKM])
-
-    Client->>Client: evidence_C' = create_evidence(challenge)
-    Client->>Server: notifications/initialized<br/>{params: {_meta: {tee: {evidence_C', challenge_response}}}}
+    Client->>Client: session_id = SHA256(pk_C ‖ pk_S ‖ sig_data_C ‖ sig_data_S)
+    Client->>Client: challenge_mac = HMAC(mac_key, challenge)
+    Client->>Server: notifications/initialized<br/>{params: {_meta: {tee: {challenge_response, challenge_mac}}}}
 
     Server->>Server: Verify challenge_response == challenge
-    Server->>AS: VerifyContainerEvidence(quote_C')
-    AS-->>Server: verdict=trusted
-    Server->>Server: session_id = SHA256(pk_C ‖ pk_S ‖ sig_data_C ‖ sig_data_S [‖ EKM])
+    Server->>Server: Verify challenge_mac with derived mac_key
+    Server->>Server: session_id = SHA256(pk_C ‖ pk_S ‖ sig_data_C ‖ sig_data_S)
 
     Note over Client,Server: Phase 2: Tool Discovery (Session Envelope)
 
@@ -106,22 +104,22 @@ sequenceDiagram
     AS-->>Server: verdicts + trust metadata
     Server-->>Client: tools/list response<br/>{result: {tools: [trusted only], _meta: {tee: {sig_data, entropy, counter, server_trust}}}}
 
-    Note over Client,Server: Phase 3: Tool Calls (Encrypted + Attested)
+    Note over Client,Server: Phase 3: Tool Calls (Encrypted + Session-Bound)
 
     rect rgb(240, 248, 255)
-        Client->>Client: Derive sig_data from session
-        Client->>Client: Encrypt params with RSA-OAEP + AES-GCM
-        Client->>Server: tools/call<br/>{params: {_meta: {tee: {evidence, sig_data, entropy, counter, enc}}}}
+        Client->>Client: Derive sig_data from session_id
+        Client->>Client: Encrypt params with session_key (AES-GCM)
+        Client->>Server: tools/call<br/>{params: {_meta: {tee: {sig_data, entropy, counter, enc}}}}
 
         Server->>Server: ToolTrustManager: is_tool_trusted?
         Note over Server: If untrusted → reject + remediate
 
         Server->>Server: Verify session binding
         Server->>Server: Self-check: RTMR3 unchanged?
-        Server->>Server: Verify evidence + decrypt params
+        Server->>Server: Decrypt params with session_key
         Server->>Server: Execute tool
-        Server->>Server: Encrypt result with ResponseKey
-        Server-->>Client: tools/call response<br/>{result: {_meta: {tee: {evidence, sig_data, entropy, counter, enc}}}}
+        Server->>Server: Encrypt result with session_key
+        Server-->>Client: tools/call response<br/>{result: {_meta: {tee: {sig_data, entropy, counter, enc}}}}
     end
 ```
 
@@ -142,7 +140,7 @@ Error responses (`ErrorData`) do not carry `_meta.tee`.
 - Bootstrap (`initialize`): random 32-byte nonce bound in quote reportdata.
 - Post-bootstrap (`tools/call`, `tools/list`): `sig_data = HMAC(session_id, entropy ‖ counter)`.
 
-This keeps bootstrap as Background-Check and per-call as session-bound Passport freshness.
+This keeps bootstrap as Background-Check and post-bootstrap traffic as session-bound freshness.
 
 ## Formal Protocol Specification
 
@@ -152,8 +150,6 @@ This keeps bootstrap as Background-Check and per-call as session-bound Passport 
 |--------|-----------|
 | `E_X(n)` | Create attestation evidence from party X binding nonce n. `reportdata = H(n) \|\| H(pk_X)` |
 | `V(E, n)` | Verify peer evidence E against expected nonce n (quote verification via attestation-service + reportdata binding + freshness check) |
-| `RSA_ENC(pk, m)` | RSA-4096-OAEP encryption of m under public key pk |
-| `RSA_DEC(sk, c)` | RSA-4096-OAEP decryption of c with private key sk |
 | `AES_ENC(k, m)` | AES-256-GCM encryption of m with key k (produces ciphertext with appended 16-byte auth tag) |
 | `AES_DEC(k, c)` | AES-256-GCM decryption of c with key k |
 | `H(x)` | SHA-256(x) |
@@ -165,7 +161,7 @@ This keeps bootstrap as Background-Check and per-call as session-bound Passport 
 
 ### Bootstrap Protocol (3 messages)
 
-The bootstrap uses the Background-Check Model (RFC 9334): the server issues a verifier-chosen challenge in message 2, and the client proves possession of its key inside a matching TEE by responding with evidence binding that challenge in message 3.
+The bootstrap uses the Background-Check Model (RFC 9334): the server issues a verifier-chosen challenge in message 2, and the client proves it completed the same bootstrap by returning the challenge plus an HMAC over that challenge using the derived session `mac_key`.
 
 ```
 Message 1 (Client -> Server): initialize request
@@ -189,19 +185,15 @@ Message 2 (Server -> Client): initialize response
 Message 3 (Client -> Server): notifications/initialized
   V(E_S, sd_S) -> verify server evidence via attestation-service
   Store pk_S as peer public key
-  session_id = H(pk_C || pk_S || sd_C || sd_S [|| EKM])
-      where EKM = TLS-Exporter("EXPORTER-tee-mcp-channel-binding", null, 32)
-            if TLS transport available; omitted otherwise
-  E_C' = E_{pk_C}(ch)           (challenge response: new evidence binding challenge)
-      reportdata = H(ch) || H(pk_C)
-      Proves: C received ch from S and possesses sk_C inside TDX
+  session_id = H(pk_C || pk_S || sd_C || sd_S)
+  mac = HMAC_{mac_key}(ch)
   Send: {method: "notifications/initialized",
-         _meta.tee: {E_C', challenge_response: ch}}
+         _meta.tee: {challenge_response: ch, challenge_mac: mac}}
 
 Server on receiving Message 3:
   Verify challenge_response matches issued challenge
-  V(E_C', ch) -> verify client evidence binds challenge via attestation-service
-  session_id = H(pk_C || pk_S || sd_C || sd_S [|| EKM])
+  Verify challenge_mac with mac_key derived from bootstrap
+  session_id = H(pk_C || pk_S || sd_C || sd_S)
   Initialize counters: counter_S = 0, peer_counter_S = 0
 ```
 
@@ -252,29 +244,26 @@ Notes:
 - `server_trust` in `tools/list` is a server trust snapshot for transparency; enforcement remains server-side.
 - Trusted servers advertise `tools.listChanged=true` and may send `notifications/tools/list_changed` when trust revision or visible-tool set changes.
 - Client applications should refresh `tools/list` after `notifications/tools/list_changed`.
+- Untrusted tools are hidden individually; `tools/list` is no longer global all-or-nothing.
 
 ### Per-Call Protocol (tools/call, messages 4+)
 
-After bootstrap, both sides share `session_id` and use the Passport Model with HMAC-derived `sig_data` and monotonic counters. Each tool call request is encrypted to the server's public key; the response reuses the same AES key (ResponseKey pattern).
+After bootstrap, both sides share `session_id`, `session_key`, and `mac_key`. Each tool call uses HMAC-derived `sig_data`, monotonic counters, and AES-256-GCM under the shared `session_key`.
 
 The server applies three verification layers before executing a tool:
 1. **ToolTrustManager** — authority verdict check (fail-closed)
 2. **Self-check** — RTMR3 unchanged since session start
-3. **Per-call attestation** — evidence verification + decryption
+3. **Session binding** — HMAC-derived `sig_data` + AES-GCM decryption
 
 ```
 Request (Client -> Server):
   epsilon_i <-$- {0,1}^256
   c_i = counter_C++
   sd = HMAC_{session_id}(epsilon_i || BE_64(c_i))
-  E_C = E_{pk_C}(sd)
-      reportdata = H(sd) || H(pk_C)
-  k <-$- {0,1}^256              (fresh AES-256-GCM key)
-  ct = AES_ENC(k, params)       (encrypt tool name + arguments)
-  ek = RSA_ENC(pk_S, k)         (wrap AES key for server)
+  ct = AES_ENC(session_key, params)
   Send: {method: "tools/call",
-         _meta.tee: {E_C, sd, epsilon_i, c_i,
-                     enc: {key: ek, nonce: aes_nonce, ciphertext: ct}}}
+         _meta.tee: {sd, epsilon_i, c_i,
+                     enc: {nonce: aes_nonce, ciphertext: ct}}}
 
 Server processing — Layer 1: ToolTrustManager (fast-path, ~0ms cached):
   trust_info = ToolTrustManager.get_tool_trust_info(tool_name, require_fresh=True)
@@ -290,17 +279,14 @@ Server processing — Layer 2: Preprocess (schema validation):
   Encrypted tools/call has only _meta in params (name/arguments are inside
   ciphertext). The preprocess hook (_preprocess_incoming_request_data) decrypts
   early so JSON-RPC schema validation can proceed normally.
-  k = RSA_DEC(sk_S, ek)
-  params = AES_DEC(k, ct)
+  params = AES_DEC(session_key, ct)
   Restore plaintext fields (name, arguments) into request params.
 
-Server processing — Layer 3: Per-call attestation:
+Server processing — Layer 3: Session binding:
   Check: c_i >= peer_counter_S   (monotonic counter check)
   sd' = HMAC_{session_id}(epsilon_i || BE_64(c_i))
   Verify: sd' == sd              (session binding check)
   Self-check: current_RTMR3 == initial_RTMR3 (refuse decrypt if changed)
-  V(E_C, sd) -> verify client evidence via attestation-service
-  (If already decrypted in preprocess, skip re-decryption)
   Execute tool call with params
   Update: peer_counter_S = c_i + 1
 
@@ -308,20 +294,16 @@ Response (Server -> Client):
   epsilon_j <-$- {0,1}^256
   c_j = counter_S++
   sd_resp = HMAC_{session_id}(epsilon_j || BE_64(c_j))
-  E_S = E_{pk_S}(sd_resp)
-      reportdata = H(sd_resp) || H(pk_S)
-  ct' = AES_ENC(k, result)      (reuse AES key from request: ResponseKey)
+  ct' = AES_ENC(session_key, result)
   Send: {result: ...,
-         _meta.tee: {E_S, sd_resp, epsilon_j, c_j,
+         _meta.tee: {sd_resp, epsilon_j, c_j,
                      enc: {nonce: aes_nonce', ciphertext: ct'}}}
-  Note: enc.key is empty — client already holds k from the request
 
 Client verification:
   Check: c_j >= peer_counter_C   (monotonic counter check)
   sd_resp' = HMAC_{session_id}(epsilon_j || BE_64(c_j))
   Verify: sd_resp' == sd_resp    (session binding check)
-  V(E_S, sd_resp) -> verify server evidence via attestation-service
-  result = AES_DEC(k, ct')      (decrypt with retained AES key)
+  result = AES_DEC(session_key, ct')
   Update: peer_counter_C = c_j + 1
 ```
 
@@ -331,11 +313,11 @@ The following invariants are maintained by the protocol. See [SECURITY_ANALYSIS.
 
 | Invariant | Property | Mechanism |
 |-----------|----------|-----------|
-| **INV-1** | Evidence freshness | Every evidence `E_X(n)` has `timestamp_ms < MAX_AGE` (5 min). |
+| **INV-1** | Bootstrap evidence freshness | Every bootstrap evidence `E_X(n)` has `timestamp_ms < MAX_AGE` (5 min). |
 | **INV-2** | Session binding | Post-bootstrap `sig_data` is `HMAC_{session_id}(epsilon \|\| counter)`. Only parties that completed the bootstrap can derive valid `sig_data`. |
 | **INV-3** | Counter monotonicity | `c_i >= peer_counter` enforced on every message. Prevents replay and reordering within a session. Gaps allowed for pipelining. |
-| **INV-4** | Key binding | `reportdata = H(nonce) \|\| H(pk_X)` in every TDX quote. Binds the public key to the TEE identity — an attacker with a different key cannot produce matching evidence. |
-| **INV-5** | Channel binding | `session_id = H(pk_C \|\| pk_S \|\| sd_C \|\| sd_S [\|\| EKM])`. Includes TLS Exported Keying Material when available, preventing relay across TLS connections. |
+| **INV-4** | Key binding | `reportdata = H(nonce) \|\| H(pk_X)` in every bootstrap TDX quote. Binds the public key to the TEE identity — an attacker with a different key cannot produce matching evidence. |
+| **INV-5** | Channel binding | `session_id = H(pk_C \|\| pk_S \|\| sd_C \|\| sd_S)`. Both sides must have completed the same bootstrap to derive matching session keys. |
 | **INV-6** | Server self-integrity | Before decrypting, server verifies `current_RTMR3 == initial_RTMR3`. Refuses to process encrypted data if container integrity has changed. |
 | **INV-7** | Authority trust gate | ToolTrustManager queries attestation-service before tool execution. Fail-closed: unknown/untrusted/stale verdicts block execution. |
 
@@ -398,7 +380,7 @@ The following invariants are maintained by the protocol. See [SECURITY_ANALYSIS.
 
 ### Initialized Notification (with `_meta.tee`)
 
-When a bootstrap challenge was received, the client sends evidence binding the challenge plus the raw challenge bytes for verification:
+When a bootstrap challenge was received, the client sends the raw challenge plus an HMAC over that challenge using the derived session `mac_key`:
 
 ```json
 {
@@ -407,15 +389,8 @@ When a bootstrap challenge was received, the client sends evidence binding the c
   "params": {
     "_meta": {
       "tee": {
-        "quote": "base64-encoded-tdx-quote",
-        "public_key": "base64-encoded-rsa-public-key",
-        "nonce": "base64-encoded-nonce",
-        "cgroup": "/docker/client-container-id",
-        "rtmr3": "hex-encoded-48-bytes",
-        "timestamp_ms": 1234567890123,
-        "role": "client",
-        "sig_data": "base64-encoded-sig-data",
         "challenge_response": "base64-encoded-challenge-bytes"
+        "challenge_mac": "base64-encoded-hmac-sha256"
       }
     }
   }
@@ -482,9 +457,9 @@ When no challenge was issued, the notification is sent without `_meta.tee` (plai
 }
 ```
 
-When the server is untrusted/stale/unknown, `tools` is returned as an empty list.
+When some tool subjects are untrusted/stale/unknown, only those tools are hidden from the list.
 
-### Tool Call Request (encrypted + evidence)
+### Tool Call Request (encrypted + session binding)
 
 ```json
 {
@@ -494,18 +469,10 @@ When the server is untrusted/stale/unknown, `tools` is returned as an empty list
   "params": {
     "_meta": {
       "tee": {
-        "quote": "base64-encoded-tdx-quote",
-        "public_key": "base64-encoded-rsa-public-key",
-        "nonce": "base64-encoded-nonce",
-        "cgroup": "/docker/client-container-id",
-        "rtmr3": "hex-encoded-48-bytes",
-        "timestamp_ms": 1234567890123,
-        "role": "client",
         "sig_data": "base64-encoded-session-bound-sig-data",
         "entropy": "base64-encoded-32-random-bytes",
         "counter": 1,
         "enc": {
-          "key": "base64-rsa-oaep-encrypted-aes-key",
           "nonce": "base64-aes-gcm-nonce-12-bytes",
           "ciphertext": "base64-aes-gcm-ciphertext-with-appended-tag"
         }
@@ -517,7 +484,7 @@ When the server is untrusted/stale/unknown, `tools` is returned as an empty list
 
 When `enc` is present, the actual params (e.g., `name`, `arguments`) are inside the ciphertext. Only `_meta` remains in plaintext. The `ciphertext` field contains AES-256-GCM encrypted data with the 16-byte authentication tag appended.
 
-### Tool Call Response (encrypted + evidence)
+### Tool Call Response (encrypted + session binding)
 
 ```json
 {
@@ -526,18 +493,10 @@ When `enc` is present, the actual params (e.g., `name`, `arguments`) are inside 
   "result": {
     "_meta": {
       "tee": {
-        "quote": "base64-encoded-tdx-quote",
-        "public_key": "base64-encoded-rsa-public-key",
-        "nonce": "base64-encoded-nonce",
-        "cgroup": "/docker/server-container-id",
-        "rtmr3": "hex-encoded-48-bytes",
-        "timestamp_ms": 1234567890123,
-        "role": "server",
         "sig_data": "base64-encoded-session-bound-sig-data",
         "entropy": "base64-encoded-32-random-bytes",
         "counter": 1,
         "enc": {
-          "key": "",
           "nonce": "base64-aes-gcm-nonce-12-bytes",
           "ciphertext": "base64-aes-gcm-ciphertext-with-appended-tag"
         }
@@ -547,7 +506,7 @@ When `enc` is present, the actual params (e.g., `name`, `arguments`) are inside 
 }
 ```
 
-In responses, `enc.key` is empty — the client already has the AES key from the request's `ResponseKey`.
+In responses, the same session key derived during bootstrap is reused for decryption.
 
 ## Data Structures
 
@@ -649,10 +608,10 @@ graph TB
 
     subgraph "Shared Crypto"
         AES[AES-256-GCM]
-        RSA[RSA-4096-OAEP]
-        ENV[Envelope Encryption]
-        TEE_ENV[TEE Envelope<br/>per-call attestation + encryption]
+        X25519[X25519 ECDH]
+        TEE_ENV[Bootstrap Envelope<br/>initialize evidence]
         SES_ENV[Session Envelope<br/>tools/list + trust metadata]
+        CALL_ENV[Call Envelope<br/>tools/call session binding]
     end
 
     subgraph "In-Guest Daemon"
@@ -673,14 +632,14 @@ graph TB
     TS_SESSION --> TS_EP
     TS_SESSION --> TTM
 
-    TC_EP --> TEE_ENV
     TC_EP --> SES_ENV
-    TS_EP --> TEE_ENV
+    TC_EP --> TEE_ENV
+    TC_EP --> CALL_ENV
     TS_EP --> SES_ENV
-    TEE_ENV --> ENV
-
-    ENV --> AES
-    ENV --> RSA
+    TS_EP --> TEE_ENV
+    TS_EP --> CALL_ENV
+    TEE_ENV --> X25519
+    CALL_ENV --> AES
 
     TC_EP --> TRUSTD
     TS_EP --> TRUSTD
@@ -743,14 +702,14 @@ new_rtmr3 = SHA384(current_rtmr3 || file_digest)
 
 ### ToolTrustManager: Authority Trust Gate
 
-Before any per-call attestation, the server checks the centralized authority for the **requested tool's subject**. This is a fast-path gate (~0ms with cache, ~2ms on authority query).
+Before any tool execution, the server checks the centralized authority for the **requested tool's subject**. This is a fast-path gate (~0ms with cache, ~2ms on authority query).
 
 ```mermaid
 flowchart TB
     CALL[Receive tools/call request]
     CALL --> TTM_CHECK{ToolTrustManager:<br/>is_tool_trusted?}
 
-    TTM_CHECK -->|"status=trusted"| ATTEST[Proceed to per-call attestation]
+    TTM_CHECK -->|"status=trusted"| ATTEST[Proceed to session-bound decrypt + execution]
     TTM_CHECK -->|"status=untrusted<br/>stale/unknown"| REMEDIATE
 
     subgraph "Trust Check (10s cache)"
@@ -780,31 +739,24 @@ flowchart TB
         S1[Receive initialized notification]
         S2{Bootstrap challenge<br/>issued?}
         S3{challenge_response<br/>matches?}
-        S4{Client evidence<br/>provided?}
-        S5{Client evidence<br/>valid via authority?}
-        S6{Client RTMR3<br/>in allowlist?}
-        S7[Accept Connection]
-        S8[Reject Connection]
+        S4{challenge_mac<br/>valid?}
+        S5[Accept Connection]
+        S6[Reject Connection]
     end
 
     S1 --> S2
     S2 -->|Yes| S3
     S2 -->|No| S4
-    S3 -->|No| S8
+    S3 -->|No| S6
     S3 -->|Yes| S4
-    S4 -->|No & required| S8
-    S4 -->|No & optional| S7
+    S4 -->|No| S6
     S4 -->|Yes| S5
-    S5 -->|No| S8
-    S5 -->|Yes| S6
-    S6 -->|No| S8
-    S6 -->|Yes| S7
 ```
 
-### Per-Call: Evidence Verification on Every tools/call
+### Per-Call: Session-Bound Verification on Every tools/call
 
-Every `tools/call` request and response with `_meta.tee` triggers evidence verification.
-Quote validity is enforced by `attestation-service` via `VerifyContainerEvidence`.
+Every `tools/call` request and response with `_meta.tee` triggers session-binding verification.
+Quote validity is established during bootstrap; runtime trust enforcement comes from `ToolTrustManager`.
 
 ```mermaid
 flowchart TB
@@ -817,29 +769,17 @@ flowchart TB
     SELFCHECK -->|No| REJECT_SELF["Reject: container<br/>integrity changed"]
     SELFCHECK -->|Yes| PARSE
 
-    PARSE["Parse evidence + sig_data"]
+    PARSE["Parse sig_data + decrypt payload"]
     PARSE --> SESSION{"Session binding:<br/>recompute sig_data<br/>from entropy/counter"}
     SESSION -->|Mismatch| REJECT[Reject]
-    SESSION -->|Valid| FRESH{"Evidence<br/>fresh enough?<br/>(< 5 min)"}
-    FRESH -->|No| REJECT
-    FRESH -->|Yes| QUOTE["Parse TDX quote"]
-    QUOTE --> RTMR_BIND{"RTMR3 matches<br/>quote?"}
-    RTMR_BIND -->|No| REJECT
-    RTMR_BIND -->|Yes| ARPC["attestation-service:<br/>VerifyContainerEvidence"]
-    ARPC --> RESULT{"verdict == trusted?"}
-    RESULT -->|No| REJECT
-    RESULT -->|Yes| RTMR_CHECK
-
-    RTMR_CHECK{"RTMR3 in<br/>allowlist?"}
-    RTMR_CHECK -->|No| REJECT
-    RTMR_CHECK -->|Yes| ACCEPT["Accept + Decrypt"]
+    SESSION -->|Valid| ACCEPT["Accept + Execute"]
 ```
 
 **Key invariants:**
 - **ToolTrustManager is ALWAYS checked first** — fail-closed authority verdict gate
 - **Self-check is ALWAYS performed** — server verifies own RTMR3 before decrypting
-- **RTMR3 allowlist is ALWAYS checked** — detects runtime code changes
-- **Authority verification is ALWAYS required** — local verifier quote caches are removed
+- **Bootstrap quote verification is ALWAYS required** — runtime quotes are not used after bootstrap
+- **Authority verdicts are ALWAYS required for tool execution** — unknown/untrusted/stale blocks execution
 
 ## Cache Architecture
 
@@ -865,7 +805,7 @@ When a subject is revoked: Layer 1 marks that subject dirty via watch update, th
 
 ### Server: TrustedMCP
 
-Drop-in replacement for FastMCP with optional TEE support.
+Drop-in replacement for `MCPServer` with optional TEE support.
 
 ```python
 from mcp.server.trusted_mcp import TrustedMCP
@@ -881,12 +821,12 @@ mcp = TrustedMCP(
     ssl_keyfile="/etc/tee-mcp/tls/server.key",
 )
 
-# Without TEE (behaves exactly like FastMCP)
+# Without TEE (behaves like MCPServer)
 mcp = TrustedMCP(name="my-server", tee_enabled=False)
 
-# Or use FastMCP directly
-from mcp.server.fastmcp import FastMCP
-mcp = FastMCP("my-server")
+# Or use MCPServer directly
+from mcp.server.mcpserver import MCPServer
+mcp = MCPServer("my-server")
 
 @mcp.tool()
 def sensitive_operation(data: str) -> str:
@@ -905,7 +845,7 @@ mcp.client_cgroup       # str
 
 ### Client: TrustedClientSession
 
-Drop-in replacement for `ClientSession` with optional TEE support. Attestation happens automatically on every message via `_meta.tee`.
+Drop-in replacement for `ClientSession` with optional TEE support. Bootstrap attestation happens during `initialize`; `tools/list` and `tools/call` carry session-bound `_meta.tee` envelopes afterward.
 
 ```python
 from mcp.client.trusted_client import TrustedClientSession
@@ -942,7 +882,7 @@ async with httpx.AsyncClient(verify="/etc/tee-mcp/tls/ca.crt") as http_client:
             if session.server_trust_info:
                 print(f"Server trust: {session.server_trust_info['status']}")
 
-            # Every call_tool carries mutual attestation evidence + encryption
+            # Every call_tool carries session-bound encryption + freshness metadata
             result = await session.call_tool("my_tool", {"param": "value"})
 
 # Properties available after initialize()
@@ -1008,15 +948,15 @@ This allows attestation-service to bind the MCP server's cryptographic identity 
 | **Integrity** | RTMR3 = hash chain of loaded files |
 | **Freshness** | Session-bound sig_data = HMAC(session_id, entropy \|\| counter) |
 | **Key Binding** | Public key hash in reportdata ties crypto to TEE |
-| **Confidentiality** | RSA-4096-OAEP + AES-256-GCM envelope encryption |
-| **Channel Binding** | session_id = SHA256(client_pk \|\| server_pk \|\| sd_C \|\| sd_S [\|\| EKM]) |
+| **Confidentiality** | Session-key AES-256-GCM after X25519 bootstrap |
+| **Channel Binding** | session_id = SHA256(client_pk \|\| server_pk \|\| sd_C \|\| sd_S) |
 | **Session Continuity** | Monotonic counter prevents replay/reordering |
 | **Bootstrap Freshness** | Verifier-chosen nonce (challenge) for Background-Check Model |
-| **Continuous Verification** | Every tools/call carries fresh evidence |
+| **Continuous Verification** | Every tools/call enforces fresh session binding plus authority verdict gating |
 | **Server Self-Integrity** | RTMR3 self-check before decrypt; refuse if container integrity changed |
 | **Authority Trust Gate** | ToolTrustManager evaluates per-tool mapped subject verdicts; fail-closed on non-trusted verdicts |
 | **Remediation** | Untrusted verdict triggers container restart via trustd (SIGTERM → SIGKILL) |
-| **Cache Security** | TTL expiry + fresh evidence timestamp + reportdata binding + RTMR3 allowlist |
+| **Cache Security** | TTL expiry + authority watch invalidation + bootstrap evidence freshness + reportdata binding |
 | **Runtime Monitoring** | RTMR3 transition detection with configurable policy |
 | **Quote Verification** | Centralized authority RPC (`attestation-service` VerifyContainerEvidence) |
 | **Fail Closed** | If authority unavailable or returns non-`trusted`, verification rejects |
@@ -1029,7 +969,7 @@ TEE-MCP maps to the IETF RATS architecture (RFC 9334) as follows:
 | TEE-MCP Component | RATS Role |
 |---|---|
 | Container running MCP code | Attester |
-| `SecureEndpoint.verify_peer()` | Verifier (local checks) |
+| `SecureEndpoint.verify_peer()` | Relying-party side verifier logic |
 | `attestation-service` | Verifier Backend (quote verification, policy) |
 | `TrustedServerSession` / `TrustedClientSession` | Relying Party |
 | TDX quote | Evidence |
@@ -1041,14 +981,14 @@ TEE-MCP maps to the IETF RATS architecture (RFC 9334) as follows:
 ### Attestation Model Classification
 
 - **Bootstrap (initialize)**: Background-Check Model (verifier-chosen nonce)
-- **Tool calls**: Passport Model (self-attested, session-bound)
-- **Combined**: Background-Check bootstrap plus Passport per-call flow
+- **Tool calls**: Session-bound encrypted channel (no fresh quote)
+- **Combined**: Background-Check bootstrap plus session-bound runtime flow
 
 ### Session-Level Channel Binding
 
 After bootstrap, both sides compute:
 ```
-session_id = SHA256(client_pubkey_pem || server_pubkey_pem || init_sig_data_client || init_sig_data_server [|| tls_ekm])
+session_id = SHA256(client_pubkey_pem || server_pubkey_pem || init_sig_data_client || init_sig_data_server)
 ```
 
 Subsequent sig_data is derived:
@@ -1062,7 +1002,7 @@ sig_data = HMAC-SHA256(session_id, entropy || counter_8bytes_BE)
 |---|---|
 | Replay | Session-bound sig_data + monotonic counter |
 | Diversion (Identity Crisis) | session_id binds both pubkeys |
-| Relay | Bootstrap challenge + session binding + TLS EKM |
+| Relay | Bootstrap challenge + session binding |
 | Runtime state change | RTMR3 self-check + ToolTrustManager + policy-driven remediation |
 | Session confusion | session_id prevents cross-session relay |
 | Authority unavailable | Fail-closed: unknown verdict → block execution |
@@ -1081,8 +1021,8 @@ flowchart TB
     E5[Authority Unavailable]
     E6[Trust Check Failed]
 
-    E1 -->|"No /dev/tdx_guest<br/>and trustd unavailable"| FAIL1[Cannot start service]
-    E2 -->|"ioctl failed"| FAIL2[Quote generation failed]
+    E1 -->|"trustd unavailable"| FAIL1[Cannot start service]
+    E2 -->|"trustd quote request failed"| FAIL2[Quote generation failed]
     E3 -->|"Verification failed<br/>via attestation-service"| FAIL3[Connection rejected]
     E4 -->|"Decryption failed"| FAIL4[Request rejected]
     E5 -->|"attestation-service<br/>unreachable"| FAIL5[Fail closed: tool blocked]
@@ -1093,22 +1033,19 @@ flowchart TB
 
 | File | Purpose |
 |------|---------|
-| `shared/tdx.py` | TDX device interface, quote generation/parsing (via trustd or direct) |
+| `shared/tdx.py` | TDX quote parsing plus trustd-backed quote/state access |
 | `shared/crypto/aes.py` | AES-256-GCM symmetric encryption |
-| `shared/crypto/rsa.py` | RSA-4096 key generation, OAEP encryption, PSS signing |
-| `shared/crypto/envelope.py` | RSA+AES envelope encryption, ResponseKey |
+| `shared/crypto/x25519.py` | X25519 key agreement + challenge MAC helpers |
 | `shared/secure_channel.py` | SecureEndpoint, authority-backed attestation verification, session binding |
 | `shared/attestation_authority_client.py` | gRPC client for centralized verifier authority (VerifyContainerEvidence, GetLatestVerdict, WatchVerdictUpdates) |
 | `shared/attestation_policy.py` | Per-workload attestation policy framework |
-| `shared/tee_envelope.py` | Per-call TEE envelope (tools/call) + session envelope (tools/list) |
+| `shared/tee_envelope.py` | Bootstrap and session envelope helpers for initialize/tools/list/tools/call |
 | `shared/tee_helpers.py` | _meta.tee injection/extraction helpers |
 | `shared/trustd_client.py` | Unix socket client for trustd daemon (GetContainerState, GetTDQuote, RestartContainer) |
-| `shared/tls_ekm.py` | TLS Exported Keying Material extraction via ctypes/OpenSSL |
 | `shared/trusted_service.py` | Standalone TEE attestation for non-MCP services |
-| `client/trusted_session.py` | TrustedClientSession — extends ClientSession with per-call TEE |
+| `client/trusted_session.py` | TrustedClientSession — bootstrap attestation + session-bound runtime envelopes |
 | `client/trusted_client.py` | Re-exports TrustedClientSession |
-| `server/trusted_session.py` | TrustedServerSession — extends ServerSession with per-call TEE |
+| `server/trusted_session.py` | TrustedServerSession — bootstrap attestation + session-bound runtime envelopes |
 | `server/trusted_server.py` | TrustedServer — extends Server with custom session support |
-| `server/trusted_mcp.py` | TrustedMCP — extends FastMCP with TEE + ToolTrustManager |
+| `server/trusted_mcp.py` | TrustedMCP — extends MCPServer with TEE + ToolTrustManager |
 | `server/tool_trust.py` | ToolTrustManager — authority-backed trust gate with remediation |
-| `server/tls_uvicorn.py` | Custom Uvicorn protocol for TLS EKM extraction |

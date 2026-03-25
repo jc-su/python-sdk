@@ -5,10 +5,10 @@ import secrets
 import pytest
 
 from mcp.shared.crypto.x25519 import (
-    SessionKeys,
+    DerivedKeys,
     X25519KeyPair,
     compute_shared_secret,
-    derive_session_keys,
+    derive_keys,
     export_private_key,
     export_public_key,
     generate_keypair,
@@ -76,15 +76,15 @@ class TestECDH:
 
 
 class TestHKDF:
-    def test_derive_session_keys_returns_session_keys(self) -> None:
+    def test_derive_keys_returns_session_keys(self) -> None:
         alice = generate_keypair()
         bob = generate_keypair()
         shared = compute_shared_secret(alice.private_key, bob.public_key)
         client_pk = export_public_key(alice.public_key)
         server_pk = export_public_key(bob.public_key)
-        keys = derive_session_keys(shared, client_pk, server_pk)
-        assert isinstance(keys, SessionKeys)
-        assert len(keys.session_key) == 32
+        keys = derive_keys(shared, client_pk, server_pk)
+        assert isinstance(keys, DerivedKeys)
+        assert len(keys.kek) == 32
         assert len(keys.mac_key) == 32
 
     def test_session_key_differs_from_mac_key(self) -> None:
@@ -93,8 +93,8 @@ class TestHKDF:
         shared = compute_shared_secret(alice.private_key, bob.public_key)
         client_pk = export_public_key(alice.public_key)
         server_pk = export_public_key(bob.public_key)
-        keys = derive_session_keys(shared, client_pk, server_pk)
-        assert keys.session_key != keys.mac_key
+        keys = derive_keys(shared, client_pk, server_pk)
+        assert keys.kek != keys.mac_key
 
     def test_deterministic_derivation(self) -> None:
         """Same inputs produce same keys."""
@@ -103,9 +103,9 @@ class TestHKDF:
         shared = compute_shared_secret(alice.private_key, bob.public_key)
         client_pk = export_public_key(alice.public_key)
         server_pk = export_public_key(bob.public_key)
-        keys1 = derive_session_keys(shared, client_pk, server_pk)
-        keys2 = derive_session_keys(shared, client_pk, server_pk)
-        assert keys1.session_key == keys2.session_key
+        keys1 = derive_keys(shared, client_pk, server_pk)
+        keys2 = derive_keys(shared, client_pk, server_pk)
+        assert keys1.kek == keys2.kek
         assert keys1.mac_key == keys2.mac_key
 
     def test_swapped_roles_produce_different_keys(self) -> None:
@@ -115,9 +115,9 @@ class TestHKDF:
         shared = compute_shared_secret(alice.private_key, bob.public_key)
         client_pk = export_public_key(alice.public_key)
         server_pk = export_public_key(bob.public_key)
-        keys_normal = derive_session_keys(shared, client_pk, server_pk)
-        keys_swapped = derive_session_keys(shared, server_pk, client_pk)
-        assert keys_normal.session_key != keys_swapped.session_key
+        keys_normal = derive_keys(shared, client_pk, server_pk)
+        keys_swapped = derive_keys(shared, server_pk, client_pk)
+        assert keys_normal.kek != keys_swapped.kek
 
     def test_both_sides_derive_same_keys(self) -> None:
         """Full protocol: both sides derive identical session keys."""
@@ -128,13 +128,13 @@ class TestHKDF:
 
         # Client side
         shared_client = compute_shared_secret(client.private_key, server.public_key)
-        keys_client = derive_session_keys(shared_client, client_pk, server_pk)
+        keys_client = derive_keys(shared_client, client_pk, server_pk)
 
         # Server side
         shared_server = compute_shared_secret(server.private_key, client.public_key)
-        keys_server = derive_session_keys(shared_server, client_pk, server_pk)
+        keys_server = derive_keys(shared_server, client_pk, server_pk)
 
-        assert keys_client.session_key == keys_server.session_key
+        assert keys_client.kek == keys_server.kek
         assert keys_client.mac_key == keys_server.mac_key
 
 
@@ -176,7 +176,7 @@ class TestHMACChallenge:
         server_pk = export_public_key(server.public_key)
 
         shared = compute_shared_secret(client.private_key, server.public_key)
-        keys = derive_session_keys(shared, client_pk, server_pk)
+        keys = derive_keys(shared, client_pk, server_pk)
 
         challenge = secrets.token_bytes(32)
         mac = hmac_challenge(keys.mac_key, challenge)

@@ -1,9 +1,8 @@
-"""
-Secure channel with mutual TEE attestation for two-party trust.
+"""Secure channel with mutual TEE attestation for two-party trust.
 
 Maps to IETF RATS (RFC 9334) architecture:
 - Container running MCP code    → Attester
-- SecureEndpoint.verify_peer()  → Verifier
+- SecureEndpoint.verify_peer_attestation()  → Verifier
 - TrustedServerSession / TrustedClientSession → Relying Party
 - TDX quote                     → Evidence
 - AttestationResult             → Attestation Result
@@ -22,8 +21,8 @@ Protocol:
 2. Session-key encryption + HMAC authentication on tools/call
 
 Session-level channel binding (post-bootstrap):
-- session_id = SHA256(client_pubkey || server_pubkey || init_sig_data_client || init_sig_data_server)
-- sig_data = HMAC-SHA256(session_id, entropy || counter)
+- session_id = SHA256(client_pubkey || server_pubkey || init_nonce_client || init_nonce_server)
+- nonce = HMAC-SHA256(session_id, entropy || counter)
 - Prevents cross-session evidence relay and provides ordering guarantees
 
 ECDH + HKDF provides message-level security:
@@ -42,12 +41,13 @@ import logging
 import secrets
 import time
 from dataclasses import dataclass, field
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 if TYPE_CHECKING:
     from collections.abc import Callable
 
 from mcp.shared.crypto import x25519
+from mcp.shared.crypto.envelope import EnvelopePayload
 from mcp.shared.crypto.x25519 import X25519PublicKey
 from mcp.shared.tdx import (
     generate_quote,
@@ -79,8 +79,7 @@ class AttestationResult:
 
 @dataclass
 class AttestationEvidence:
-    """
-    TEE attestation evidence for a single party.
+    """TEE attestation evidence for a single party.
     """
 
     quote: bytes  # TDX quote
@@ -89,10 +88,10 @@ class AttestationEvidence:
     cgroup: str  # Container cgroup
     rtmr3: bytes  # Container's virtual RTMR3
     timestamp_ms: int
-    role: str = ""  # Role: "ms", "client", "server"
+    role: str = ""  # Role: "client", "server"
 
-    def to_dict(self) -> dict:
-        result = {
+    def to_dict(self) -> dict[str, Any]:
+        evidence_dict = {
             "quote": base64.b64encode(self.quote).decode(),
             "public_key": base64.b64encode(self.public_key).decode(),
             "nonce": base64.b64encode(self.nonce).decode(),
@@ -101,18 +100,18 @@ class AttestationEvidence:
             "timestamp_ms": self.timestamp_ms,
             "role": self.role,
         }
-        return result
+        return evidence_dict
 
     @classmethod
-    def from_dict(cls, d: dict) -> AttestationEvidence:
+    def from_dict(cls, data: dict) -> AttestationEvidence:
         return cls(
-            quote=base64.b64decode(d["quote"]),
-            public_key=base64.b64decode(d["public_key"]),
-            nonce=base64.b64decode(d["nonce"]),
-            cgroup=d["cgroup"],
-            rtmr3=bytes.fromhex(d["rtmr3"]),
-            timestamp_ms=d["timestamp_ms"],
-            role=d.get("role", ""),
+            quote=base64.b64decode(data["quote"]),
+            public_key=base64.b64decode(data["public_key"]),
+            nonce=base64.b64decode(data["nonce"]),
+            cgroup=data["cgroup"],
+            rtmr3=bytes.fromhex(data["rtmr3"]),
+            timestamp_ms=data["timestamp_ms"],
+            role=data.get("role", ""),
         )
 
 
@@ -152,7 +151,7 @@ class PeerStateChange:
 # =============================================================================
 
 
-def _compute_reportdata(nonce: bytes, public_key_raw: bytes) -> bytes:
+def _bind_nonce_and_key(nonce: bytes, public_key_raw: bytes) -> bytes:
     """Compute reportdata binding nonce and public key.
 
     Args:
@@ -187,22 +186,24 @@ def _verify_quote_via_authority(
         nonce=expected_nonce,
         quote=evidence.quote,
         quote_report_data=quote_reportdata,
-        public_key_pem=evidence.public_key,
+        public_key_bytes=evidence.public_key,
     )
     if result is None:
         return False, "Authority verifier request failed"
-    if result.verdict != "trusted":
+
+    from mcp.shared.trust_verdict import TrustVerdict
+
+    if result.verdict != TrustVerdict.TRUSTED:
         return False, f"Authority verifier verdict={result.verdict}: {result.message}"
     return True, ""
 
 
-def _verify_evidence(
+def _verify_attestation_evidence(
     evidence: AttestationEvidence,
     expected_nonce: bytes,
     allowed_rtmr3: list[str] | None = None,
 ) -> tuple[bool, str, bytes | None]:
-    """
-    Verify attestation evidence.
+    """Verify attestation evidence.
 
     Authority-only mode:
     - reportdata = SHA256(nonce) || SHA256(pubkey)
@@ -228,8 +229,8 @@ def _verify_evidence(
         return False, "RTMR3 mismatch between evidence and quote", None
 
     # Verify nonce-based reportdata binding.
-    expected_rd = _compute_reportdata(expected_nonce, evidence.public_key)
-    if not hmac.compare_digest(quote.reportdata, expected_rd):
+    expected_reportdata = _bind_nonce_and_key(expected_nonce, evidence.public_key)
+    if not hmac.compare_digest(quote.reportdata, expected_reportdata):
         return False, "Reportdata mismatch - nonce/key not bound correctly", None
 
     valid, err = _verify_quote_via_authority(
@@ -256,8 +257,7 @@ def _verify_evidence(
 
 @dataclass
 class SecureEndpoint:
-    """
-    One endpoint of a secure channel with two-party mutual attestation.
+    """One endpoint of a secure channel with two-party mutual attestation.
 
     Each endpoint has its own X25519 key pair for ECDH key agreement.
 
@@ -280,14 +280,14 @@ class SecureEndpoint:
     on_peer_state_change: Callable[[PeerStateChange], RTMR3TransitionPolicy] | None = None
     _peer_state_history: list[PeerStateChange] = field(default_factory=list, repr=False)
 
-    # Session-level channel binding
+    # Session state
     session_id: bytes | None = field(default=None, repr=False)
-    _call_counter: int = field(default=0, repr=False)
-    _peer_call_counter: int = field(default=0, repr=False)
+    _send_counter: int = field(default=0, repr=False)
+    _recv_counter: int = field(default=0, repr=False)
 
-    # ECDH-derived session keys
-    session_key: bytes | None = field(default=None, repr=False)
-    mac_key: bytes | None = field(default=None, repr=False)
+    # ECDH-derived keys
+    kek: bytes | None = field(default=None, repr=False)  # key-encryption key (AES Key Wrap)
+    mac_key: bytes | None = field(default=None, repr=False)  # HMAC-SHA256 for auth
 
     # Bootstrap challenge
     _bootstrap_challenge: bytes | None = field(default=None, repr=False)
@@ -303,11 +303,10 @@ class SecureEndpoint:
         cls,
         role: str = "",
     ) -> SecureEndpoint:
-        """
-        Create endpoint with new X25519 key pair.
+        """Create endpoint with new X25519 key pair.
 
         Args:
-            role: Role identifier ("ms", "client", "server")
+            role: Role identifier ("client", "server")
         """
         keypair = x25519.generate_keypair()
         return cls(
@@ -328,109 +327,93 @@ class SecureEndpoint:
         return self._pending_nonces.get(peer_role)
 
     # =========================================================================
-    # Session-level channel binding
+    # Session establishment
     # =========================================================================
 
     def establish_session(
         self,
         peer_pubkey_raw: bytes,
-        my_init_sig_data: bytes,
-        peer_init_sig_data: bytes,
+        my_init_nonce: bytes,
+        peer_init_nonce: bytes,
     ) -> bytes:
-        """Compute session_id and derive session keys after bootstrap key exchange.
+        """Compute session_id and derive keys after bootstrap key exchange.
 
         1. X25519 ECDH → shared_secret
-        2. HKDF-SHA256 → session_key + mac_key
-        3. session_id = SHA256(client_pk || server_pk || client_sd || server_sd)
-
-        The order is canonical: client material first, server material second.
+        2. HKDF-SHA256 → KEK (key-encryption key) + mac_key
+        3. session_id = SHA256(client_pk || server_pk || client_init_nonce || server_init_nonce)
 
         Args:
             peer_pubkey_raw: Peer's raw X25519 public key (32 bytes).
-            my_init_sig_data: Our sig_data from the initialize exchange.
-            peer_init_sig_data: Peer's sig_data from the initialize exchange.
+            my_init_nonce: Our nonce from the initialize exchange.
+            peer_init_nonce: Peer's nonce from the initialize exchange.
 
         Returns:
             The computed session_id (32 bytes).
         """
-        # 1. ECDH shared secret
         peer_pub = x25519.load_public_key(peer_pubkey_raw)
         shared_secret = x25519.compute_shared_secret(self.private_key, peer_pub)
 
-        # 2. Canonical key ordering
+        # Canonical ordering: client first, server second
         if self.role == "client":
             client_pk = self.public_key_bytes
             server_pk = peer_pubkey_raw
-            client_sd = my_init_sig_data
-            server_sd = peer_init_sig_data
+            client_init_nonce = my_init_nonce
+            server_init_nonce = peer_init_nonce
         else:
             client_pk = peer_pubkey_raw
             server_pk = self.public_key_bytes
-            client_sd = peer_init_sig_data
-            server_sd = my_init_sig_data
+            client_init_nonce = peer_init_nonce
+            server_init_nonce = my_init_nonce
 
-        # 3. HKDF → session_key + mac_key
-        keys = x25519.derive_session_keys(shared_secret, client_pk, server_pk)
-        self.session_key = keys.session_key
+        keys = x25519.derive_keys(shared_secret, client_pk, server_pk)
+        self.kek = keys.kek
         self.mac_key = keys.mac_key
 
-        # 4. session_id
-        binding = client_pk + server_pk + client_sd + server_sd
+        binding = client_pk + server_pk + client_init_nonce + server_init_nonce
         self.session_id = hashlib.sha256(binding).digest()
-        self._call_counter = 0
-        self._peer_call_counter = 0
+        self._send_counter = 0
+        self._recv_counter = 0
         logger.debug("Session established: %s", self.session_id.hex()[:16])
         return self.session_id
 
-    def derive_sig_data(self, entropy: bytes) -> tuple[bytes, int]:
-        """Derive sig_data from session_id, entropy, and monotonic counter.
+    # =========================================================================
+    # Counter management (replay protection)
+    # =========================================================================
 
-        sig_data = HMAC-SHA256(session_id, entropy || counter_8bytes_BE)
-
-        Args:
-            entropy: Fresh random 32 bytes.
-
-        Returns:
-            Tuple of (sig_data bytes, counter value used).
-
-        Raises:
-            ValueError: If session_id is not established.
-        """
-        if self.session_id is None:
-            raise ValueError("Session not established - call establish_session() first")
-
-        counter = self._call_counter
+    def next_send_counter(self) -> int:
+        """Get next send counter and increment."""
+        counter = self._send_counter
         if counter >= 2**64 - 1:
-            raise OverflowError("Session call counter exhausted - reestablish session")
-        self._call_counter += 1
+            raise OverflowError("Send counter exhausted — reestablish session")
+        self._send_counter += 1
+        return counter
 
-        counter_bytes = counter.to_bytes(8, "big")
-        sig_data = hmac.new(self.session_id, entropy + counter_bytes, hashlib.sha256).digest()
-        return sig_data, counter
-
-    def verify_derived_sig_data(self, entropy: bytes, counter: int) -> bytes:
-        """Recompute sig_data for verification of a peer's session-bound message.
-
-        Args:
-            entropy: The entropy value from the peer's tee envelope.
-            counter: The counter value from the peer's tee envelope.
-
-        Returns:
-            The recomputed sig_data bytes.
+    def verify_recv_counter(self, counter: int) -> None:
+        """Verify received counter is monotonically increasing.
 
         Raises:
-            ValueError: If session_id is not established or counter is stale.
+            ValueError: If counter is stale (replay detected).
         """
-        if self.session_id is None:
-            raise ValueError("Session not established - call establish_session() first")
+        if counter < self._recv_counter:
+            raise ValueError(f"Stale counter: got {counter}, expected >= {self._recv_counter}")
+        self._recv_counter = counter + 1
 
-        # Counter must be monotonically increasing
-        if counter < self._peer_call_counter:
-            raise ValueError(f"Stale counter: got {counter}, expected >= {self._peer_call_counter}")
-        self._peer_call_counter = counter + 1
+    # =========================================================================
+    # Session authentication (for tools/list)
+    # =========================================================================
 
-        counter_bytes = counter.to_bytes(8, "big")
-        return hmac.new(self.session_id, entropy + counter_bytes, hashlib.sha256).digest()
+    def create_session_auth(self, counter: int) -> bytes:
+        """Create HMAC-SHA256(mac_key, counter) for session envelope authentication."""
+        if self.mac_key is None:
+            raise ValueError("MAC key not established")
+        return hmac.new(self.mac_key, counter.to_bytes(8, "big"), hashlib.sha256).digest()
+
+    def verify_session_auth(self, counter: int, auth_tag: bytes) -> bool:
+        """Verify session auth tag. Constant-time comparison."""
+        if self.mac_key is None:
+            return False
+        expected = hmac.new(self.mac_key, counter.to_bytes(8, "big"), hashlib.sha256).digest()
+        return hmac.compare_digest(expected, auth_tag)
 
     # =========================================================================
     # Bootstrap challenge
@@ -482,58 +465,52 @@ class SecureEndpoint:
         return x25519.verify_challenge_mac(self.mac_key, challenge, mac)
 
     # =========================================================================
-    # Session-key encryption (post-bootstrap)
+    # Envelope encryption (post-bootstrap) — per-message DEK + AES Key Wrap
     # =========================================================================
 
-    def encrypt_message(self, plaintext: bytes) -> tuple[bytes, bytes]:
-        """Encrypt message using session_key (AES-256-GCM).
-
-        Args:
-            plaintext: Data to encrypt.
+    def wrap_and_encrypt(self, plaintext: bytes, *, aad: bytes | None = None) -> EnvelopePayload:
+        """Encrypt with per-message DEK wrapped by KEK.
 
         Returns:
-            Tuple of (nonce, ciphertext).
+            EnvelopePayload with wrapped_key, iv, and ciphertext.
 
         Raises:
-            ValueError: If session_key is not established.
+            ValueError: If KEK is not established.
         """
-        if self.session_key is None:
-            raise ValueError("Session key not established - call establish_session() first")
-        from mcp.shared.crypto import aes
+        if self.kek is None:
+            raise ValueError("KEK not established — complete bootstrap first")
+        from mcp.shared.crypto.envelope import envelope_encrypt
 
-        result = aes.encrypt(self.session_key, plaintext)
-        return result.nonce, result.ciphertext
+        return envelope_encrypt(self.kek, plaintext, aad=aad)
 
-    def decrypt_message(self, nonce: bytes, ciphertext: bytes) -> bytes:
-        """Decrypt message using session_key (AES-256-GCM).
+    def unwrap_and_decrypt(self, payload: EnvelopePayload, *, aad: bytes | None = None) -> bytes:
+        """Unwrap DEK and decrypt payload.
 
         Args:
-            nonce: 12-byte AES-GCM nonce.
-            ciphertext: AES-GCM ciphertext with auth tag.
+            payload: EnvelopePayload with wrapped_key, iv, and ciphertext.
 
         Returns:
             Decrypted plaintext.
 
         Raises:
-            ValueError: If session_key is not established.
+            ValueError: If KEK is not established.
         """
-        if self.session_key is None:
-            raise ValueError("Session key not established - call establish_session() first")
-        from mcp.shared.crypto import aes
+        if self.kek is None:
+            raise ValueError("KEK not established — complete bootstrap first")
+        from mcp.shared.crypto.envelope import envelope_decrypt
 
-        return aes.decrypt(self.session_key, nonce, ciphertext)
+        return envelope_decrypt(self.kek, payload, aad=aad)
 
     # =========================================================================
     # Attestation evidence (bootstrap only)
     # =========================================================================
 
-    def create_evidence(self, peer_nonce: bytes) -> AttestationEvidence:
-        """
-        Create attestation evidence responding to peer's nonce.
+    def create_attestation(self, peer_nonce: bytes) -> AttestationEvidence:
+        """Create attestation evidence responding to peer's nonce.
 
         The quote binds: SHA256(peer_nonce) || SHA256(my_public_key).
         """
-        reportdata = _compute_reportdata(peer_nonce, self.public_key_bytes)
+        reportdata = _bind_nonce_and_key(peer_nonce, self.public_key_bytes)
         quote = generate_quote(reportdata)
         cgroup = get_current_cgroup()
         rtmr3 = get_container_rtmr3(cgroup)
@@ -553,15 +530,14 @@ class SecureEndpoint:
             role=self.role,
         )
 
-    def verify_peer(
+    def verify_peer_attestation(
         self,
         evidence: AttestationEvidence,
         expected_nonce: bytes | None = None,
         peer_role: str = "default",
         allowed_rtmr3: list[str] | None = None,
     ) -> AttestationResult:
-        """
-        Verify peer's attestation evidence.
+        """Verify peer's attestation evidence.
 
         On success, stores peer's info for session key derivation.
         """
@@ -570,7 +546,7 @@ class SecureEndpoint:
             if expected_nonce is None:
                 return AttestationResult(valid=False, error=f"No pending nonce for {peer_role}")
 
-        valid, err, pub_raw = _verify_evidence(
+        valid, err, peer_pubkey_bytes = _verify_attestation_evidence(
             evidence,
             expected_nonce,
             allowed_rtmr3,
@@ -627,11 +603,12 @@ class SecureEndpoint:
                     evidence.rtmr3.hex()[:16],
                 )
 
-        # Store peer info
-        peer_pub_key = x25519.load_public_key(pub_raw)  # type: ignore
+        # Store peer info (peer_pubkey_bytes is guaranteed non-None after valid=True)
+        assert peer_pubkey_bytes is not None
+        peer_pubkey = x25519.load_public_key(peer_pubkey_bytes)
         peer_info = PeerInfo(
-            public_key=peer_pub_key,
-            public_key_bytes=pub_raw,  # type: ignore
+            public_key=peer_pubkey,
+            public_key_bytes=peer_pubkey_bytes,
             cgroup=evidence.cgroup,
             rtmr3=evidence.rtmr3,
             role=effective_role,
@@ -688,80 +665,3 @@ class SecureEndpoint:
     def server_rtmr3(self) -> bytes:
         """Get peer's RTMR3 (for client use)."""
         return self.peer_rtmr3
-
-    # =========================================================================
-    # Convenience aliases for API compatibility
-    # =========================================================================
-
-    def create_evidence_with_random_sig(self) -> tuple[AttestationEvidence, bytes]:
-        """Create attestation evidence with random sig_data for self-signed liveness.
-
-        Generates random 32-byte sig_data, uses it as peer_nonce for create_evidence().
-        The verifier calls verify_peer_self_signed() with the sig_data from the envelope.
-
-        Returns:
-            Tuple of (AttestationEvidence, sig_data bytes).
-        """
-        sig_data = secrets.token_bytes(NONCE_SIZE)
-        evidence = self.create_evidence(sig_data)
-        return evidence, sig_data
-
-    def verify_peer_self_signed(
-        self,
-        evidence: AttestationEvidence,
-        sig_data: bytes,
-        peer_role: str = "default",
-        allowed_rtmr3: list[str] | None = None,
-    ) -> AttestationResult:
-        """Verify attestation evidence where sig_data was chosen by the sender.
-
-        This is a thin wrapper around verify_peer() that uses sig_data as the
-        expected nonce. Used for the unified per-call TEE protocol where each
-        message carries its own random sig_data instead of a session-derived nonce.
-
-        Args:
-            evidence: Peer's attestation evidence.
-            sig_data: Random bytes from the tee envelope (chosen by sender).
-            peer_role: Role of the peer.
-            allowed_rtmr3: RTMR3 allowlist patterns.
-
-        Returns:
-            AttestationResult with verification outcome.
-        """
-        return self.verify_peer(
-            evidence,
-            expected_nonce=sig_data,
-            peer_role=peer_role,
-            allowed_rtmr3=allowed_rtmr3,
-        )
-
-    def generate_attestation(self, peer_nonce: bytes) -> AttestationEvidence:
-        """Alias for create_evidence."""
-        return self.create_evidence(peer_nonce)
-
-    def verify_attestation(
-        self,
-        evidence: AttestationEvidence,
-        expected_nonce: bytes | None = None,
-        allowed_rtmr3_patterns: list[str] | None = None,
-    ) -> AttestationResult:
-        """Alias for verify_peer with pattern-based naming."""
-        return self.verify_peer(evidence, expected_nonce, allowed_rtmr3=allowed_rtmr3_patterns)
-
-
-# =============================================================================
-# Convenience aliases and factories
-# =============================================================================
-
-SecureChannelServer = SecureEndpoint
-SecureChannelClient = SecureEndpoint
-
-
-def create_mcp_client() -> SecureEndpoint:
-    """Create endpoint for MCP Client."""
-    return SecureEndpoint.create(role="client")
-
-
-def create_mcp_server() -> SecureEndpoint:
-    """Create endpoint for MCP Server."""
-    return SecureEndpoint.create(role="server")

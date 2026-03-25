@@ -78,8 +78,10 @@ class MockSecureEndpoint:
     def __init__(self, role: str = "client"):
         self.role = role
         self.session_id: bytes | None = None
-        self.session_key: bytes | None = None
+        self.kek: bytes | None = None
         self.mac_key: bytes | None = None
+        self._send_counter = 0
+        self._recv_counter = 0
         self._peers: dict[str, MockPeer] = {}
         self._nonces: dict[str, bytes] = {}
         self._bootstrap_challenge: bytes | None = None
@@ -101,14 +103,14 @@ class MockSecureEndpoint:
         self._nonces[peer_role] = nonce
         return nonce
 
-    def create_evidence(self, nonce: bytes) -> MockAttestationEvidence:
+    def create_attestation(self, nonce: bytes) -> MockAttestationEvidence:
         return MockAttestationEvidence(
             role=self.role,
             nonce=nonce,
             cgroup=f"/docker/{self.role}_{self._id}",
         )
 
-    def verify_peer(
+    def verify_peer_attestation(
         self,
         evidence: MockAttestationEvidence,
         expected_nonce: bytes | None = None,
@@ -130,6 +132,46 @@ class MockSecureEndpoint:
             raise ValueError("MAC key not established")
         expected = hmac_mod.new(self.mac_key, challenge, hashlib.sha256).digest()
         return hmac_mod.compare_digest(expected, mac)
+
+    def next_send_counter(self) -> int:
+        counter = self._send_counter
+        self._send_counter += 1
+        return counter
+
+    def verify_recv_counter(self, counter: int) -> None:
+        if counter < self._recv_counter:
+            raise ValueError(f"Stale counter: got {counter}, expected >= {self._recv_counter}")
+        self._recv_counter = counter + 1
+
+    def create_session_auth(self, counter: int) -> bytes:
+        import hashlib
+        import hmac as hmac_mod
+
+        key = self.mac_key or b"mock_mac_key"
+        return hmac_mod.new(key, counter.to_bytes(8, "big"), hashlib.sha256).digest()
+
+    def verify_session_auth(self, counter: int, auth_tag: bytes) -> bool:
+        import hashlib
+        import hmac as hmac_mod
+
+        if self.mac_key is None:
+            return False
+        expected = hmac_mod.new(self.mac_key, counter.to_bytes(8, "big"), hashlib.sha256).digest()
+        return hmac_mod.compare_digest(expected, auth_tag)
+
+    def wrap_and_encrypt(self, plaintext: bytes, *, aad: bytes | None = None) -> "EnvelopePayload":
+        from mcp.shared.crypto.envelope import envelope_encrypt
+
+        if self.kek is None:
+            raise ValueError("KEK not established")
+        return envelope_encrypt(self.kek, plaintext, aad=aad)
+
+    def unwrap_and_decrypt(self, payload: "EnvelopePayload", *, aad: bytes | None = None) -> bytes:
+        from mcp.shared.crypto.envelope import envelope_decrypt
+
+        if self.kek is None:
+            raise ValueError("KEK not established")
+        return envelope_decrypt(self.kek, payload, aad=aad)
 
     def get_peer(self, role: str) -> MockPeer | None:
         return self._peers.get(role)
@@ -239,7 +281,7 @@ class TestUnifiedTeeProtocol:
 
     @pytest.mark.anyio
     async def test_server_handles_initialized_no_challenge(self, memory_streams):
-        """Test that _handle_initialized_tee succeeds when no challenge is pending."""
+        """Test that _verify_challenge_response succeeds when no challenge is pending."""
         _, read_recv, write_send, _ = memory_streams
 
         init_options = InitializationOptions(
@@ -250,15 +292,15 @@ class TestUnifiedTeeProtocol:
 
         server = create_server_session(read_recv, write_send, init_options, tee_enabled=True)
 
-        # No bootstrap challenge was set, so _handle_initialized_tee should return True
+        # No bootstrap challenge was set, so _verify_challenge_response should return True
         # (require_client_attestation is False by default)
         notification = types.InitializedNotification()
-        result = server._handle_initialized_tee(notification)
+        result = server._verify_challenge_response(notification)
         assert result is True
 
     @pytest.mark.anyio
     async def test_server_handles_initialized_with_challenge(self, memory_streams):
-        """Test that _handle_initialized_tee verifies challenge-response HMAC."""
+        """Test that _verify_challenge_response verifies challenge-response HMAC."""
         _, read_recv, write_send, _ = memory_streams
 
         init_options = InitializationOptions(
@@ -288,7 +330,7 @@ class TestUnifiedTeeProtocol:
         params = types.NotificationParams(_meta=meta)
         notification = types.InitializedNotification(params=params)
 
-        result = server._handle_initialized_tee(notification)
+        result = server._verify_challenge_response(notification)
         assert result is True
 
 
@@ -302,11 +344,11 @@ class TestAttestationFailures:
 
         client = create_client_session(read_recv, write_send, tee_enabled=True)
 
-        # Override verify_peer to return invalid
+        # Override verify_peer_attestation to return invalid
         def invalid_verify(*args, **kwargs):
             return MockVerifyResult(valid=False, error="Invalid quote")
 
-        client._endpoint.verify_peer = invalid_verify
+        client._endpoint.verify_peer_attestation = invalid_verify
 
         # Simulate checking server TEE from a response - would fail
         assert client.is_server_attested is False
@@ -329,7 +371,7 @@ class TestAttestationFailures:
         # Notification without _meta.tee
         notification = types.InitializedNotification()
 
-        server._handle_initialized_tee(notification)
+        server._verify_challenge_response(notification)
 
         assert server._client_attested is False
 
@@ -348,11 +390,11 @@ class TestAttestationFailures:
             read_recv, write_send, init_options, tee_enabled=True, require_client_attestation=True
         )
 
-        # Override verify_peer to fail
+        # Override verify_peer_attestation to fail
         def failing_verify(*args, **kwargs):
             return MockVerifyResult(valid=False, error="Bad attestation")
 
-        server._endpoint.verify_peer = failing_verify
+        server._endpoint.verify_peer_attestation = failing_verify
 
         # Create request with _meta.tee
         client_evidence = MockAttestationEvidence(role="client")

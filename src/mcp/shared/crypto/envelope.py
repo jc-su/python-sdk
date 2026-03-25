@@ -1,85 +1,97 @@
-"""
-Session-key encryption using AES-256-GCM.
+"""Envelope encryption using AES Key Wrap + AES-256-GCM.
 
-Post-bootstrap, all message encryption uses the ECDH-derived session_key.
-No RSA key wrapping — the session key is established via X25519 ECDH + HKDF
-during the bootstrap handshake.
+Per-message DEK (data encryption key) is randomly generated, used once,
+then wrapped with the KEK (key-encryption key) derived from ECDH.
 
 Encryption flow:
-1. Use session_key (32 bytes, from HKDF) directly as AES-256-GCM key
-2. Encrypt message with fresh random nonce
-3. Send: nonce + ciphertext (no encrypted_key field)
+1. Generate random 32-byte DEK
+2. Wrap DEK: wrapped_key = AES-KW(KEK, DEK)
+3. Encrypt payload: AES-256-GCM(DEK, plaintext)
+4. Send: wrapped_key + iv + ciphertext
 
 Decryption flow:
-1. Use session_key to decrypt with AES-256-GCM
-2. Return plaintext
+1. Unwrap DEK: DEK = AES-KW-unwrap(KEK, wrapped_key)
+2. Decrypt payload: AES-256-GCM(DEK, ciphertext)
+
+Security properties:
+- Per-message key isolation: compromising one DEK doesn't affect others
+- Nonce-reuse tolerance: different DEK per message, so nonce collision is harmless
+- KEK never touches plaintext directly
 """
 
+from __future__ import annotations
+
 import base64
-import json
+import secrets
 from dataclasses import dataclass
+from typing import Any
+
+from cryptography.hazmat.primitives.keywrap import aes_key_unwrap, aes_key_wrap
 
 from mcp.shared.crypto import aes
 
+DEK_SIZE = 32  # AES-256
+
 
 @dataclass
-class SessionEncryptedMessage:
-    """Session-key encrypted message (AES-256-GCM)."""
+class EnvelopePayload:
+    """Envelope-encrypted message: wrapped DEK + AES-256-GCM ciphertext."""
 
-    nonce: bytes  # AES-GCM nonce (12 bytes)
-    ciphertext: bytes  # AES-GCM encrypted data + tag
+    wrapped_key: bytes  # AES-KW wrapped DEK (40 bytes for 32-byte DEK)
+    iv: bytes  # AES-GCM initialization vector (12 bytes)
+    ciphertext: bytes  # AES-GCM encrypted data + auth tag
 
-    def to_dict(self) -> dict:
+    def to_dict(self) -> dict[str, Any]:
         return {
-            "nonce": base64.b64encode(self.nonce).decode(),
+            "wrapped_key": base64.b64encode(self.wrapped_key).decode(),
+            "iv": base64.b64encode(self.iv).decode(),
             "ciphertext": base64.b64encode(self.ciphertext).decode(),
         }
 
-    def to_json(self) -> str:
-        return json.dumps(self.to_dict())
-
     @classmethod
-    def from_dict(cls, data: dict) -> "SessionEncryptedMessage":
+    def from_dict(cls, data: dict[str, Any]) -> EnvelopePayload:
         return cls(
-            nonce=base64.b64decode(data["nonce"]),
+            wrapped_key=base64.b64decode(data["wrapped_key"]),
+            iv=base64.b64decode(data["iv"]),
             ciphertext=base64.b64decode(data["ciphertext"]),
         )
 
-    @classmethod
-    def from_json(cls, json_str: str) -> "SessionEncryptedMessage":
-        return cls.from_dict(json.loads(json_str))
 
-
-def session_encrypt(session_key: bytes, plaintext: bytes) -> SessionEncryptedMessage:
-    """
-    Encrypt a message using the session key (AES-256-GCM).
+def envelope_encrypt(kek: bytes, plaintext: bytes, aad: bytes | None = None) -> EnvelopePayload:
+    """Encrypt with per-message DEK wrapped by KEK.
 
     Args:
-        session_key: 32-byte AES key (from HKDF derivation)
-        plaintext: Data to encrypt
+        kek: 32-byte key-encryption key (from HKDF).
+        plaintext: Data to encrypt.
+        aad: Additional authenticated data bound to the ciphertext.
 
     Returns:
-        SessionEncryptedMessage with nonce and ciphertext
+        EnvelopePayload with wrapped DEK + AES-GCM ciphertext.
     """
-    result = aes.encrypt(session_key, plaintext)
-    return SessionEncryptedMessage(
-        nonce=result.nonce,
+    dek = secrets.token_bytes(DEK_SIZE)
+    wrapped_key = aes_key_wrap(kek, dek)
+    result = aes.encrypt(dek, plaintext, aad=aad)
+    return EnvelopePayload(
+        wrapped_key=wrapped_key,
+        iv=result.nonce,
         ciphertext=result.ciphertext,
     )
 
 
-def session_decrypt(session_key: bytes, message: SessionEncryptedMessage) -> bytes:
-    """
-    Decrypt a message using the session key (AES-256-GCM).
+def envelope_decrypt(kek: bytes, payload: EnvelopePayload, aad: bytes | None = None) -> bytes:
+    """Decrypt by unwrapping DEK then decrypting payload.
 
     Args:
-        session_key: 32-byte AES key (from HKDF derivation)
-        message: Encrypted message
+        kek: 32-byte key-encryption key (from HKDF).
+        payload: Envelope with wrapped DEK + ciphertext.
+        aad: Additional authenticated data that must match encryption.
 
     Returns:
-        Decrypted plaintext
+        Decrypted plaintext.
 
     Raises:
-        cryptography.exceptions.InvalidTag: If authentication fails
+        cryptography.hazmat.primitives.keywrap.InvalidUnwrap: If KEK is wrong.
+        cryptography.exceptions.InvalidTag: If ciphertext is tampered.
     """
-    return aes.decrypt(session_key, message.nonce, message.ciphertext)
+    dek = aes_key_unwrap(kek, payload.wrapped_key)
+    return aes.decrypt(dek, payload.iv, payload.ciphertext, aad=aad)

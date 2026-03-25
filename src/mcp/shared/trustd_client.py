@@ -53,14 +53,14 @@ class TrustdClient:
             sock.sendall(request_bytes)
 
             # Read response (newline-delimited)
-            buf = b""
-            while b"\n" not in buf:
+            response_buffer = b""
+            while b"\n" not in response_buffer:
                 chunk = sock.recv(65536)
                 if not chunk:
                     raise TrustdError("connection closed before response")
-                buf += chunk
+                response_buffer += chunk
 
-            line = buf.split(b"\n", 1)[0]
+            line = response_buffer.split(b"\n", 1)[0]
             response = json.loads(line)
 
             if not response.get("ok"):
@@ -147,7 +147,7 @@ def get_trustd_client() -> TrustdClient | None:
             logger.info("trustd client initialized: %s", socket_path)
         else:
             _trustd_client = None
-            logger.debug("trustd socket not found at %s, using direct access", socket_path)
+            logger.debug("trustd socket not found at %s", socket_path)
 
         _trustd_client_checked = True
         return _trustd_client

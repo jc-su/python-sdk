@@ -1,1 +1,0 @@
-"""TEE-MCP benchmarking suite."""

@@ -3,8 +3,7 @@
 import base64
 
 from mcp.shared.attestation_policy import AttestationPolicy, PolicyRegistry
-from mcp.shared.tee_envelope import create_request_envelope
-
+from mcp.shared.tee_envelope import create_bootstrap_envelope
 
 # =============================================================================
 # Mock classes (reused from test_tee_envelope)
@@ -39,7 +38,7 @@ class MockSecureEndpoint:
         self.peers = {}
         self.session_id = None
 
-    def create_evidence(self, nonce):
+    def create_attestation(self, nonce):
         return MockAttestationEvidence(role=self.role, nonce=nonce)
 
     def get_peer(self, role):
@@ -148,16 +147,14 @@ class TestPolicyRegistry:
 class TestWorkloadIdInEnvelope:
     def test_workload_id_included_in_envelope(self):
         endpoint = MockSecureEndpoint(role="client")
-        params = {"name": "tool", "arguments": {}}
 
-        tee_dict, _ = create_request_envelope(endpoint, params, peer_role="server", workload_id="mcp://my-agent")
+        tee_dict = create_bootstrap_envelope(endpoint, workload_id="mcp://my-agent")
 
         assert tee_dict["workload_id"] == "mcp://my-agent"
 
     def test_no_workload_id_by_default(self):
         endpoint = MockSecureEndpoint(role="client")
-        params = {"name": "tool"}
 
-        tee_dict, _ = create_request_envelope(endpoint, params)
+        tee_dict = create_bootstrap_envelope(endpoint)
 
         assert "workload_id" not in tee_dict

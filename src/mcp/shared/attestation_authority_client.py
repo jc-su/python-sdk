@@ -11,14 +11,14 @@ When enabled, MCP Server can:
 
 from __future__ import annotations
 
-from dataclasses import dataclass
 import hashlib
 import logging
 import os
 import threading
 import time
+from collections.abc import Callable
+from dataclasses import dataclass
 from typing import Any
-from typing import Callable
 
 logger = logging.getLogger(__name__)
 
@@ -45,7 +45,7 @@ class AuthorityVerdict:
     """Latest verifier verdict for a subject."""
 
     subject: str
-    verdict: str  # trusted | untrusted | stale | unknown
+    verdict: str  # TrustVerdict value (str enum, backward-compatible)
     message: str
     policy_action: str  # none | alert | restart | kill
     attestation_token: str
@@ -59,7 +59,7 @@ class AuthorityVerdict:
 class AuthorityEvidenceResult:
     """Verifier result for one evidence verification request."""
 
-    verdict: str  # trusted | untrusted | stale | unknown
+    verdict: str  # TrustVerdict value (str enum, backward-compatible)
     message: str
     policy_action: str
     attestation_token: str
@@ -227,13 +227,15 @@ class AttestationAuthorityClient:
         )
 
     def _map_verdict(self, verdict: int) -> str:
+        from mcp.shared.trust_verdict import TrustVerdict
+
         if verdict == self._pb2.VERDICT_TRUSTED:
-            return "trusted"
+            return TrustVerdict.TRUSTED
         if verdict == self._pb2.VERDICT_UNTRUSTED:
-            return "untrusted"
+            return TrustVerdict.UNTRUSTED
         if verdict == self._pb2.VERDICT_STALE:
-            return "stale"
-        return "unknown"
+            return TrustVerdict.STALE
+        return TrustVerdict.UNKNOWN
 
     def _to_authority_verdict(self, record: Any) -> AuthorityVerdict:
         return AuthorityVerdict(
@@ -287,7 +289,7 @@ class AttestationAuthorityClient:
         nonce: bytes,
         quote: bytes,
         quote_report_data: bytes,
-        public_key_pem: bytes,
+        public_key_bytes: bytes,
         initial_rtmr3: bytes | None = None,
     ) -> AuthorityEvidenceResult | None:
         """Verify MCP quote evidence through attestation-service."""
@@ -305,7 +307,7 @@ class AttestationAuthorityClient:
             logger.warning("verify_mcp_evidence invalid reportdata length: %d", len(quote_report_data))
             return None
 
-        pubkey_hash_hex = hashlib.sha256(public_key_pem).hexdigest()
+        pubkey_hash_hex = hashlib.sha256(public_key_bytes).hexdigest()
         request = self._pb2.VerifyRequest(
             cgroup_path=cgroup_path or "unknown",
             rtmr3=rtmr3.hex(),

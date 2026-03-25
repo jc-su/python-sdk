@@ -1,4 +1,8 @@
-"""Tests for session-level channel binding (Part A)."""
+"""Tests for session-level channel binding (Part A).
+
+Post-refactor: session binding uses counter monotonicity + HMAC auth tags.
+No more HMAC-derived sig_data / derive_message_nonce / verify_message_nonce.
+"""
 
 import secrets
 from unittest.mock import patch
@@ -15,11 +19,11 @@ class TestEstablishSession:
         ep = SecureEndpoint.create(role="client")
         peer_kp = generate_keypair()
         peer_pk = export_public_key(peer_kp.public_key)
-        my_sd = b"A" * 32
-        peer_sd = b"B" * 32
+        my_nonce = b"A" * 32
+        peer_nonce = b"B" * 32
 
-        sid1 = ep.establish_session(peer_pk, my_sd, peer_sd)
-        sid2 = ep.establish_session(peer_pk, my_sd, peer_sd)
+        sid1 = ep.establish_session(peer_pk, my_nonce, peer_nonce)
+        sid2 = ep.establish_session(peer_pk, my_nonce, peer_nonce)
         assert sid1 == sid2
         assert len(sid1) == 32
 
@@ -39,8 +43,8 @@ class TestEstablishSession:
         server_kp = generate_keypair()
         client_pk = export_public_key(client_kp.public_key)
         server_pk = export_public_key(server_kp.public_key)
-        client_sd = b"A" * 32
-        server_sd = b"B" * 32
+        client_nonce = b"A" * 32
+        server_nonce = b"B" * 32
 
         ep_client = SecureEndpoint(
             private_key=client_kp.private_key,
@@ -55,39 +59,39 @@ class TestEstablishSession:
             role="server",
         )
 
-        # Client: my_init_sig_data=client_sd, peer_init_sig_data=server_sd
-        sid_client = ep_client.establish_session(server_pk, client_sd, server_sd)
-        # Server: my_init_sig_data=server_sd, peer_init_sig_data=client_sd
-        sid_server = ep_server.establish_session(client_pk, server_sd, client_sd)
+        # Client: my_init_nonce=client_nonce, peer_init_nonce=server_nonce
+        sid_client = ep_client.establish_session(server_pk, client_nonce, server_nonce)
+        # Server: my_init_nonce=server_nonce, peer_init_nonce=client_nonce
+        sid_server = ep_server.establish_session(client_pk, server_nonce, client_nonce)
         assert sid_client == sid_server
 
     def test_session_resets_counters(self):
-        """Establishing session resets call counters."""
+        """Establishing session resets send/recv counters."""
         ep = SecureEndpoint.create(role="client")
-        ep._call_counter = 42
-        ep._peer_call_counter = 10
+        ep._send_counter = 42
+        ep._recv_counter = 10
 
         peer_kp = generate_keypair()
         peer_pk = export_public_key(peer_kp.public_key)
         ep.establish_session(peer_pk, b"A" * 32, b"B" * 32)
-        assert ep._call_counter == 0
-        assert ep._peer_call_counter == 0
+        assert ep._send_counter == 0
+        assert ep._recv_counter == 0
 
     def test_session_derives_keys(self):
-        """Establishing session derives session_key and mac_key."""
+        """Establishing session derives kek and mac_key."""
         ep = SecureEndpoint.create(role="client")
         peer_kp = generate_keypair()
         peer_pk = export_public_key(peer_kp.public_key)
         ep.establish_session(peer_pk, b"A" * 32, b"B" * 32)
-        assert ep.session_key is not None
-        assert len(ep.session_key) == 32
+        assert ep.kek is not None
+        assert len(ep.kek) == 32
         assert ep.mac_key is not None
         assert len(ep.mac_key) == 32
-        assert ep.session_key != ep.mac_key
+        assert ep.kek != ep.mac_key
 
 
-class TestDeriveSigData:
-    """HMAC-based sig_data derivation."""
+class TestSendCounter:
+    """Counter-based replay protection: next_send_counter."""
 
     def _setup_ep(self):
         ep = SecureEndpoint.create(role="client")
@@ -96,36 +100,10 @@ class TestDeriveSigData:
         ep.establish_session(peer_pk, b"A" * 32, b"B" * 32)
         return ep
 
-    def test_unique_per_counter(self):
-        """Each call produces different sig_data (different counter)."""
+    def test_counter_starts_at_zero(self):
+        """First call returns counter 0."""
         ep = self._setup_ep()
-
-        entropy = secrets.token_bytes(32)
-        sd1, c1 = ep.derive_sig_data(entropy)
-        sd2, c2 = ep.derive_sig_data(entropy)
-
-        assert c1 == 0
-        assert c2 == 1
-        assert sd1 != sd2
-
-    def test_different_entropy_different_sig_data(self):
-        """Different entropy with same counter would produce different sig_data."""
-        ep = self._setup_ep()
-
-        sd1, _ = ep.derive_sig_data(secrets.token_bytes(32))
-        ep._call_counter = 0  # Reset to reuse same counter
-        sd2, _ = ep.derive_sig_data(secrets.token_bytes(32))
-
-        assert sd1 != sd2
-
-    def test_requires_session(self):
-        """derive_sig_data fails without session."""
-        ep = SecureEndpoint.create(role="client")
-        try:
-            ep.derive_sig_data(b"x" * 32)
-            assert False, "Should raise ValueError"
-        except ValueError as e:
-            assert "Session not established" in str(e)
+        assert ep.next_send_counter() == 0
 
     def test_counter_increments(self):
         """Counter increments monotonically."""
@@ -133,28 +111,63 @@ class TestDeriveSigData:
 
         counters = []
         for _ in range(10):
-            _, c = ep.derive_sig_data(secrets.token_bytes(32))
-            counters.append(c)
+            counters.append(ep.next_send_counter())
 
         assert counters == list(range(10))
 
     def test_counter_overflow_raises(self):
         """Counter at 2^64-1 raises OverflowError."""
         ep = self._setup_ep()
-        ep._call_counter = 2**64 - 1
+        ep._send_counter = 2**64 - 1
 
         try:
-            ep.derive_sig_data(secrets.token_bytes(32))
+            ep.next_send_counter()
             assert False, "Should raise OverflowError"
         except OverflowError as e:
             assert "exhausted" in str(e)
 
 
-class TestVerifyDerivedSigData:
-    """Verification of session-bound sig_data."""
+class TestRecvCounter:
+    """Counter-based replay protection: verify_recv_counter."""
 
-    def test_correct_recomputation(self):
-        """Verifier recomputes same sig_data as sender."""
+    def _setup_ep(self):
+        ep = SecureEndpoint.create(role="server")
+        peer_kp = generate_keypair()
+        peer_pk = export_public_key(peer_kp.public_key)
+        ep.establish_session(peer_pk, b"A" * 32, b"B" * 32)
+        return ep
+
+    def test_monotonic_counters_accepted(self):
+        """Sequential counters are accepted."""
+        ep = self._setup_ep()
+        ep.verify_recv_counter(0)
+        ep.verify_recv_counter(1)
+        ep.verify_recv_counter(2)
+
+    def test_gap_accepted(self):
+        """Counter gaps are accepted (counter 0, then 5)."""
+        ep = self._setup_ep()
+        ep.verify_recv_counter(0)
+        ep.verify_recv_counter(5)  # Gap is fine
+
+    def test_stale_counter_rejected(self):
+        """Counter must be monotonically increasing."""
+        ep = self._setup_ep()
+        ep.verify_recv_counter(0)
+        ep.verify_recv_counter(1)
+
+        try:
+            ep.verify_recv_counter(0)  # Stale
+            assert False, "Should raise ValueError"
+        except ValueError as e:
+            assert "Stale counter" in str(e)
+
+
+class TestSessionAuth:
+    """HMAC-based session authentication (for tools/list)."""
+
+    def _setup_pair(self):
+        """Create client/server pair with same keys."""
         client_kp = generate_keypair()
         server_kp = generate_keypair()
         client_pk = export_public_key(client_kp.public_key)
@@ -173,80 +186,62 @@ class TestVerifyDerivedSigData:
             role="server",
         )
 
-        client_sd = b"A" * 32
-        server_sd = b"B" * 32
+        client.establish_session(server_pk, b"A" * 32, b"B" * 32)
+        server.establish_session(client_pk, b"B" * 32, b"A" * 32)
 
-        client.establish_session(server_pk, client_sd, server_sd)
-        server.establish_session(client_pk, server_sd, client_sd)
+        return client, server
 
-        assert client.session_id == server.session_id
+    def test_auth_round_trip(self):
+        """Auth tag created by one side is verified by the other."""
+        client, server = self._setup_pair()
 
-        entropy = secrets.token_bytes(32)
-        sig_data, counter = client.derive_sig_data(entropy)
+        counter = client.next_send_counter()
+        auth_tag = client.create_session_auth(counter)
+        assert server.verify_session_auth(counter, auth_tag) is True
 
-        recomputed = server.verify_derived_sig_data(entropy, counter)
-        assert recomputed == sig_data
+    def test_wrong_counter_auth_fails(self):
+        """Auth tag for wrong counter fails verification."""
+        client, server = self._setup_pair()
 
-    def test_different_session_ids_fail(self):
-        """Mismatched session_id produces different sig_data."""
-        peer1_kp = generate_keypair()
-        peer2_kp = generate_keypair()
-        peer1_pk = export_public_key(peer1_kp.public_key)
-        peer2_pk = export_public_key(peer2_kp.public_key)
+        counter = client.next_send_counter()
+        auth_tag = client.create_session_auth(counter)
+        # Verify with wrong counter
+        assert server.verify_session_auth(counter + 1, auth_tag) is False
 
-        ep1 = SecureEndpoint.create(role="client")
-        ep2 = SecureEndpoint.create(role="client")
+    def test_tampered_auth_tag_fails(self):
+        """Tampered auth tag fails verification."""
+        client, server = self._setup_pair()
 
-        ep1.establish_session(peer1_pk, b"A" * 32, b"B" * 32)
-        ep2.establish_session(peer2_pk, b"C" * 32, b"D" * 32)
+        counter = client.next_send_counter()
+        auth_tag = client.create_session_auth(counter)
+        tampered = bytearray(auth_tag)
+        tampered[0] ^= 0xFF
+        assert server.verify_session_auth(counter, bytes(tampered)) is False
 
-        entropy = secrets.token_bytes(32)
-        sd1, c1 = ep1.derive_sig_data(entropy)
-        sd2 = ep2.verify_derived_sig_data(entropy, c1)
-
-        assert sd1 != sd2  # Different session_id → different sig_data
-
-    def test_stale_counter_rejected(self):
-        """Counter must be monotonically increasing."""
-        ep = SecureEndpoint.create(role="server")
-        peer_kp = generate_keypair()
-        peer_pk = export_public_key(peer_kp.public_key)
-        ep.establish_session(peer_pk, b"A" * 32, b"B" * 32)
-
-        ep.verify_derived_sig_data(b"x" * 32, 0)
-        ep.verify_derived_sig_data(b"y" * 32, 1)
-
+    def test_auth_without_mac_key_raises(self):
+        """create_session_auth raises without mac_key."""
+        ep = SecureEndpoint.create(role="client")
         try:
-            ep.verify_derived_sig_data(b"z" * 32, 0)  # Stale
+            ep.create_session_auth(0)
             assert False, "Should raise ValueError"
         except ValueError as e:
-            assert "Stale counter" in str(e)
-
-    def test_requires_session(self):
-        """verify_derived_sig_data fails without session."""
-        ep = SecureEndpoint.create(role="server")
-        try:
-            ep.verify_derived_sig_data(b"x" * 32, 0)
-            assert False, "Should raise ValueError"
-        except ValueError as e:
-            assert "Session not established" in str(e)
+            assert "MAC key not established" in str(e)
 
 
 class TestBackwardCompatibility:
-    """Session binding is optional — backward compatible with raw random sig_data."""
+    """Session binding is optional -- backward compatible with raw random nonce."""
 
     def test_no_session_uses_random(self):
-        """Without session_id, sig_data is just random (existing behavior)."""
+        """Without session_id, nonce is just random (existing behavior)."""
         ep = SecureEndpoint.create(role="client")
         assert ep.session_id is None
 
-        # create_evidence_with_random_sig still works
         with (
             patch("mcp.shared.secure_channel.generate_quote", return_value=b"\x04\x00" + b"\x00" * 1020),
             patch("mcp.shared.secure_channel.parse_quote", return_value=None),
             patch("mcp.shared.secure_channel.get_current_cgroup", return_value="/docker/test"),
             patch("mcp.shared.secure_channel.get_container_rtmr3", return_value=bytes(48)),
         ):
-            evidence, sig_data = ep.create_evidence_with_random_sig()
-            assert len(sig_data) == 32
-            assert evidence.nonce == sig_data
+            nonce = secrets.token_bytes(32)
+            evidence = ep.create_attestation(nonce)
+            assert evidence.nonce == nonce

@@ -2,6 +2,7 @@
 
 import secrets
 from dataclasses import dataclass
+
 from cryptography.hazmat.primitives.ciphers.aead import AESGCM
 
 # Constants
@@ -28,8 +29,7 @@ class AesGcmResult:
 
 
 def encrypt(key: bytes, plaintext: bytes, aad: bytes | None = None) -> AesGcmResult:
-    """
-    Encrypt data using AES-256-GCM.
+    """Encrypt data using AES-256-GCM.
 
     Args:
         key: 32-byte AES key
@@ -46,8 +46,7 @@ def encrypt(key: bytes, plaintext: bytes, aad: bytes | None = None) -> AesGcmRes
 
 
 def decrypt(key: bytes, nonce: bytes, ciphertext: bytes, aad: bytes | None = None) -> bytes:
-    """
-    Decrypt data using AES-256-GCM.
+    """Decrypt data using AES-256-GCM.
 
     Args:
         key: 32-byte AES key

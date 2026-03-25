@@ -1,21 +1,21 @@
-"""Tests for session envelope functions (create_session_envelope, verify_session_envelope)."""
+"""Tests for session envelope functions (create_session_envelope, verify_session_envelope).
+
+Session envelopes use HMAC(mac_key, counter) for authentication.
+No encryption, no TDX quote. Wire format: {counter, auth_tag, timestamp_ms}.
+"""
 
 import base64
 import hashlib
 import hmac
 import secrets
-from dataclasses import dataclass
-
-import pytest
 
 from mcp.shared.tee_envelope import (
     create_session_envelope,
     verify_session_envelope,
 )
 
-
 # =============================================================================
-# Mock Classes (same pattern as test_tee_envelope.py)
+# Mock Classes (matching new SecureEndpoint API)
 # =============================================================================
 
 
@@ -24,34 +24,37 @@ class MockSecureEndpoint:
 
     def __init__(self, role: str = "server"):
         self.role = role
-        self.session_id: bytes | None = None
-        self._call_counter = 0
-        self._peer_call_counter = 0
+        self.mac_key: bytes | None = secrets.token_bytes(32)
+        self._send_counter = 0
+        self._recv_counter = 0
 
-    def derive_sig_data(self, entropy: bytes) -> tuple[bytes, int]:
-        if self.session_id is None:
-            raise ValueError("Session not established")
-        counter = self._call_counter
-        self._call_counter += 1
-        counter_bytes = counter.to_bytes(8, "big")
-        sig_data = hmac.new(self.session_id, entropy + counter_bytes, hashlib.sha256).digest()
-        return sig_data, counter
+    def next_send_counter(self) -> int:
+        counter = self._send_counter
+        self._send_counter += 1
+        return counter
 
-    def verify_derived_sig_data(self, entropy: bytes, counter: int) -> bytes:
-        if self.session_id is None:
-            raise ValueError("Session not established")
-        if counter < self._peer_call_counter:
-            raise ValueError(f"Stale counter: got {counter}, expected >= {self._peer_call_counter}")
-        self._peer_call_counter = counter + 1
-        counter_bytes = counter.to_bytes(8, "big")
-        return hmac.new(self.session_id, entropy + counter_bytes, hashlib.sha256).digest()
+    def verify_recv_counter(self, counter: int) -> None:
+        if counter < self._recv_counter:
+            raise ValueError(f"Stale counter: got {counter}, expected >= {self._recv_counter}")
+        self._recv_counter = counter + 1
+
+    def create_session_auth(self, counter: int) -> bytes:
+        if self.mac_key is None:
+            raise ValueError("MAC key not established")
+        return hmac.new(self.mac_key, counter.to_bytes(8, "big"), hashlib.sha256).digest()
+
+    def verify_session_auth(self, counter: int, auth_tag: bytes) -> bool:
+        if self.mac_key is None:
+            return False
+        expected = hmac.new(self.mac_key, counter.to_bytes(8, "big"), hashlib.sha256).digest()
+        return hmac.compare_digest(expected, auth_tag)
 
 
-class MockEndpointNoSession:
-    """Mock endpoint without session_id."""
+class MockEndpointNoMacKey:
+    """Mock endpoint without mac_key."""
 
     def __init__(self):
-        self.session_id = None
+        self.mac_key = None
 
 
 # =============================================================================
@@ -61,22 +64,22 @@ class MockEndpointNoSession:
 
 class TestCreateSessionEnvelope:
     def test_basic_session_envelope(self):
-        """Session envelope includes sig_data and timestamp."""
+        """Session envelope includes counter, auth_tag, and timestamp."""
         endpoint = MockSecureEndpoint()
-        endpoint.session_id = secrets.token_bytes(32)
 
         tee = create_session_envelope(endpoint)
 
-        assert "sig_data" in tee
-        assert "timestamp_ms" in tee
-        assert "entropy" in tee
         assert "counter" in tee
+        assert "auth_tag" in tee
+        assert "timestamp_ms" in tee
         assert tee["counter"] == 0
+        # No sig_data or entropy in new format
+        assert "sig_data" not in tee
+        assert "entropy" not in tee
 
     def test_includes_trust_metadata(self):
         """Trust metadata is included when provided."""
         endpoint = MockSecureEndpoint()
-        endpoint.session_id = secrets.token_bytes(32)
 
         metadata = {
             "status": "trusted",
@@ -96,7 +99,6 @@ class TestCreateSessionEnvelope:
     def test_no_trust_metadata_by_default(self):
         """No server_trust field when not provided."""
         endpoint = MockSecureEndpoint()
-        endpoint.session_id = secrets.token_bytes(32)
 
         tee = create_session_envelope(endpoint)
 
@@ -105,7 +107,6 @@ class TestCreateSessionEnvelope:
     def test_counter_increments(self):
         """Counter increments per call."""
         endpoint = MockSecureEndpoint()
-        endpoint.session_id = secrets.token_bytes(32)
 
         tee1 = create_session_envelope(endpoint)
         tee2 = create_session_envelope(endpoint)
@@ -113,16 +114,14 @@ class TestCreateSessionEnvelope:
         assert tee1["counter"] == 0
         assert tee2["counter"] == 1
 
-    def test_without_session_no_binding(self):
-        """Without session_id, no entropy/counter in envelope."""
-        endpoint = MockEndpointNoSession()
+    def test_auth_tag_is_valid_base64(self):
+        """auth_tag is a valid base64-encoded string."""
+        endpoint = MockSecureEndpoint()
 
         tee = create_session_envelope(endpoint)
 
-        assert "sig_data" in tee
-        assert "timestamp_ms" in tee
-        assert "entropy" not in tee
-        assert "counter" not in tee
+        auth_tag_bytes = base64.b64decode(tee["auth_tag"])
+        assert len(auth_tag_bytes) == 32  # SHA256 HMAC output
 
 
 # =============================================================================
@@ -133,13 +132,13 @@ class TestCreateSessionEnvelope:
 class TestVerifySessionEnvelope:
     def test_valid_session_envelope(self):
         """Valid session-bound envelope passes verification."""
-        session_id = secrets.token_bytes(32)
+        mac_key = secrets.token_bytes(32)
 
         sender = MockSecureEndpoint()
-        sender.session_id = session_id
+        sender.mac_key = mac_key
 
         receiver = MockSecureEndpoint()
-        receiver.session_id = session_id
+        receiver.mac_key = mac_key
 
         tee = create_session_envelope(sender)
         valid, error = verify_session_envelope(receiver, tee)
@@ -147,102 +146,71 @@ class TestVerifySessionEnvelope:
         assert valid is True
         assert error == ""
 
-    def test_missing_sig_data(self):
-        """Missing sig_data fails verification."""
-        endpoint = MockEndpointNoSession()
-
-        valid, error = verify_session_envelope(endpoint, {"timestamp_ms": 123})
-
-        assert valid is False
-        assert "sig_data" in error
-
-    def test_invalid_sig_data_base64(self):
-        """Malformed base64 in sig_data is rejected."""
-        endpoint = MockEndpointNoSession()
-
-        valid, error = verify_session_envelope(endpoint, {"sig_data": "!!!bad!!!"})
-
-        assert valid is False
-        assert "Invalid base64" in error
-
-    def test_missing_session_binding_when_session_exists(self):
-        """Missing entropy/counter when session exists fails."""
+    def test_missing_counter(self):
+        """Missing counter fails verification."""
         endpoint = MockSecureEndpoint()
-        endpoint.session_id = secrets.token_bytes(32)
 
-        tee = {"sig_data": base64.b64encode(b"x" * 32).decode()}
-        valid, error = verify_session_envelope(endpoint, tee)
+        valid, error = verify_session_envelope(endpoint, {"auth_tag": "x", "timestamp_ms": 123})
 
         assert valid is False
-        assert "Missing session binding" in error
-
-    def test_partial_session_binding_rejected(self):
-        """Having entropy but not counter (or vice versa) fails."""
-        endpoint = MockSecureEndpoint()
-        endpoint.session_id = secrets.token_bytes(32)
-
-        tee = {
-            "sig_data": base64.b64encode(b"x" * 32).decode(),
-            "entropy": base64.b64encode(b"y" * 32).decode(),
-        }
-        valid, error = verify_session_envelope(endpoint, tee)
-
-        assert valid is False
-        assert "Both entropy and counter" in error
-
-    def test_session_binding_before_establishment(self):
-        """Session binding fields before session establishment fails."""
-        endpoint = MockEndpointNoSession()
-
-        tee = {
-            "sig_data": base64.b64encode(b"x" * 32).decode(),
-            "entropy": base64.b64encode(b"y" * 32).decode(),
-            "counter": 0,
-        }
-        valid, error = verify_session_envelope(endpoint, tee)
-
-        assert valid is False
-        assert "before session establishment" in error
+        assert "Missing or invalid counter" in error
 
     def test_invalid_counter_type(self):
         """Non-integer counter fails."""
         endpoint = MockSecureEndpoint()
-        endpoint.session_id = secrets.token_bytes(32)
 
-        tee = {
-            "sig_data": base64.b64encode(b"x" * 32).decode(),
-            "entropy": base64.b64encode(b"y" * 32).decode(),
+        valid, error = verify_session_envelope(endpoint, {
             "counter": "not_int",
-        }
-        valid, error = verify_session_envelope(endpoint, tee)
+            "auth_tag": base64.b64encode(b"x" * 32).decode(),
+        })
 
         assert valid is False
-        assert "Invalid counter type" in error
+        assert "Missing or invalid counter" in error
 
-    def test_invalid_entropy_base64(self):
-        """Malformed base64 in entropy is rejected."""
+    def test_missing_auth_tag(self):
+        """Missing auth_tag fails verification."""
         endpoint = MockSecureEndpoint()
-        endpoint.session_id = secrets.token_bytes(32)
 
-        tee = {
-            "sig_data": base64.b64encode(b"x" * 32).decode(),
-            "entropy": "!!!bad!!!",
-            "counter": 0,
-        }
-        valid, error = verify_session_envelope(endpoint, tee)
+        valid, error = verify_session_envelope(endpoint, {"counter": 0})
 
         assert valid is False
-        assert "Invalid base64 in entropy" in error
+        assert "Missing auth_tag" in error
+
+    def test_invalid_auth_tag_base64(self):
+        """Malformed base64 in auth_tag is rejected."""
+        endpoint = MockSecureEndpoint()
+
+        valid, error = verify_session_envelope(endpoint, {
+            "counter": 0,
+            "auth_tag": "!!!bad-base64!!!",
+        })
+
+        assert valid is False
+        assert "Invalid base64 in auth_tag" in error
+
+    def test_wrong_auth_tag_rejected(self):
+        """Invalid auth_tag (wrong mac_key) is rejected."""
+        sender = MockSecureEndpoint()
+        receiver = MockSecureEndpoint()
+        # Different mac_keys -> auth tag won't match
+        sender.mac_key = secrets.token_bytes(32)
+        receiver.mac_key = secrets.token_bytes(32)
+
+        tee = create_session_envelope(sender)
+        valid, error = verify_session_envelope(receiver, tee)
+
+        assert valid is False
+        assert "Invalid auth_tag" in error
 
     def test_stale_counter_rejected(self):
         """Replayed counter is rejected."""
-        session_id = secrets.token_bytes(32)
+        mac_key = secrets.token_bytes(32)
 
         sender = MockSecureEndpoint()
-        sender.session_id = session_id
+        sender.mac_key = mac_key
 
         receiver = MockSecureEndpoint()
-        receiver.session_id = session_id
+        receiver.mac_key = mac_key
 
         tee1 = create_session_envelope(sender)
         tee2 = create_session_envelope(sender)
@@ -251,17 +219,23 @@ class TestVerifySessionEnvelope:
         valid, _ = verify_session_envelope(receiver, tee2)
         assert valid is True
 
-        # Verify first (counter=0) — stale
+        # Verify first (counter=0) -- stale
         valid, error = verify_session_envelope(receiver, tee1)
         assert valid is False
-        assert "Session binding failed" in error
+        assert "Replay detected" in error
 
-    def test_without_session_no_binding_accepted(self):
-        """Without session, no binding fields is acceptable."""
-        endpoint = MockEndpointNoSession()
+    def test_round_trip_multiple(self):
+        """Multiple session envelopes in sequence pass verification."""
+        mac_key = secrets.token_bytes(32)
 
-        tee = {"sig_data": base64.b64encode(b"x" * 32).decode()}
-        valid, error = verify_session_envelope(endpoint, tee)
+        sender = MockSecureEndpoint()
+        sender.mac_key = mac_key
 
-        assert valid is True
-        assert error == ""
+        receiver = MockSecureEndpoint()
+        receiver.mac_key = mac_key
+
+        for i in range(5):
+            tee = create_session_envelope(sender)
+            valid, error = verify_session_envelope(receiver, tee)
+            assert valid is True, f"Failed on envelope {i}: {error}"
+            assert tee["counter"] == i

@@ -1,23 +1,23 @@
 """Tests for mcp.shared.tee_helpers."""
 
-from mcp.shared.tee_helpers import (
-    extract_tee_dict,
+from mcp.shared.tee_envelope import (
+    extract_tee,
     extract_tee_from_result,
     inject_tee,
 )
 
 
 class TestExtractTeeDict:
-    """Tests for extract_tee_dict."""
+    """Tests for extract_tee."""
 
     def test_none_params(self) -> None:
-        assert extract_tee_dict(None) is None
+        assert extract_tee(None) is None
 
     def test_no_meta(self) -> None:
         class FakeParams:
             pass
 
-        assert extract_tee_dict(FakeParams()) is None
+        assert extract_tee(FakeParams()) is None
 
     def test_meta_no_tee(self) -> None:
         class FakeMeta:
@@ -26,7 +26,7 @@ class TestExtractTeeDict:
         class FakeParams:
             meta = FakeMeta()
 
-        assert extract_tee_dict(FakeParams()) is None
+        assert extract_tee(FakeParams()) is None
 
     def test_meta_with_tee(self) -> None:
         tee = {"quote": "abc", "sig_data": "def"}
@@ -37,7 +37,7 @@ class TestExtractTeeDict:
         class FakeParams:
             meta = FakeMeta()
 
-        assert extract_tee_dict(FakeParams()) is tee
+        assert extract_tee(FakeParams()) is tee
 
     def test_meta_tee_as_attribute(self) -> None:
         """Test fallback to direct attribute access."""
@@ -52,7 +52,7 @@ class TestExtractTeeDict:
         class FakeParams:
             meta = FakeMeta()
 
-        assert extract_tee_dict(FakeParams()) is tee
+        assert extract_tee(FakeParams()) is tee
 
     def test_underscore_meta(self) -> None:
         """Test fallback to _meta attribute."""
@@ -64,7 +64,7 @@ class TestExtractTeeDict:
         class FakeParams:
             _meta = FakeMeta()
 
-        assert extract_tee_dict(FakeParams()) is tee
+        assert extract_tee(FakeParams()) is tee
 
 
 class TestInjectTee:

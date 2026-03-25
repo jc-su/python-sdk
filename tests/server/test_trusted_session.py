@@ -81,12 +81,15 @@ class MockSecureEndpoint:
     def __init__(self, role: str = "server"):
         self.role = role
         self.session_id: bytes | None = None
-        self.session_key: bytes | None = None
+        self.kek: bytes | None = None
         self.mac_key: bytes | None = None
+        self._send_counter = 0
+        self._recv_counter = 0
         self._peers: dict[str, MockPeer] = {}
         self._nonces: dict[str, bytes] = {}
         self._bootstrap_challenge: bytes | None = None
         self._verify_mac_result: bool = True
+        self._initial_rtmr3: bytes | None = None
 
     @classmethod
     def create(cls, role: str = "server") -> "MockSecureEndpoint":
@@ -102,10 +105,10 @@ class MockSecureEndpoint:
         self._nonces[peer_role] = nonce
         return nonce
 
-    def create_evidence(self, nonce: bytes) -> MockAttestationEvidence:
+    def create_attestation(self, nonce: bytes) -> MockAttestationEvidence:
         return MockAttestationEvidence(role=self.role, nonce=nonce)
 
-    def verify_peer(
+    def verify_peer_attestation(
         self,
         evidence: MockAttestationEvidence,
         expected_nonce: bytes | None = None,
@@ -122,6 +125,46 @@ class MockSecureEndpoint:
     def verify_challenge_mac(self, challenge: bytes, mac_bytes: bytes) -> bool:
         """Verify HMAC-SHA256 challenge MAC. Returns configurable result."""
         return self._verify_mac_result
+
+    def next_send_counter(self) -> int:
+        counter = self._send_counter
+        self._send_counter += 1
+        return counter
+
+    def verify_recv_counter(self, counter: int) -> None:
+        if counter < self._recv_counter:
+            raise ValueError(f"Stale counter: got {counter}, expected >= {self._recv_counter}")
+        self._recv_counter = counter + 1
+
+    def create_session_auth(self, counter: int) -> bytes:
+        import hashlib
+        import hmac
+
+        key = self.mac_key or b"mock_mac_key"
+        return hmac.new(key, counter.to_bytes(8, "big"), hashlib.sha256).digest()
+
+    def verify_session_auth(self, counter: int, auth_tag: bytes) -> bool:
+        import hashlib
+        import hmac
+
+        if self.mac_key is None:
+            return False
+        expected = hmac.new(self.mac_key, counter.to_bytes(8, "big"), hashlib.sha256).digest()
+        return hmac.compare_digest(expected, auth_tag)
+
+    def wrap_and_encrypt(self, plaintext: bytes, *, aad: bytes | None = None) -> "EnvelopePayload":
+        from mcp.shared.crypto.envelope import envelope_encrypt
+
+        if self.kek is None:
+            raise ValueError("KEK not established")
+        return envelope_encrypt(self.kek, plaintext, aad=aad)
+
+    def unwrap_and_decrypt(self, payload: "EnvelopePayload", *, aad: bytes | None = None) -> bytes:
+        from mcp.shared.crypto.envelope import envelope_decrypt
+
+        if self.kek is None:
+            raise ValueError("KEK not established")
+        return envelope_decrypt(self.kek, payload, aad=aad)
 
     def get_peer(self, role: str) -> MockPeer | None:
         return self._peers.get(role)
@@ -217,20 +260,20 @@ class TestTrustedServerSession:
         assert isinstance(session._endpoint, MockSecureEndpoint)
 
     @pytest.mark.anyio
-    async def test_handle_initialized_tee_no_challenge_pending(self, mock_streams, init_options):
+    async def test_verify_challenge_response_no_challenge_pending(self, mock_streams, init_options):
         """Test initialized notification accepted when no challenge was pending."""
         read_stream, write_stream, _, _ = mock_streams
 
         session = create_test_session(read_stream, write_stream, init_options, tee_enabled=True)
 
-        # No bootstrap challenge set -> _handle_initialized_tee accepts without MAC
+        # No bootstrap challenge set -> _verify_challenge_response accepts without MAC
         tee_dict = {"challenge_response": base64.b64encode(b"x").decode()}
 
         meta = {"tee": tee_dict}
         params = types.NotificationParams(_meta=meta)
         notification = types.InitializedNotification(params=params)
 
-        result = session._handle_initialized_tee(notification)
+        result = session._verify_challenge_response(notification)
         assert result is True
 
     @pytest.mark.anyio
@@ -242,7 +285,7 @@ class TestTrustedServerSession:
 
         notification = types.InitializedNotification()
 
-        session._handle_initialized_tee(notification)
+        session._verify_challenge_response(notification)
 
         assert session._client_attested is False
 
@@ -256,7 +299,7 @@ class TestTrustedServerSession:
 
         notification = types.InitializedNotification()
 
-        assert session._handle_initialized_tee(notification) is False
+        assert session._verify_challenge_response(notification) is False
 
     @pytest.mark.anyio
     async def test_initialized_challenge_mismatch_is_fatal(self, mock_streams, init_options):
@@ -275,7 +318,7 @@ class TestTrustedServerSession:
         params = types.NotificationParams(_meta=meta)
         notification = types.InitializedNotification(params=params)
 
-        assert session._handle_initialized_tee(notification) is False
+        assert session._verify_challenge_response(notification) is False
 
     @pytest.mark.anyio
     async def test_initialized_no_challenge_required_attestation_fails(self, mock_streams, init_options):
@@ -292,7 +335,7 @@ class TestTrustedServerSession:
         params = types.NotificationParams(_meta=meta)
         notification = types.InitializedNotification(params=params)
 
-        assert session._handle_initialized_tee(notification) is False
+        assert session._verify_challenge_response(notification) is False
 
     @pytest.mark.anyio
     async def test_send_response_with_tee(self, mock_streams, init_options):
@@ -301,8 +344,8 @@ class TestTrustedServerSession:
 
         session = create_test_session(read_stream, write_stream, init_options, tee_enabled=True)
 
-        # session_key is None on mock -> bootstrap path (plaintext + evidence)
-        assert session._endpoint.session_key is None
+        # kek is None on mock -> bootstrap path (plaintext + evidence)
+        assert session._endpoint.kek is None
 
         # Simulate that request 5 was a verified tool call
         session._tee_request_ids.add(5)
@@ -341,7 +384,7 @@ class TestTrustedServerSession:
 
     @pytest.mark.anyio
     async def test_verify_request_with_tee(self, mock_streams, init_options):
-        """Test verification of _meta.tee in request via open_tool_request_envelope."""
+        """Test verification of _meta.tee in request via verify_encrypted_envelope."""
         read_stream, write_stream, _, _ = mock_streams
 
         session = create_test_session(read_stream, write_stream, init_options, tee_enabled=True)
@@ -369,7 +412,7 @@ class TestTrustedServerSession:
         )
 
         with patch(
-            "mcp.server.trusted_session.open_tool_request_envelope",
+            "mcp.server.trusted_session.verify_encrypted_envelope",
             return_value=(None, True, ""),
         ):
             result = session._verify_and_decrypt_request(responder)
@@ -472,7 +515,7 @@ class TestTrustedServerSession:
         )
 
         with patch(
-            "mcp.server.trusted_session.open_tool_request_envelope",
+            "mcp.server.trusted_session.verify_encrypted_envelope",
             return_value=(None, True, ""),
         ):
             result = session._verify_and_decrypt_request(responder)
@@ -498,7 +541,7 @@ class TestTrustedServerSession:
 
         decrypted_params = {"name": "test_tool", "arguments": {"k": "v"}}
         with patch(
-            "mcp.server.trusted_session.open_tool_request_envelope",
+            "mcp.server.trusted_session.verify_encrypted_envelope",
             return_value=(decrypted_params, True, ""),
         ):
             prepared = session._preprocess_incoming_request_data(raw_request)
@@ -539,7 +582,7 @@ class TestTrustedServerSession:
         )
 
         session._preverified_request_ids.add(55)
-        with patch("mcp.server.trusted_session.open_tool_request_envelope") as mock_open:
+        with patch("mcp.server.trusted_session.verify_encrypted_envelope") as mock_open:
             result = session._verify_and_decrypt_request(responder)
 
         assert result is True
@@ -576,7 +619,7 @@ class TestTrustedServerSession:
         )
 
         with patch(
-            "mcp.server.trusted_session.open_tool_request_envelope",
+            "mcp.server.trusted_session.verify_encrypted_envelope",
             return_value=({"name": "decrypted_tool", "arguments": {"new": 2}}, True, ""),
         ):
             result = session._verify_and_decrypt_request(responder)
@@ -646,7 +689,7 @@ class TestChallengeMac:
         params = types.NotificationParams(_meta=meta)
         notification = types.InitializedNotification(params=params)
 
-        result = session._handle_initialized_tee(notification)
+        result = session._verify_challenge_response(notification)
 
         assert result is True
 
@@ -672,7 +715,7 @@ class TestChallengeMac:
         params = types.NotificationParams(_meta=meta)
         notification = types.InitializedNotification(params=params)
 
-        result = session._handle_initialized_tee(notification)
+        result = session._verify_challenge_response(notification)
 
         assert result is False
 
@@ -696,7 +739,7 @@ class TestChallengeMac:
         params = types.NotificationParams(_meta=meta)
         notification = types.InitializedNotification(params=params)
 
-        result = session._handle_initialized_tee(notification)
+        result = session._verify_challenge_response(notification)
         assert result is False
 
     @pytest.mark.anyio
@@ -722,7 +765,7 @@ class TestChallengeMac:
         params = types.NotificationParams(_meta=meta)
         notification = types.InitializedNotification(params=params)
 
-        result = session._handle_initialized_tee(notification)
+        result = session._verify_challenge_response(notification)
         assert result is True
 
     @pytest.mark.anyio
@@ -748,7 +791,7 @@ class TestChallengeMac:
         params = types.NotificationParams(_meta=meta)
         notification = types.InitializedNotification(params=params)
 
-        result = session._handle_initialized_tee(notification)
+        result = session._verify_challenge_response(notification)
         assert result is False
 
     @pytest.mark.anyio
@@ -769,7 +812,7 @@ class TestChallengeMac:
         params = types.NotificationParams(_meta=meta)
         notification = types.InitializedNotification(params=params)
 
-        result = session._handle_initialized_tee(notification)
+        result = session._verify_challenge_response(notification)
         assert result is False
 
 
@@ -832,21 +875,7 @@ class TestToolsListAndWhitelist:
 
         session = create_test_session(read_stream, write_stream, init_options, tee_enabled=True)
         session._endpoint.session_id = b"x" * 32
-
-        # Add derive_sig_data to mock
-        import hashlib
-        import hmac
-
-        call_counter = [0]
-
-        def derive_sig_data(entropy):
-            counter = call_counter[0]
-            call_counter[0] += 1
-            counter_bytes = counter.to_bytes(8, "big")
-            sig = hmac.new(b"x" * 32, entropy + counter_bytes, hashlib.sha256).digest()
-            return sig, counter
-
-        session._endpoint.derive_sig_data = derive_sig_data
+        session._endpoint.mac_key = b"m" * 32
 
         # Mark as tools/list request
         session._tee_request_ids.add(20)
@@ -861,7 +890,8 @@ class TestToolsListAndWhitelist:
         assert "_meta" in jsonrpc_msg.result
         assert "tee" in jsonrpc_msg.result["_meta"]
         tee = jsonrpc_msg.result["_meta"]["tee"]
-        assert "sig_data" in tee
+        assert "counter" in tee
+        assert "auth_tag" in tee
         assert "timestamp_ms" in tee
 
     @pytest.mark.anyio
@@ -871,29 +901,16 @@ class TestToolsListAndWhitelist:
 
         session = create_test_session(read_stream, write_stream, init_options, tee_enabled=True)
         session._endpoint.session_id = b"x" * 32
-
-        import hashlib
-        import hmac
-
-        call_counter = [0]
-
-        def derive_sig_data(entropy):
-            counter = call_counter[0]
-            call_counter[0] += 1
-            counter_bytes = counter.to_bytes(8, "big")
-            sig = hmac.new(b"x" * 32, entropy + counter_bytes, hashlib.sha256).digest()
-            return sig, counter
-
-        session._endpoint.derive_sig_data = derive_sig_data
+        session._endpoint.mac_key = b"m" * 32
 
         # Set up mock ToolTrustManager
         from unittest.mock import MagicMock
 
-        from mcp.server.tool_trust import ServerTrustInfo
+        from mcp.server.tool_trust import SubjectTrustState
 
         mock_ttm = MagicMock()
         mock_ttm.revision = 0
-        mock_ttm.get_server_trust_info.return_value = ServerTrustInfo(
+        mock_ttm.get_server_trust_state.return_value = SubjectTrustState(
             status="trusted",
             rtmr3="aa" * 48,
             initial_rtmr3="aa" * 48,
@@ -924,10 +941,10 @@ class TestToolsListAndWhitelist:
 
         from unittest.mock import MagicMock
 
-        from mcp.server.tool_trust import ServerTrustInfo
+        from mcp.server.tool_trust import SubjectTrustState
 
         mock_ttm = MagicMock()
-        mock_ttm.get_tool_trust_info.return_value = ServerTrustInfo(
+        mock_ttm.get_tool_trust_state.return_value = SubjectTrustState(
             status="untrusted",
             rtmr3="bb" * 48,
             initial_rtmr3="aa" * 48,
@@ -982,7 +999,7 @@ class TestToolsListAndWhitelist:
         from unittest.mock import MagicMock
 
         mock_ttm = MagicMock()
-        mock_ttm.get_tool_trust_info.return_value = MagicMock(status="trusted")
+        mock_ttm.get_tool_trust_state.return_value = MagicMock(status="trusted")
         mock_ttm.is_tool_trusted.return_value = True
         session._tool_trust_manager = mock_ttm
 
@@ -1008,9 +1025,9 @@ class TestToolsListAndWhitelist:
             on_complete=lambda r: None,
         )
 
-        # Patch open_tool_request_envelope so _verify_and_decrypt_request succeeds
+        # Patch verify_encrypted_envelope so _verify_and_decrypt_request succeeds
         with patch(
-            "mcp.server.trusted_session.open_tool_request_envelope",
+            "mcp.server.trusted_session.verify_encrypted_envelope",
             return_value=(None, True, ""),
         ):
             # The trust check happens inside _received_request, not _verify_and_decrypt_request
@@ -1020,7 +1037,7 @@ class TestToolsListAndWhitelist:
         mock_ttm.is_tool_trusted.assert_called_once()
         assert mock_ttm.is_tool_trusted.call_args.args[0] == "trusted_tool"
         assert "trust_info" in mock_ttm.is_tool_trusted.call_args.kwargs
-        mock_ttm.get_tool_trust_info.assert_called_once_with("trusted_tool", require_fresh=True)
+        mock_ttm.get_tool_trust_state.assert_called_once_with("trusted_tool", require_fresh=True)
 
     @pytest.mark.anyio
     async def test_validation_error_clears_tools_list_state(self, mock_streams, init_options):
@@ -1043,28 +1060,15 @@ class TestToolsListAndWhitelist:
 
         session = create_test_session(read_stream, write_stream, init_options, tee_enabled=True)
         session._endpoint.session_id = b"x" * 32
-
-        import hashlib
-        import hmac
-
-        call_counter = [0]
-
-        def derive_sig_data(entropy):
-            counter = call_counter[0]
-            call_counter[0] += 1
-            counter_bytes = counter.to_bytes(8, "big")
-            sig = hmac.new(b"x" * 32, entropy + counter_bytes, hashlib.sha256).digest()
-            return sig, counter
-
-        session._endpoint.derive_sig_data = derive_sig_data
+        session._endpoint.mac_key = b"m" * 32
 
         from unittest.mock import MagicMock
 
-        from mcp.server.tool_trust import ServerTrustInfo
+        from mcp.server.tool_trust import SubjectTrustState
 
         mock_ttm = MagicMock()
         mock_ttm.revision = 0
-        mock_ttm.get_server_trust_info.return_value = ServerTrustInfo(
+        mock_ttm.get_server_trust_state.return_value = SubjectTrustState(
             status="trusted",
             rtmr3="aa" * 48,
             initial_rtmr3="aa" * 48,
@@ -1074,7 +1078,7 @@ class TestToolsListAndWhitelist:
             source="attestation-service",
             policy_action="none",
         )
-        trusted_info = ServerTrustInfo(
+        trusted_info = SubjectTrustState(
             status="trusted",
             rtmr3="aa" * 48,
             initial_rtmr3="aa" * 48,
@@ -1085,7 +1089,7 @@ class TestToolsListAndWhitelist:
             policy_action="none",
             version=11,
         )
-        untrusted_info = ServerTrustInfo(
+        untrusted_info = SubjectTrustState(
             status="untrusted",
             rtmr3="bb" * 48,
             initial_rtmr3="aa" * 48,
@@ -1101,7 +1105,7 @@ class TestToolsListAndWhitelist:
             assert require_fresh is True
             return trusted_info if tool_name == "safe_tool" else untrusted_info
 
-        mock_ttm.get_tool_trust_info.side_effect = get_tool_info
+        mock_ttm.get_tool_trust_state.side_effect = get_tool_info
         mock_ttm.is_tool_trusted.side_effect = lambda tool_name, *, trust_info=None, require_fresh=False: (
             trust_info.status == "trusted"
         )

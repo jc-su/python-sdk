@@ -41,14 +41,14 @@ class TestBootstrapChallengeInEnvelope:
     """Challenge included in response envelope and processed in request envelope."""
 
     def test_challenge_in_response_envelope(self):
-        """create_response_envelope includes challenge when provided."""
-        from mcp.shared.tee_envelope import create_response_envelope
+        """create_bootstrap_envelope includes challenge when provided."""
+        from mcp.shared.tee_envelope import create_bootstrap_envelope
 
         class MockEP:
             session_id = None
             role = "server"
 
-            def create_evidence(self, nonce):
+            def create_attestation(self, nonce):
                 class MockEv:
                     def to_dict(self):
                         return {
@@ -66,20 +66,20 @@ class TestBootstrapChallengeInEnvelope:
         ep = MockEP()
         challenge = b"X" * 32
 
-        tee_dict = create_response_envelope(ep, {"result": "ok"}, challenge=challenge)
+        tee_dict = create_bootstrap_envelope(ep, challenge=challenge)
 
         assert "challenge" in tee_dict
         assert base64.b64decode(tee_dict["challenge"]) == challenge
 
     def test_no_challenge_by_default(self):
         """No challenge field when not provided."""
-        from mcp.shared.tee_envelope import create_response_envelope
+        from mcp.shared.tee_envelope import create_bootstrap_envelope
 
         class MockEP:
             session_id = None
             role = "server"
 
-            def create_evidence(self, nonce):
+            def create_attestation(self, nonce):
                 class MockEv:
                     def to_dict(self):
                         return {
@@ -95,19 +95,19 @@ class TestBootstrapChallengeInEnvelope:
                 return MockEv()
 
         ep = MockEP()
-        tee_dict = create_response_envelope(ep, {"result": "ok"})
+        tee_dict = create_bootstrap_envelope(ep)
         assert "challenge" not in tee_dict
 
-    def test_challenge_response_in_request_envelope(self):
-        """create_request_envelope uses override_nonce for challenge binding."""
-        from mcp.shared.tee_envelope import create_request_envelope
+    def test_challenge_response_binds_to_evidence(self):
+        """Challenge used as nonce binds to attestation evidence."""
+        from mcp.shared.tee_envelope import create_bootstrap_envelope
 
         class MockEP:
             session_id = None
             peers = {}
             role = "client"
 
-            def create_evidence(self, nonce):
+            def create_attestation(self, nonce):
                 class MockEv:
                     def __init__(self, n):
                         self.nonce = n
@@ -129,15 +129,13 @@ class TestBootstrapChallengeInEnvelope:
                 return None
 
         ep = MockEP()
-        challenge = b"Z" * 32
 
-        tee_dict, _ = create_request_envelope(ep, {}, override_nonce=challenge)
+        tee_dict = create_bootstrap_envelope(ep)
 
-        # sig_data should be the challenge itself (override)
-        assert base64.b64decode(tee_dict["sig_data"]) == challenge
-        # No entropy/counter since it's an override
-        assert "entropy" not in tee_dict
-        assert "counter" not in tee_dict
+        # nonce is random, bound into the evidence nonce
+        nonce = base64.b64decode(tee_dict["sig_data"])
+        assert len(nonce) == 32
+        assert base64.b64decode(tee_dict["sig_data"]) == nonce
 
 
 class TestChallengeResponseFlow:

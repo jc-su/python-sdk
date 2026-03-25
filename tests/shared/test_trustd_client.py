@@ -4,7 +4,6 @@ import base64
 import json
 import os
 import socket
-import tempfile
 import threading
 
 import pytest
@@ -60,7 +59,7 @@ class MockTrustdServer:
             try:
                 conn, _ = self._server_socket.accept()  # type: ignore[union-attr]
                 threading.Thread(target=self._handle_conn, args=(conn,), daemon=True).start()
-            except (socket.timeout, OSError):
+            except (TimeoutError, OSError):
                 continue
 
     def _handle_conn(self, conn: socket.socket) -> None:

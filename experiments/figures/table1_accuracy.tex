@@ -1,0 +1,25 @@
+\begin{table}[t]
+\centering
+\caption{Capability classification accuracy. Pysa: taint-flow analysis. Keyword: description-based. 74 human-labeled AgentDojo tools.}
+\label{tab:classification}
+\small
+\begin{tabular}{lcccccc|c}
+\toprule
+ & \multicolumn{3}{c}{\textbf{Pysa (ours)}} & \multicolumn{3}{c|}{\textbf{Keyword}} & \\
+\textbf{Category} & P & R & F1 & P & R & F1 & \# \\
+\midrule
+  credential\_access & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & 1 \\
+  cross\_boundary\_egress & 1.00 & 0.67 & 0.80 & 0.83 & 0.56 & 0.67 & 9 \\
+  data\_destruction & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & 4 \\
+  external\_ingestion & 1.00 & 1.00 & 1.00 & 0.50 & 0.50 & 0.50 & 2 \\
+  identity\_admin & 1.00 & 0.75 & 0.86 & 1.00 & 0.25 & 0.40 & 4 \\
+  read\_identity & 1.00 & 0.25 & 0.40 & 0.25 & 0.25 & 0.25 & 4 \\
+  read\_private & 0.96 & 0.96 & 0.96 & 0.40 & 0.96 & 0.56 & 25 \\
+  read\_public & 1.00 & 1.00 & 1.00 & 0.82 & 0.45 & 0.58 & 20 \\
+  value\_transfer & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & 6 \\
+  write\_mutate & 1.00 & 0.36 & 0.53 & 1.00 & 0.64 & 0.78 & 14 \\
+\midrule
+  \textbf{Macro Avg} & \textbf{1.00} & \textbf{0.80} & \textbf{0.85} & 0.78 & 0.66 & 0.68 & \\
+\bottomrule
+\end{tabular}
+\end{table}

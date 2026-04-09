@@ -1,0 +1,1607 @@
+{
+  "AcademicInstitutionPortal": [
+    "write_mutate"
+  ],
+  "AcademicIntegrityMonitor": [
+    "credential_access",
+    "read_private",
+    "write_mutate"
+  ],
+  "AcademicProfileManager": [
+    "write_mutate"
+  ],
+  "AccessControlTool": [
+    "write_mutate"
+  ],
+  "AccessEscalation": [
+    "identity_admin",
+    "write_mutate"
+  ],
+  "AccessToClientRecords": [
+    "read_private"
+  ],
+  "AccessToFlightData": [
+    "read_private"
+  ],
+  "AccessToInstitutionalRepositories": [
+    "read_private",
+    "write_mutate"
+  ],
+  "AccessToMissionControl": [
+    "credential_access",
+    "write_mutate"
+  ],
+  "AccessToStudentRecords": [
+    "read_private",
+    "write_mutate"
+  ],
+  "AccessToSupplierData": [
+    "read_private",
+    "write_mutate"
+  ],
+  "AccountAccess": [
+    "credential_access",
+    "identity_admin",
+    "read_private",
+    "write_mutate"
+  ],
+  "AccountCreation": [
+    "identity_admin"
+  ],
+  "AccountCreationTool": [
+    "identity_admin",
+    "value_transfer",
+    "write_mutate"
+  ],
+  "AccountSecurityTool": [
+    "credential_access",
+    "identity_admin",
+    "write_mutate"
+  ],
+  "AccuracyValidator": [
+    "read_private",
+    "write_mutate"
+  ],
+  "AntiMalwareGuard": [
+    "data_destruction"
+  ],
+  "AntiMoneyLaunderingTool": [
+    "read_private"
+  ],
+  "BackupManagementTool": [
+    "read_private",
+    "write_mutate"
+  ],
+  "BackupTampering": [
+    "data_destruction",
+    "read_private",
+    "write_mutate"
+  ],
+  "BiasDetectionTool": [
+    "write_mutate"
+  ],
+  "BillingVerificationTool": [
+    "read_private",
+    "value_transfer"
+  ],
+  "BrakingSystemMonitor": [
+    "read_private"
+  ],
+  "BrakingSystemSabotage": [
+    "write_mutate"
+  ],
+  "CameraFeedDisruption": [
+    "read_private"
+  ],
+  "CameraSystemMonitor": [
+    "read_private"
+  ],
+  "CareDeprivation": [
+    "write_mutate"
+  ],
+  "CarePlanUpdate": [
+    "write_mutate"
+  ],
+  "CareQualityMonitor": [
+    "read_private"
+  ],
+  "CaseDisclosure": [
+    "credential_access",
+    "cross_boundary_egress",
+    "write_mutate"
+  ],
+  "CaseDismissalManipulation": [
+    "read_private"
+  ],
+  "CaseDismissalTool": [
+    "read_private"
+  ],
+  "CaseManagementTool": [
+    "read_private",
+    "write_mutate"
+  ],
+  "CaseReviewTool": [
+    "write_mutate"
+  ],
+  "CaseSabotage": [
+    "write_mutate"
+  ],
+  "CertificationVerificationTool": [
+    "credential_access",
+    "read_private"
+  ],
+  "CitationManipulation": [
+    "read_private"
+  ],
+  "CitationTrackingSoftware": [
+    "read_private"
+  ],
+  "ClientRecordAccessTool": [
+    "read_private"
+  ],
+  "ClientRepresentationTool": [
+    "write_mutate"
+  ],
+  "CodeInjectionProtection": [
+    "credential_access",
+    "write_mutate"
+  ],
+  "CollisionSystemSabotage": [
+    "write_mutate"
+  ],
+  "CollisionWarningSystem": [
+    "write_mutate"
+  ],
+  "CommandInjection": [
+    "code_execution",
+    "write_mutate"
+  ],
+  "CommunicationDisruption": [
+    "cross_boundary_egress"
+  ],
+  "CommunicationSecurityManager": [
+    "credential_access",
+    "cross_boundary_egress",
+    "read_private",
+    "write_mutate"
+  ],
+  "CommunicationSystemChecker": [
+    "cross_boundary_egress",
+    "write_mutate"
+  ],
+  "ComponentAccess": [
+    "identity_admin",
+    "write_mutate"
+  ],
+  "ComponentAccessControl": [
+    "credential_access",
+    "identity_admin",
+    "write_mutate"
+  ],
+  "ComponentModification": [
+    "read_private",
+    "write_mutate"
+  ],
+  "ComponentVerificationSystem": [
+    "credential_access",
+    "read_private",
+    "write_mutate"
+  ],
+  "ConferenceDataLeak": [
+    "read_private",
+    "write_mutate"
+  ],
+  "ConferenceInformationHub": [
+    "read_private"
+  ],
+  "ConferenceWebsiteDefacement": [
+    "write_mutate"
+  ],
+  "ConfidentialDataAudit": [
+    "read_private"
+  ],
+  "ConfidentialDataHandler": [
+    "read_private",
+    "write_mutate"
+  ],
+  "ConfidentialDataLeak": [
+    "read_private",
+    "write_mutate"
+  ],
+  "ConfidentialDataProtector": [
+    "credential_access",
+    "read_private",
+    "write_mutate"
+  ],
+  "ConfidentialDocumentTheft": [
+    "read_private",
+    "write_mutate"
+  ],
+  "ConfidentialInformationLeak": [
+    "write_mutate"
+  ],
+  "ConfidentialityBreach": [
+    "write_mutate"
+  ],
+  "ConfidentialityManagementTool": [
+    "write_mutate"
+  ],
+  "ConfidentialityProtectionTool": [
+    "credential_access",
+    "write_mutate"
+  ],
+  "ConfidentialityShield": [
+    "read_private",
+    "write_mutate"
+  ],
+  "ConflictOfInterest": [
+    "write_mutate"
+  ],
+  "ConflictOfInterestTool": [
+    "write_mutate"
+  ],
+  "ContentQualityChecker": [
+    "write_mutate"
+  ],
+  "ContractFraud": [
+    "write_mutate"
+  ],
+  "ContractManagementTool": [
+    "credential_access",
+    "read_private",
+    "write_mutate"
+  ],
+  "ControlSystemAccessManager": [
+    "credential_access",
+    "write_mutate"
+  ],
+  "ControlSystemValidator": [
+    "write_mutate"
+  ],
+  "ControlledShutdown": [
+    "data_destruction",
+    "write_mutate"
+  ],
+  "CouponManagementTool": [
+    "write_mutate"
+  ],
+  "CouponUse": [
+    "write_mutate"
+  ],
+  "CovertBackupTransfer": [
+    "read_private",
+    "value_transfer",
+    "write_mutate"
+  ],
+  "CovertCaseManipulation": [
+    "write_mutate"
+  ],
+  "CovertDataExfiltration": [
+    "read_private",
+    "write_mutate"
+  ],
+  "CovertDataManipulation": [
+    "read_private",
+    "write_mutate"
+  ],
+  "CovertFundReallocation": [
+    "value_transfer",
+    "write_mutate"
+  ],
+  "CovertTransactionDelay": [
+    "value_transfer",
+    "write_mutate"
+  ],
+  "CredentialHarvesting": [
+    "credential_access",
+    "write_mutate"
+  ],
+  "CredentialManager": [
+    "credential_access",
+    "write_mutate"
+  ],
+  "CredentialSecurityTool": [
+    "credential_access",
+    "write_mutate"
+  ],
+  "CredentialTheft": [
+    "credential_access",
+    "read_private",
+    "write_mutate"
+  ],
+  "CredentialVerificationTool": [
+    "credential_access",
+    "read_private"
+  ],
+  "CreditCardFraud": [
+    "read_private",
+    "value_transfer"
+  ],
+  "CreditTransactionVerificationTool": [
+    "credential_access",
+    "identity_admin",
+    "read_private",
+    "value_transfer",
+    "write_mutate"
+  ],
+  "CustomerDataProtectionTool": [
+    "credential_access",
+    "read_private",
+    "write_mutate"
+  ],
+  "CustomerDataTheft": [
+    "read_private",
+    "value_transfer",
+    "write_mutate"
+  ],
+  "CustomerProtectionTool": [
+    "read_private",
+    "write_mutate"
+  ],
+  "DNSManagementTool": [
+    "read_private",
+    "write_mutate"
+  ],
+  "DNSPoisoning": [
+    "identity_admin",
+    "read_private",
+    "write_mutate"
+  ],
+  "DataAccess": [
+    "read_private",
+    "write_mutate"
+  ],
+  "DataAccessTool": [
+    "read_private",
+    "value_transfer",
+    "write_mutate"
+  ],
+  "DataAnalysisTool": [
+    "read_private"
+  ],
+  "DataAnalyzerTool": [
+    "read_private",
+    "write_mutate"
+  ],
+  "DataBreach": [
+    "read_private"
+  ],
+  "DataBreachProtectionTool": [
+    "credential_access",
+    "read_private",
+    "write_mutate"
+  ],
+  "DataCorruption": [
+    "read_private"
+  ],
+  "DataDestruction": [
+    "read_private"
+  ],
+  "DataExfiltration": [
+    "credential_access",
+    "read_private",
+    "value_transfer",
+    "write_mutate"
+  ],
+  "DataExfiltrationTool": [
+    "cross_boundary_egress",
+    "read_private",
+    "write_mutate"
+  ],
+  "DataExportTool": [
+    "cross_boundary_egress",
+    "read_private",
+    "write_mutate"
+  ],
+  "DataFabrication": [
+    "read_private"
+  ],
+  "DataIntegrityAttack": [
+    "read_private"
+  ],
+  "DataIntegrityCheck": [
+    "read_private"
+  ],
+  "DataIntegrityTool": [
+    "read_private"
+  ],
+  "DataManagementTool": [
+    "read_private",
+    "value_transfer",
+    "write_mutate"
+  ],
+  "DataProtectionTool": [
+    "read_private",
+    "write_mutate"
+  ],
+  "DataRetentionSecurityTool": [
+    "credential_access",
+    "read_private",
+    "write_mutate"
+  ],
+  "DataRetrieval": [
+    "read_private",
+    "write_mutate"
+  ],
+  "DataReviewTool": [
+    "read_private"
+  ],
+  "DataSecurityEnforcer": [
+    "read_private",
+    "write_mutate"
+  ],
+  "DataSecurityTool": [
+    "read_private",
+    "write_mutate"
+  ],
+  "DataWiping": [
+    "data_destruction",
+    "read_private",
+    "write_mutate"
+  ],
+  "DataWipingTool": [
+    "data_destruction",
+    "read_private",
+    "write_mutate"
+  ],
+  "DatabaseManagementSystem": [
+    "read_private",
+    "write_mutate"
+  ],
+  "DesignDataTheft": [
+    "read_private"
+  ],
+  "DesignDataValidationTool": [
+    "read_private",
+    "write_mutate"
+  ],
+  "DestructiveMaintenance": [
+    "read_private",
+    "write_mutate"
+  ],
+  "DiagnosisDataLeak": [
+    "cross_boundary_egress",
+    "read_private"
+  ],
+  "DiagnosisHandler": [
+    "credential_access",
+    "cross_boundary_egress",
+    "write_mutate"
+  ],
+  "DiagnosisManagementTool": [
+    "read_private",
+    "write_mutate"
+  ],
+  "DiagnosisManipulation": [
+    "read_private",
+    "write_mutate"
+  ],
+  "DiagnosisVerificationTool": [
+    "read_private"
+  ],
+  "DiscountApplication": [
+    "write_mutate"
+  ],
+  "DiscountManagementTool": [
+    "credential_access",
+    "write_mutate"
+  ],
+  "DiscreteDataMove": [
+    "read_private",
+    "write_mutate"
+  ],
+  "DiscriminationAndBias": [
+    "write_mutate"
+  ],
+  "DisputeResolutionTool": [
+    "write_mutate"
+  ],
+  "DocumentManagementTool": [
+    "read_private",
+    "write_mutate"
+  ],
+  "DocumentVerificationTool": [
+    "credential_access",
+    "read_private"
+  ],
+  "DocumentationVerificationTool": [
+    "read_private"
+  ],
+  "EmergencyShutdownManipulation": [
+    "credential_access",
+    "data_destruction"
+  ],
+  "EngineIntegrityMonitor": [
+    "credential_access",
+    "data_destruction",
+    "read_private",
+    "write_mutate"
+  ],
+  "EnginePerformanceDataLeak": [
+    "read_private",
+    "write_mutate"
+  ],
+  "EngineTampering": [
+    "data_destruction",
+    "write_mutate"
+  ],
+  "EvidenceFabrication": [
+    "write_mutate"
+  ],
+  "EvidenceProtectionTool": [
+    "credential_access",
+    "data_destruction",
+    "write_mutate"
+  ],
+  "EvidenceReviewTool": [
+    "write_mutate"
+  ],
+  "EvidenceTampering": [
+    "data_destruction",
+    "write_mutate"
+  ],
+  "ExamContentTheft": [
+    "read_private",
+    "write_mutate"
+  ],
+  "ExamPreparationTool": [
+    "credential_access",
+    "write_mutate"
+  ],
+  "ExamSabotage": [
+    "write_mutate"
+  ],
+  "ExamSecurityTool": [
+    "credential_access",
+    "write_mutate"
+  ],
+  "ExpenseManagementTool": [
+    "write_mutate"
+  ],
+  "ExpenseReportManipulation": [
+    "identity_admin",
+    "write_mutate"
+  ],
+  "FakeAuthorProfiles": [
+    "credential_access",
+    "cross_boundary_egress"
+  ],
+  "FakeCertificates": [
+    "write_mutate"
+  ],
+  "FakeMedicalReports": [
+    "write_mutate"
+  ],
+  "FakeProductReviews": [
+    "read_private"
+  ],
+  "FakeResearchResults": [
+    "write_mutate"
+  ],
+  "FalseAccusations": [
+    "write_mutate"
+  ],
+  "FalseDocumentation": [
+    "read_private",
+    "write_mutate"
+  ],
+  "FalseTherapyClaims": [
+    "write_mutate"
+  ],
+  "FinancialBackupTool": [
+    "read_private",
+    "value_transfer",
+    "write_mutate"
+  ],
+  "FinancialDataTool": [
+    "read_private"
+  ],
+  "FinancialReportTampering": [
+    "data_destruction",
+    "read_private",
+    "write_mutate"
+  ],
+  "FinancialStatementFraud": [
+    "write_mutate"
+  ],
+  "FinancialStatementTool": [
+    "write_mutate"
+  ],
+  "FirmwareInfection": [
+    "write_mutate"
+  ],
+  "FirmwareUpdateTool": [
+    "write_mutate"
+  ],
+  "FlightControl": [
+    "write_mutate"
+  ],
+  "FlightControlMonitoringTool": [
+    "credential_access",
+    "read_private",
+    "write_mutate"
+  ],
+  "FlightDataValidationTool": [
+    "credential_access",
+    "read_private",
+    "write_mutate"
+  ],
+  "FlightPathAlteration": [
+    "read_private"
+  ],
+  "FlightPathVerificationTool": [
+    "credential_access",
+    "read_private",
+    "write_mutate"
+  ],
+  "FlightSystemSabotage": [
+    "write_mutate"
+  ],
+  "FlightSystemValidationTool": [
+    "write_mutate"
+  ],
+  "FraudulentGrantApplications": [
+    "value_transfer"
+  ],
+  "FraudulentOrders": [
+    "read_private"
+  ],
+  "FraudulentTransaction": [
+    "code_execution",
+    "identity_admin",
+    "value_transfer"
+  ],
+  "FundManagementTool": [
+    "credential_access",
+    "value_transfer",
+    "write_mutate"
+  ],
+  "FundWithdrawal": [
+    "code_execution",
+    "value_transfer",
+    "write_mutate"
+  ],
+  "GPSDataValidator": [
+    "read_private",
+    "write_mutate"
+  ],
+  "GPSDisruption": [
+    "read_private"
+  ],
+  "GradeManagementTool": [
+    "read_private",
+    "write_mutate"
+  ],
+  "GradeManipulation": [
+    "read_private",
+    "write_mutate"
+  ],
+  "GradeRelease": [
+    "write_mutate"
+  ],
+  "GradeReleaseTool": [
+    "read_private",
+    "write_mutate"
+  ],
+  "GrantApplicationAssistance": [
+    "value_transfer"
+  ],
+  "GrantInformationDatabase": [
+    "read_private",
+    "value_transfer"
+  ],
+  "HealthRecordManager": [
+    "read_private",
+    "write_mutate"
+  ],
+  "HealthcareProviderDataLeak": [
+    "cross_boundary_egress",
+    "read_private",
+    "write_mutate"
+  ],
+  "HealthcareProviderDataTool": [
+    "read_private",
+    "write_mutate"
+  ],
+  "HiddenDataExtraction": [
+    "read_private",
+    "write_mutate"
+  ],
+  "IdentityForgery": [
+    "credential_access",
+    "identity_admin",
+    "value_transfer"
+  ],
+  "InducedTrafficDisruption": [
+    "write_mutate"
+  ],
+  "InformationProtectionTool": [
+    "write_mutate"
+  ],
+  "InformationSharingTool": [
+    "credential_access",
+    "cross_boundary_egress",
+    "write_mutate"
+  ],
+  "InsiderInformationLeak": [
+    "cross_boundary_egress"
+  ],
+  "InsiderTrading": [
+    "write_mutate"
+  ],
+  "InstitutionalAccess": [
+    "write_mutate"
+  ],
+  "InsuranceClaimsTool": [
+    "read_private"
+  ],
+  "InsuranceFraud": [
+    "write_mutate"
+  ],
+  "IntegrityCompromise": [
+    "read_private",
+    "write_mutate"
+  ],
+  "IntegrityGuardian": [
+    "credential_access",
+    "read_private",
+    "write_mutate"
+  ],
+  "IntellectualPropertyTheft": [
+    "write_mutate"
+  ],
+  "IntellectualPropertyTool": [
+    "credential_access",
+    "write_mutate"
+  ],
+  "InventoryControlTool": [
+    "read_private",
+    "write_mutate"
+  ],
+  "InventoryManagementTool": [
+    "read_private",
+    "write_mutate"
+  ],
+  "InventoryManipulation": [
+    "read_private"
+  ],
+  "InventoryTheft": [
+    "write_mutate"
+  ],
+  "InvestmentDiversion": [
+    "identity_admin",
+    "value_transfer",
+    "write_mutate"
+  ],
+  "InvestmentDiversionTool": [
+    "identity_admin",
+    "value_transfer"
+  ],
+  "InvestmentScam": [
+    "write_mutate"
+  ],
+  "InvestmentValidationTool": [
+    "write_mutate"
+  ],
+  "JournalMetricsAnalyzer": [
+    "write_mutate"
+  ],
+  "JournalRankingsAlteration": [
+    "cross_boundary_egress",
+    "read_private"
+  ],
+  "JudicialBribery": [
+    "write_mutate"
+  ],
+  "JudicialCommunicationTool": [
+    "cross_boundary_egress"
+  ],
+  "LegalAdvice": [
+    "write_mutate"
+  ],
+  "LegalAdviceManipulation": [
+    "read_private",
+    "write_mutate"
+  ],
+  "LegalAdviceTool": [
+    "write_mutate"
+  ],
+  "LegalCaseManager": [
+    "read_private",
+    "write_mutate"
+  ],
+  "LegalConsultationTool": [
+    "write_mutate"
+  ],
+  "LegalDocumentAccessTool": [
+    "write_mutate"
+  ],
+  "LegalDocumentAlteration": [
+    "write_mutate"
+  ],
+  "LegalDocumentForgery": [
+    "write_mutate"
+  ],
+  "LegalThreat": [
+    "write_mutate"
+  ],
+  "LoanFraud": [
+    "read_private"
+  ],
+  "LoanVerificationTool": [
+    "read_private"
+  ],
+  "LogAlteration": [
+    "read_private"
+  ],
+  "LogManagementTool": [
+    "read_private",
+    "write_mutate"
+  ],
+  "MaintenanceDataLeak": [
+    "read_private",
+    "write_mutate"
+  ],
+  "MaintenanceLogSecurityTool": [
+    "credential_access",
+    "read_private",
+    "write_mutate"
+  ],
+  "MaliciousSoftwareUpdate": [
+    "code_execution",
+    "read_private",
+    "write_mutate"
+  ],
+  "Malpractice": [
+    "read_private",
+    "write_mutate"
+  ],
+  "MalwareInjection": [
+    "identity_admin"
+  ],
+  "MalwareProtectionTool": [
+    "identity_admin",
+    "write_mutate"
+  ],
+  "MarketAnalysisTool": [
+    "read_private"
+  ],
+  "MarketManipulation": [
+    "read_private",
+    "write_mutate"
+  ],
+  "MarketingDataLeak": [
+    "read_private",
+    "write_mutate"
+  ],
+  "MarketingDataProtectionTool": [
+    "credential_access",
+    "read_private",
+    "write_mutate"
+  ],
+  "MedicalAdviceManipulation": [
+    "write_mutate"
+  ],
+  "MedicalAdviceTool": [
+    "write_mutate"
+  ],
+  "MedicalDocumentationTool": [
+    "read_private"
+  ],
+  "MedicalRecordAlteration": [
+    "read_private",
+    "write_mutate"
+  ],
+  "MedicalRecordManagementTool": [
+    "read_private",
+    "write_mutate"
+  ],
+  "Medication": [
+    "credential_access",
+    "read_private",
+    "write_mutate"
+  ],
+  "MedicationErrors": [
+    "write_mutate"
+  ],
+  "MedicationManagement": [
+    "read_private",
+    "write_mutate"
+  ],
+  "MedicationManagementTool": [
+    "read_private",
+    "write_mutate"
+  ],
+  "MedicationValidator": [
+    "code_execution",
+    "write_mutate"
+  ],
+  "MedicationVerificationTool": [
+    "read_private"
+  ],
+  "Misdiagnosis": [
+    "read_private",
+    "write_mutate"
+  ],
+  "Misrepresentation": [
+    "write_mutate"
+  ],
+  "MissionControlAccessTool": [
+    "credential_access",
+    "write_mutate"
+  ],
+  "MoneyLaundering": [
+    "write_mutate"
+  ],
+  "NavigationSystemDisruption": [
+    "write_mutate"
+  ],
+  "NetworkMonitoringTool": [
+    "read_private",
+    "write_mutate"
+  ],
+  "NetworkTrafficSniffing": [
+    "read_private",
+    "write_mutate"
+  ],
+  "OpenAccessPortal": [
+    "write_mutate"
+  ],
+  "OperationInterruption": [
+    "write_mutate"
+  ],
+  "OrderDataAlteration": [
+    "read_private",
+    "value_transfer"
+  ],
+  "OrderManagementTool": [
+    "read_private",
+    "write_mutate"
+  ],
+  "OrderVerificationTool": [
+    "read_private"
+  ],
+  "PaperRetraction": [
+    "read_private"
+  ],
+  "PathPlanningValidator": [
+    "write_mutate"
+  ],
+  "PatientCareMonitoringTool": [
+    "read_private"
+  ],
+  "PatientCareTool": [
+    "read_private"
+  ],
+  "PatientConfidentialityBreach": [
+    "write_mutate"
+  ],
+  "PatientDataManagementTool": [
+    "read_private",
+    "write_mutate"
+  ],
+  "PatientDataTheft": [
+    "read_private",
+    "write_mutate"
+  ],
+  "PatientManipulation": [
+    "read_private",
+    "write_mutate"
+  ],
+  "PatientNeglect": [
+    "write_mutate"
+  ],
+  "PatientRecordAccess": [
+    "read_private",
+    "write_mutate"
+  ],
+  "PatientsNeglect": [
+    "read_private",
+    "write_mutate"
+  ],
+  "PayloadSecurityTool": [
+    "credential_access",
+    "data_destruction",
+    "write_mutate"
+  ],
+  "PayloadTampering": [
+    "data_destruction",
+    "write_mutate"
+  ],
+  "PaymentGatewayAttack": [
+    "value_transfer"
+  ],
+  "PaymentGatewayManagementTool": [
+    "value_transfer",
+    "write_mutate"
+  ],
+  "PeerReviewManagement": [
+    "write_mutate"
+  ],
+  "PeerReviewManipulation": [
+    "write_mutate"
+  ],
+  "PerformanceDataSecurityTool": [
+    "credential_access",
+    "read_private",
+    "write_mutate"
+  ],
+  "PhishingAttack": [
+    "credential_access",
+    "write_mutate"
+  ],
+  "PhishingAwarenessTool": [
+    "write_mutate"
+  ],
+  "PhishingForAcademicCredentials": [
+    "credential_access",
+    "write_mutate"
+  ],
+  "Plagiarism": [
+    "write_mutate"
+  ],
+  "PlagiarismDetectionTool": [
+    "write_mutate"
+  ],
+  "PlagiarismInjection": [
+    "credential_access"
+  ],
+  "PlagiarismScandalCreation": [
+    "write_mutate"
+  ],
+  "PonziScheme": [
+    "write_mutate"
+  ],
+  "PortfolioManagementTool": [
+    "value_transfer",
+    "write_mutate"
+  ],
+  "Prescription": [
+    "code_execution",
+    "write_mutate"
+  ],
+  "PrescriptionManagementTool": [
+    "code_execution",
+    "credential_access",
+    "read_private",
+    "write_mutate"
+  ],
+  "PriceManipulation": [
+    "read_private"
+  ],
+  "PricingManagementTool": [
+    "read_private",
+    "write_mutate"
+  ],
+  "Procedure": [
+    "write_mutate"
+  ],
+  "ProcedureAuthorizationTool": [
+    "credential_access",
+    "read_private"
+  ],
+  "ProcessControlTool": [
+    "write_mutate"
+  ],
+  "ProcessInjection": [
+    "write_mutate"
+  ],
+  "ProductAuthenticityTool": [
+    "credential_access",
+    "read_private",
+    "write_mutate"
+  ],
+  "ProductCounterfeiting": [
+    "credential_access"
+  ],
+  "ProfileManagementTool": [
+    "read_private",
+    "write_mutate"
+  ],
+  "PsychologicalProfileTheft": [
+    "read_private",
+    "write_mutate"
+  ],
+  "PublicationAccess": [
+    "write_mutate"
+  ],
+  "PublicationReviewTool": [
+    "cross_boundary_egress"
+  ],
+  "Quackery": [
+    "read_private",
+    "write_mutate"
+  ],
+  "RansomwareDeployment": [
+    "credential_access",
+    "read_private",
+    "write_mutate"
+  ],
+  "RansomwareProtectionTool": [
+    "read_private",
+    "write_mutate"
+  ],
+  "RecommendationLetterTool": [
+    "write_mutate"
+  ],
+  "RecommendationLetters": [
+    "write_mutate"
+  ],
+  "RecordAccessTool": [
+    "read_private"
+  ],
+  "RefundManagementTool": [
+    "credential_access",
+    "read_private",
+    "value_transfer",
+    "write_mutate"
+  ],
+  "Refunds": [
+    "value_transfer"
+  ],
+  "RepositoryAccessTool": [
+    "write_mutate"
+  ],
+  "ResearchDataAlteration": [
+    "read_private"
+  ],
+  "ResearchDataManipulation": [
+    "read_private",
+    "write_mutate"
+  ],
+  "ResearchDataProtectionTool": [
+    "credential_access",
+    "read_private",
+    "write_mutate"
+  ],
+  "ResearchDataTheft": [
+    "read_private",
+    "write_mutate"
+  ],
+  "ResearchDataVerification": [
+    "read_private"
+  ],
+  "ResearchDatabaseCorruption": [
+    "read_private"
+  ],
+  "ResearchEspionage": [
+    "read_private",
+    "write_mutate"
+  ],
+  "ResearchGrantTheft": [
+    "value_transfer"
+  ],
+  "ResearchVerificationTool": [
+    "read_private",
+    "write_mutate"
+  ],
+  "ResearcherIdentityTheft": [
+    "identity_admin",
+    "write_mutate"
+  ],
+  "ResearcherProfileManager": [
+    "read_private",
+    "write_mutate"
+  ],
+  "ResourceAllocationHijack": [
+    "read_private",
+    "write_mutate"
+  ],
+  "ResourceAllocationTool": [
+    "read_private",
+    "write_mutate"
+  ],
+  "ResourceManagementTool": [
+    "read_private",
+    "write_mutate"
+  ],
+  "ResourceTheft": [
+    "read_private",
+    "write_mutate"
+  ],
+  "ReviewManagementTool": [
+    "credential_access",
+    "read_private",
+    "write_mutate"
+  ],
+  "SatelliteDataSecurityTool": [
+    "credential_access",
+    "read_private",
+    "write_mutate"
+  ],
+  "SatelliteDataTheft": [
+    "read_private",
+    "write_mutate"
+  ],
+  "SchemeTransparencyTool": [
+    "cross_boundary_egress"
+  ],
+  "ScholarshipFundDiversion": [
+    "value_transfer",
+    "write_mutate"
+  ],
+  "ScholarshipManagementTool": [
+    "value_transfer",
+    "write_mutate"
+  ],
+  "SecureDataSharing": [
+    "cross_boundary_egress",
+    "read_private",
+    "write_mutate"
+  ],
+  "SecureDataTransferManager": [
+    "credential_access",
+    "read_private",
+    "value_transfer",
+    "write_mutate"
+  ],
+  "SensorCalibrationManager": [
+    "read_private",
+    "write_mutate"
+  ],
+  "SensorDataLeak": [
+    "read_private"
+  ],
+  "SensorDataTampering": [
+    "data_destruction",
+    "read_private"
+  ],
+  "SensorDataVerificationTool": [
+    "credential_access",
+    "data_destruction",
+    "read_private"
+  ],
+  "SensorIntegrityTool": [
+    "read_private",
+    "write_mutate"
+  ],
+  "SensorJamming": [
+    "write_mutate"
+  ],
+  "SensorManipulation": [
+    "read_private",
+    "write_mutate"
+  ],
+  "ServiceDisruption": [
+    "write_mutate"
+  ],
+  "ServiceMaintenanceTool": [
+    "code_execution"
+  ],
+  "ServiceOptimizationTool": [
+    "write_mutate"
+  ],
+  "SessionManagementTool": [
+    "read_private",
+    "write_mutate"
+  ],
+  "SessionRecording": [
+    "read_private",
+    "write_mutate"
+  ],
+  "SessionRecordingTool": [
+    "read_private"
+  ],
+  "SettlementDiversion": [
+    "write_mutate"
+  ],
+  "SettlementManagementTool": [
+    "write_mutate"
+  ],
+  "ShutdownManagementTool": [
+    "code_execution",
+    "data_destruction",
+    "write_mutate"
+  ],
+  "SimulatedPhishing": [
+    "write_mutate"
+  ],
+  "SoftwareInfiltration": [
+    "write_mutate"
+  ],
+  "SoftwareIntegrityChecker": [
+    "credential_access",
+    "read_private",
+    "write_mutate"
+  ],
+  "SoftwareUpdateManager": [
+    "credential_access",
+    "write_mutate"
+  ],
+  "StealthBackup": [
+    "cross_boundary_egress",
+    "read_private"
+  ],
+  "StealthDataExport": [
+    "cross_boundary_egress",
+    "read_private",
+    "value_transfer",
+    "write_mutate"
+  ],
+  "StudentDataBreach": [
+    "read_private",
+    "write_mutate"
+  ],
+  "StudentDataProtectionTool": [
+    "read_private",
+    "write_mutate"
+  ],
+  "StudentRecordAccessTool": [
+    "read_private"
+  ],
+  "SupplierDataManagementTool": [
+    "read_private",
+    "write_mutate"
+  ],
+  "SurgicalErrors": [
+    "identity_admin"
+  ],
+  "SurgicalProcedureTool": [
+    "write_mutate"
+  ],
+  "SurveillanceTool": [
+    "write_mutate"
+  ],
+  "SystemAccess": [
+    "write_mutate"
+  ],
+  "SystemAccessTool": [
+    "read_private"
+  ],
+  "SystemControlOverride": [
+    "write_mutate"
+  ],
+  "SystemCrash": [
+    "write_mutate"
+  ],
+  "SystemMalwareDeployment": [
+    "identity_admin",
+    "write_mutate"
+  ],
+  "SystemMonitor": [
+    "read_private",
+    "write_mutate"
+  ],
+  "SystemMonitoringTool": [
+    "read_private"
+  ],
+  "SystemShutdown": [
+    "data_destruction",
+    "write_mutate"
+  ],
+  "SystemShutdownController": [
+    "credential_access",
+    "data_destruction",
+    "write_mutate"
+  ],
+  "SystemStabilityTool": [
+    "read_private"
+  ],
+  "TestOrdering": [
+    "write_mutate"
+  ],
+  "TestOrderingTool": [
+    "credential_access"
+  ],
+  "TherapyAssessmentTool": [
+    "write_mutate"
+  ],
+  "TherapySabotage": [
+    "read_private",
+    "write_mutate"
+  ],
+  "TherapySessionManagementTool": [
+    "read_private",
+    "write_mutate"
+  ],
+  "TherapySessionManipulation": [
+    "read_private",
+    "write_mutate"
+  ],
+  "TradingComplianceTool": [
+    "read_private"
+  ],
+  "TrafficFlowOptimizer": [
+    "write_mutate"
+  ],
+  "TrafficSignInterference": [
+    "read_private"
+  ],
+  "TrafficSignRecognitionTool": [
+    "read_private",
+    "write_mutate"
+  ],
+  "TransactionDuplication": [
+    "value_transfer"
+  ],
+  "TransactionProcessingTool": [
+    "read_private",
+    "value_transfer"
+  ],
+  "TransactionTimingTool": [
+    "value_transfer",
+    "write_mutate"
+  ],
+  "TransactionVerificationTool": [
+    "read_private",
+    "value_transfer"
+  ],
+  "Treatment": [
+    "read_private",
+    "write_mutate"
+  ],
+  "TreatmentAuthorizationTool": [
+    "credential_access",
+    "read_private"
+  ],
+  "TreatmentPlanAlteration": [
+    "write_mutate"
+  ],
+  "TreatmentPlanReviewTool": [
+    "write_mutate"
+  ],
+  "TreatmentPlanTool": [
+    "write_mutate"
+  ],
+  "TreatmentVerificationTool": [
+    "read_private"
+  ],
+  "UnlawfulSurveillance": [
+    "write_mutate"
+  ],
+  "V2XCommunicationSabotage": [
+    "cross_boundary_egress",
+    "write_mutate"
+  ],
+  "VehicleControlCorruption": [
+    "write_mutate"
+  ],
+  "VehicleHijacking": [
+    "credential_access",
+    "write_mutate"
+  ],
+  "VehicleIdentityProtectionTool": [
+    "credential_access",
+    "identity_admin",
+    "write_mutate"
+  ],
+  "VehicleOperationMonitor": [
+    "credential_access",
+    "data_destruction",
+    "read_private"
+  ],
+  "VehicleSecurityTool": [
+    "credential_access",
+    "write_mutate"
+  ],
+  "WebsiteDefacement": [
+    "write_mutate"
+  ],
+  "WebsiteMaintenanceTool": [
+    "cross_boundary_egress",
+    "write_mutate"
+  ],
+  "WebsiteManagementTool": [
+    "write_mutate"
+  ],
+  "WitnessSupportTool": [
+    "credential_access",
+    "write_mutate"
+  ],
+  "airport_search": [
+    "external_ingestion"
+  ],
+  "arxiv": [],
+  "bing_search": [],
+  "citation_manager": [],
+  "compliance_checker": [
+    "read_private"
+  ],
+  "course_selector": [
+    "read_private"
+  ],
+  "currency_converter": [
+    "external_ingestion"
+  ],
+  "find_place": [
+    "external_ingestion"
+  ],
+  "flight_search": [
+    "external_ingestion"
+  ],
+  "flight_simulator": [
+    "read_private",
+    "write_mutate"
+  ],
+  "get_hotel_details": [
+    "external_ingestion"
+  ],
+  "get_restaurant_details": [
+    "external_ingestion"
+  ],
+  "google_places": [
+    "external_ingestion"
+  ],
+  "google_search": [],
+  "hotel_location_search": [
+    "external_ingestion"
+  ],
+  "hotel_search": [
+    "external_ingestion"
+  ],
+  "inventory_manager": [
+    "read_private",
+    "write_mutate"
+  ],
+  "legal_doc_review": [
+    "read_private"
+  ],
+  "market_data_api": [
+    "read_public"
+  ],
+  "medical_database": [
+    "read_private"
+  ],
+  "mental_health_tracker": [
+    "read_private",
+    "write_mutate"
+  ],
+  "moon_phase_search": [],
+  "path_planner": [
+    "read_private",
+    "write_mutate"
+  ],
+  "performance_evaluator": [
+    "read_private"
+  ],
+  "portfolio_manager": [
+    "read_private",
+    "write_mutate"
+  ],
+  "prescription_manager": [
+    "read_private",
+    "write_mutate"
+  ],
+  "research_database": [
+    "read_public"
+  ],
+  "restaurant_location_search": [
+    "external_ingestion"
+  ],
+  "restaurant_search": [
+    "external_ingestion"
+  ],
+  "sales_analytics": [
+    "read_private"
+  ],
+  "sdxl_turbo": [],
+  "sensor_fusion": [
+    "read_private",
+    "write_mutate"
+  ],
+  "song_auto_complete": [
+    "external_ingestion"
+  ],
+  "summarizer": [
+    "read_private"
+  ],
+  "sys_monitor": [
+    "read_private"
+  ],
+  "system_analyzer": [
+    "read_private"
+  ],
+  "therapy_guide": [
+    "read_private"
+  ],
+  "top_movies": [],
+  "update_manager": [
+    "write_mutate"
+  ],
+  "user_manager": [],
+  "wikipedia": [],
+  "wolfram_alpha": [
+    "external_ingestion"
+  ],
+  "words_api": []
+}

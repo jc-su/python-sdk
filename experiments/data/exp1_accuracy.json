@@ -1,0 +1,219 @@
+{
+  "n_tools": 74,
+  "n_categories": 11,
+  "pysa": {
+    "code_execution": {
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1": 0.0,
+      "tp": 0,
+      "fp": 0,
+      "fn": 0,
+      "support": 0
+    },
+    "credential_access": {
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0,
+      "tp": 1,
+      "fp": 0,
+      "fn": 0,
+      "support": 1
+    },
+    "cross_boundary_egress": {
+      "precision": 1.0,
+      "recall": 0.667,
+      "f1": 0.8,
+      "tp": 6,
+      "fp": 0,
+      "fn": 3,
+      "support": 9
+    },
+    "data_destruction": {
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0,
+      "tp": 4,
+      "fp": 0,
+      "fn": 0,
+      "support": 4
+    },
+    "external_ingestion": {
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0,
+      "tp": 2,
+      "fp": 0,
+      "fn": 0,
+      "support": 2
+    },
+    "identity_admin": {
+      "precision": 1.0,
+      "recall": 0.75,
+      "f1": 0.857,
+      "tp": 3,
+      "fp": 0,
+      "fn": 1,
+      "support": 4
+    },
+    "read_identity": {
+      "precision": 1.0,
+      "recall": 0.25,
+      "f1": 0.4,
+      "tp": 1,
+      "fp": 0,
+      "fn": 3,
+      "support": 4
+    },
+    "read_private": {
+      "precision": 0.96,
+      "recall": 0.96,
+      "f1": 0.96,
+      "tp": 24,
+      "fp": 1,
+      "fn": 1,
+      "support": 25
+    },
+    "read_public": {
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0,
+      "tp": 20,
+      "fp": 0,
+      "fn": 0,
+      "support": 20
+    },
+    "value_transfer": {
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0,
+      "tp": 6,
+      "fp": 0,
+      "fn": 0,
+      "support": 6
+    },
+    "write_mutate": {
+      "precision": 1.0,
+      "recall": 0.357,
+      "f1": 0.526,
+      "tp": 5,
+      "fp": 0,
+      "fn": 9,
+      "support": 14
+    },
+    "macro_avg": {
+      "precision": 0.996,
+      "recall": 0.798,
+      "f1": 0.854,
+      "categories_with_support": 10
+    }
+  },
+  "keyword": {
+    "code_execution": {
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1": 0.0,
+      "tp": 0,
+      "fp": 0,
+      "fn": 0,
+      "support": 0
+    },
+    "credential_access": {
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0,
+      "tp": 1,
+      "fp": 0,
+      "fn": 0,
+      "support": 1
+    },
+    "cross_boundary_egress": {
+      "precision": 0.833,
+      "recall": 0.556,
+      "f1": 0.667,
+      "tp": 5,
+      "fp": 1,
+      "fn": 4,
+      "support": 9
+    },
+    "data_destruction": {
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0,
+      "tp": 4,
+      "fp": 0,
+      "fn": 0,
+      "support": 4
+    },
+    "external_ingestion": {
+      "precision": 0.5,
+      "recall": 0.5,
+      "f1": 0.5,
+      "tp": 1,
+      "fp": 1,
+      "fn": 1,
+      "support": 2
+    },
+    "identity_admin": {
+      "precision": 1.0,
+      "recall": 0.25,
+      "f1": 0.4,
+      "tp": 1,
+      "fp": 0,
+      "fn": 3,
+      "support": 4
+    },
+    "read_identity": {
+      "precision": 0.25,
+      "recall": 0.25,
+      "f1": 0.25,
+      "tp": 1,
+      "fp": 3,
+      "fn": 3,
+      "support": 4
+    },
+    "read_private": {
+      "precision": 0.4,
+      "recall": 0.96,
+      "f1": 0.565,
+      "tp": 24,
+      "fp": 36,
+      "fn": 1,
+      "support": 25
+    },
+    "read_public": {
+      "precision": 0.818,
+      "recall": 0.45,
+      "f1": 0.581,
+      "tp": 9,
+      "fp": 2,
+      "fn": 11,
+      "support": 20
+    },
+    "value_transfer": {
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0,
+      "tp": 6,
+      "fp": 0,
+      "fn": 0,
+      "support": 6
+    },
+    "write_mutate": {
+      "precision": 1.0,
+      "recall": 0.643,
+      "f1": 0.783,
+      "tp": 9,
+      "fp": 0,
+      "fn": 5,
+      "support": 14
+    },
+    "macro_avg": {
+      "precision": 0.78,
+      "recall": 0.661,
+      "f1": 0.675,
+      "categories_with_support": 10
+    }
+  },
+  "mismatch_count": 43
+}

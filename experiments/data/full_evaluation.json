@@ -1,0 +1,119 @@
+{
+  "agentdojo_task": {
+    "ASR": 14.0,
+    "PBR": 86.0,
+    "UA": 100.0,
+    "FPR": 0.0,
+    "FNR": 22.4,
+    "malicious_calls": 1105,
+    "malicious_allowed": 247,
+    "cross_tool": 524,
+    "cross_blocked": 524,
+    "same_tool": 85,
+    "same_blocked": 0,
+    "text_only": 20,
+    "tool_attacks": 609,
+    "total_scenarios": 629,
+    "suites": {
+      "banking": {
+        "benign_tasks": 16,
+        "benign_ok": 16,
+        "scenarios": 144,
+        "tool_attacks": 144,
+        "blocked": 102
+      },
+      "workspace": {
+        "benign_tasks": 40,
+        "benign_ok": 40,
+        "scenarios": 240,
+        "tool_attacks": 240,
+        "blocked": 222
+      },
+      "slack": {
+        "benign_tasks": 21,
+        "benign_ok": 21,
+        "scenarios": 105,
+        "tool_attacks": 105,
+        "blocked": 86
+      },
+      "travel": {
+        "benign_tasks": 20,
+        "benign_ok": 20,
+        "scenarios": 140,
+        "tool_attacks": 120,
+        "blocked": 114,
+        "text_only": 20
+      }
+    }
+  },
+  "agentdojo_task_args": {
+    "ASR": 4.1,
+    "PBR": 95.9,
+    "UA": 100.0,
+    "FPR": 0.0,
+    "FNR": 14.3,
+    "malicious_calls": 1105,
+    "malicious_allowed": 158,
+    "cross_tool": 524,
+    "cross_blocked": 524,
+    "same_tool": 85,
+    "same_blocked": 60,
+    "text_only": 20,
+    "tool_attacks": 609,
+    "total_scenarios": 629,
+    "suites": {
+      "banking": {
+        "benign_tasks": 16,
+        "benign_ok": 16,
+        "scenarios": 144,
+        "tool_attacks": 144,
+        "blocked": 140
+      },
+      "workspace": {
+        "benign_tasks": 40,
+        "benign_ok": 40,
+        "scenarios": 240,
+        "tool_attacks": 240,
+        "blocked": 238
+      },
+      "slack": {
+        "benign_tasks": 21,
+        "benign_ok": 21,
+        "scenarios": 105,
+        "tool_attacks": 105,
+        "blocked": 90
+      },
+      "travel": {
+        "benign_tasks": 20,
+        "benign_ok": 20,
+        "scenarios": 140,
+        "tool_attacks": 120,
+        "blocked": 116,
+        "text_only": 20
+      }
+    }
+  },
+  "asb": {
+    "total_attacks": 400,
+    "blocked": 400,
+    "ASR": 0.0,
+    "n_agents": 10,
+    "n_normal_tools": 20,
+    "by_attack_type": {
+      "Stealthy Attack": {
+        "total": 200,
+        "blocked": 200,
+        "ASR": 0.0
+      },
+      "Disruptive Attack": {
+        "total": 200,
+        "blocked": 200,
+        "ASR": 0.0
+      }
+    }
+  },
+  "overhead_us": {
+    "allowlist": 1.04,
+    "args": 1.38
+  }
+}

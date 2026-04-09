@@ -1,0 +1,23 @@
+\begin{table}[t]
+\centering
+\caption{TrustFnCall system overhead. All latency measurements averaged over 100K samples.}
+\label{tab:system}
+\small
+\begin{tabular}{lrrrr}
+\toprule
+\textbf{Configuration} & \textbf{Mean} & \textbf{p50} & \textbf{p99} & \textbf{p99/LLM} \\
+ & ($\mu$s) & ($\mu$s) & ($\mu$s) & ratio \\
+\midrule
+  baseline (1 tool, 1 rule, no allowlist) & 1.11 & 1.09 & 1.43 & 139,665$\times$ \\
+  10 tools, allowlist & 1.14 & 1.12 & 1.47 & 136,426$\times$ \\
+  100 tools, allowlist & 1.15 & 1.13 & 1.45 & 138,026$\times$ \\
+  100 tools, allowlist + arg constraints & 1.51 & 1.49 & 1.87 & 106,781$\times$ \\
+  100 tools, 100 rules (worst-case match) & 27.41 & 27.36 & 31.07 & 6,438$\times$ \\
+\midrule
+  Throughput (100 tools) & \multicolumn{4}{r}{969,204 calls/sec} \\
+  Memory (100 tools) & \multicolumn{4}{r}{93.3 KB peak} \\
+  Memory (1000 tools) & \multicolumn{4}{r}{560.2 KB peak} \\
+  Pysa offline (batch, 70 tools) & \multicolumn{4}{r}{0.7 sec total} \\
+\bottomrule
+\end{tabular}
+\end{table}

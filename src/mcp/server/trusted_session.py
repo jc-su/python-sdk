@@ -305,7 +305,15 @@ class TrustedServerSession(ServerSession):
                 # Fast-path 2: semantic authorization check
                 if self._authorization_manager is not None and tool_name:
                     client_subject = self._client_subject()
-                    auth_decision = self._authorization_manager.authorize(client_subject, tool_name)
+                    tool_arguments = None
+                    params = responder.request.params
+                    if params is not None:
+                        raw_args = getattr(params, "arguments", None)
+                        if isinstance(raw_args, dict):
+                            tool_arguments = raw_args
+                    auth_decision = self._authorization_manager.authorize(
+                        client_subject, tool_name, arguments=tool_arguments
+                    )
                     if not auth_decision.authorized:
                         logger.warning(
                             "Tool '%s' blocked by authorization: %s (rule=%s, subject=%s)",
@@ -450,15 +458,9 @@ class TrustedServerSession(ServerSession):
             trust_metadata = None
             visible_tool_names: set[str] | None = None
 
-            # Register tools with authorization manager (analyze capabilities)
+            # Tools are pre-registered via register_verified_tool() at server startup
+            # (after Pysa offline analysis). We do NOT register here via keyword analysis.
             tools_payload = result_dict.get("tools")
-            if isinstance(tools_payload, list) and self._authorization_manager is not None:
-                for tool in tools_payload:
-                    if isinstance(tool, dict):
-                        name = tool.get("name")
-                        desc = tool.get("description", "")
-                        if isinstance(name, str) and name:
-                            self._authorization_manager.register_tool(name, desc or "")
 
             if self._tool_trust_manager is not None:
                 trust_info = self._tool_trust_manager.get_server_trust_state(require_fresh=True)

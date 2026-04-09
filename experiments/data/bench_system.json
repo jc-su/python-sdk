@@ -1,0 +1,104 @@
+{
+  "latency": {
+    "baseline": {
+      "description": "baseline (1 tool, 1 rule, no allowlist)",
+      "n_samples": 100000,
+      "mean_us": 1.114,
+      "std_us": 0.167,
+      "p50_us": 1.087,
+      "p95_us": 1.294,
+      "p99_us": 1.432,
+      "min_us": 0.964,
+      "max_us": 16.276
+    },
+    "allowlist_10": {
+      "description": "10 tools, allowlist",
+      "n_samples": 100000,
+      "mean_us": 1.144,
+      "std_us": 0.239,
+      "p50_us": 1.119,
+      "p95_us": 1.311,
+      "p99_us": 1.466,
+      "min_us": 1.0,
+      "max_us": 55.797
+    },
+    "allowlist_100": {
+      "description": "100 tools, allowlist",
+      "n_samples": 100000,
+      "mean_us": 1.15,
+      "std_us": 0.148,
+      "p50_us": 1.129,
+      "p95_us": 1.305,
+      "p99_us": 1.449,
+      "min_us": 0.987,
+      "max_us": 14.475
+    },
+    "allowlist_args_100": {
+      "description": "100 tools, allowlist + arg constraints",
+      "n_samples": 100000,
+      "mean_us": 1.512,
+      "std_us": 0.225,
+      "p50_us": 1.487,
+      "p95_us": 1.697,
+      "p99_us": 1.873,
+      "min_us": 1.305,
+      "max_us": 43.683
+    },
+    "rules_100": {
+      "description": "100 tools, 100 rules (worst-case match)",
+      "n_samples": 100000,
+      "mean_us": 27.412,
+      "std_us": 6.311,
+      "p50_us": 27.363,
+      "p95_us": 28.513,
+      "p99_us": 31.065,
+      "min_us": 25.737,
+      "max_us": 1926.84
+    }
+  },
+  "throughput": {
+    "calls_per_sec": 969204,
+    "total_calls": 1939000,
+    "duration_sec": 2.0
+  },
+  "memory": {
+    "10": {
+      "current_kb": 10.6,
+      "peak_kb": 10.7
+    },
+    "100": {
+      "current_kb": 93.3,
+      "peak_kb": 93.3
+    },
+    "1000": {
+      "current_kb": 560.2,
+      "peak_kb": 560.2
+    }
+  },
+  "scalability": {
+    "by_tools": {
+      "1": 1.074,
+      "5": 1.099,
+      "10": 1.088,
+      "50": 1.084,
+      "100": 1.087,
+      "500": 1.084,
+      "1000": 1.081
+    },
+    "by_rules": {
+      "1": 1.046,
+      "5": 2.191,
+      "10": 3.596,
+      "50": 15.21,
+      "100": 27.707,
+      "500": 134.635,
+      "1000": 269.829
+    }
+  },
+  "pysa_offline": {
+    "per_tool_avg_sec": 4.2,
+    "batch_total_sec": 0.7,
+    "n_tools": 70,
+    "note": "Per-tool includes Pysa process startup (~3.5s). Batch amortizes startup."
+  }
+}

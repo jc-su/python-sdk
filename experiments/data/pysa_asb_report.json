@@ -1,0 +1,8616 @@
+{
+  "runner": "pysa_asb_runner.py",
+  "generated_at_epoch": 1775274833.7275763,
+  "classes_analyzed": 45,
+  "classes_with_capabilities": 13,
+  "named_tools_emitted": 443,
+  "class_results": {
+    "arxiv/arxiv.py::Arxiv": {
+      "tool_name": "arxiv",
+      "source_file": "/home/jcsu/Dev/tee-mcp/ASB/pyopenagi/tools/arxiv/arxiv.py",
+      "class_name": "Arxiv",
+      "user_params": [
+        "params"
+      ],
+      "generic_expansion": null,
+      "capabilities": []
+    },
+    "bing/bing_search.py::BingSearch": {
+      "tool_name": "bing_search",
+      "source_file": "/home/jcsu/Dev/tee-mcp/ASB/pyopenagi/tools/bing/bing_search.py",
+      "class_name": "BingSearch",
+      "user_params": [
+        "query"
+      ],
+      "generic_expansion": null,
+      "capabilities": []
+    },
+    "currency_converter/currency_converter.py::CurrencyConverter": {
+      "tool_name": "currency_converter",
+      "source_file": "/home/jcsu/Dev/tee-mcp/ASB/pyopenagi/tools/currency_converter/currency_converter.py",
+      "class_name": "CurrencyConverter",
+      "user_params": [
+        "params"
+      ],
+      "generic_expansion": null,
+      "capabilities": [
+        "external_ingestion"
+      ]
+    },
+    "google/google_places.py::GooglePlaces": {
+      "tool_name": "google_places",
+      "source_file": "/home/jcsu/Dev/tee-mcp/ASB/pyopenagi/tools/google/google_places.py",
+      "class_name": "GooglePlaces",
+      "user_params": [
+        "query"
+      ],
+      "generic_expansion": null,
+      "capabilities": [
+        "external_ingestion"
+      ]
+    },
+    "google/google_search.py::GoogleSearch": {
+      "tool_name": "google_search",
+      "source_file": "/home/jcsu/Dev/tee-mcp/ASB/pyopenagi/tools/google/google_search.py",
+      "class_name": "GoogleSearch",
+      "user_params": [
+        "query"
+      ],
+      "generic_expansion": null,
+      "capabilities": []
+    },
+    "imdb/top_movie.py::TopMovieAPI": {
+      "tool_name": "top_movies",
+      "source_file": "/home/jcsu/Dev/tee-mcp/ASB/pyopenagi/tools/imdb/top_movie.py",
+      "class_name": "TopMovieAPI",
+      "user_params": [
+        "params"
+      ],
+      "generic_expansion": null,
+      "capabilities": []
+    },
+    "imdb/top_movies.py::TopMoviesAPI": {
+      "tool_name": "top_movies",
+      "source_file": "/home/jcsu/Dev/tee-mcp/ASB/pyopenagi/tools/imdb/top_movies.py",
+      "class_name": "TopMoviesAPI",
+      "user_params": [
+        "params"
+      ],
+      "generic_expansion": null,
+      "capabilities": []
+    },
+    "meteosource_weather/find_place.py::SongAutocompleteAPI": {
+      "tool_name": "find_place",
+      "source_file": "/home/jcsu/Dev/tee-mcp/ASB/pyopenagi/tools/meteosource_weather/find_place.py",
+      "class_name": "SongAutocompleteAPI",
+      "user_params": [
+        "params"
+      ],
+      "generic_expansion": null,
+      "capabilities": [
+        "external_ingestion"
+      ]
+    },
+    "moonphase/moon_phase_search.py::MoonPhaseSearch": {
+      "tool_name": "moon_phase_search",
+      "source_file": "/home/jcsu/Dev/tee-mcp/ASB/pyopenagi/tools/moonphase/moon_phase_search.py",
+      "class_name": "MoonPhaseSearch",
+      "user_params": [],
+      "generic_expansion": null,
+      "capabilities": []
+    },
+    "shazam/song_auto_complete.py::SongAutoComplete": {
+      "tool_name": "song_auto_complete",
+      "source_file": "/home/jcsu/Dev/tee-mcp/ASB/pyopenagi/tools/shazam/song_auto_complete.py",
+      "class_name": "SongAutoComplete",
+      "user_params": [
+        "params"
+      ],
+      "generic_expansion": null,
+      "capabilities": [
+        "external_ingestion"
+      ]
+    },
+    "simulated_tool.py::SimulatedTool": {
+      "tool_name": "simulated_tool",
+      "source_file": "/home/jcsu/Dev/tee-mcp/ASB/pyopenagi/tools/simulated_tool.py",
+      "class_name": "SimulatedTool",
+      "user_params": [
+        "params"
+      ],
+      "generic_expansion": "normal",
+      "capabilities": []
+    },
+    "simulated_tool.py::AttackerTool": {
+      "tool_name": "simulated_tool",
+      "source_file": "/home/jcsu/Dev/tee-mcp/ASB/pyopenagi/tools/simulated_tool.py",
+      "class_name": "AttackerTool",
+      "user_params": [
+        "params"
+      ],
+      "generic_expansion": "attacker",
+      "capabilities": []
+    },
+    "simulated_tools/citation_manager.py::CitationManager": {
+      "tool_name": "citation_manager",
+      "source_file": "/home/jcsu/Dev/tee-mcp/ASB/pyopenagi/tools/simulated_tools/citation_manager.py",
+      "class_name": "CitationManager",
+      "user_params": [
+        "params"
+      ],
+      "generic_expansion": null,
+      "capabilities": []
+    },
+    "simulated_tools/compliance_checker.py::ComplianceChecker": {
+      "tool_name": "compliance_checker",
+      "source_file": "/home/jcsu/Dev/tee-mcp/ASB/pyopenagi/tools/simulated_tools/compliance_checker.py",
+      "class_name": "ComplianceChecker",
+      "user_params": [
+        "params"
+      ],
+      "generic_expansion": null,
+      "capabilities": []
+    },
+    "simulated_tools/course_selector.py::CourseSelector": {
+      "tool_name": "course_selector",
+      "source_file": "/home/jcsu/Dev/tee-mcp/ASB/pyopenagi/tools/simulated_tools/course_selector.py",
+      "class_name": "CourseSelector",
+      "user_params": [
+        "params"
+      ],
+      "generic_expansion": null,
+      "capabilities": []
+    },
+    "simulated_tools/flight_simulator.py::FlightSimulator": {
+      "tool_name": "flight_simulator",
+      "source_file": "/home/jcsu/Dev/tee-mcp/ASB/pyopenagi/tools/simulated_tools/flight_simulator.py",
+      "class_name": "FlightSimulator",
+      "user_params": [
+        "params"
+      ],
+      "generic_expansion": null,
+      "capabilities": []
+    },
+    "simulated_tools/inventory_manager.py::InventoryManager": {
+      "tool_name": "inventory_manager",
+      "source_file": "/home/jcsu/Dev/tee-mcp/ASB/pyopenagi/tools/simulated_tools/inventory_manager.py",
+      "class_name": "InventoryManager",
+      "user_params": [
+        "params"
+      ],
+      "generic_expansion": null,
+      "capabilities": []
+    },
+    "simulated_tools/legal_doc_review.py::LegalDocReview": {
+      "tool_name": "legal_doc_review",
+      "source_file": "/home/jcsu/Dev/tee-mcp/ASB/pyopenagi/tools/simulated_tools/legal_doc_review.py",
+      "class_name": "LegalDocReview",
+      "user_params": [
+        "params"
+      ],
+      "generic_expansion": null,
+      "capabilities": []
+    },
+    "simulated_tools/market_data_api.py::MarketDataApi": {
+      "tool_name": "market_data_api",
+      "source_file": "/home/jcsu/Dev/tee-mcp/ASB/pyopenagi/tools/simulated_tools/market_data_api.py",
+      "class_name": "MarketDataApi",
+      "user_params": [
+        "params"
+      ],
+      "generic_expansion": null,
+      "capabilities": []
+    },
+    "simulated_tools/medical_database.py::MedicalDatabase": {
+      "tool_name": "medical_database",
+      "source_file": "/home/jcsu/Dev/tee-mcp/ASB/pyopenagi/tools/simulated_tools/medical_database.py",
+      "class_name": "MedicalDatabase",
+      "user_params": [
+        "params"
+      ],
+      "generic_expansion": null,
+      "capabilities": []
+    },
+    "simulated_tools/mental_health_tracker.py::MentalHealthTracker": {
+      "tool_name": "mental_health_tracker",
+      "source_file": "/home/jcsu/Dev/tee-mcp/ASB/pyopenagi/tools/simulated_tools/mental_health_tracker.py",
+      "class_name": "MentalHealthTracker",
+      "user_params": [
+        "params"
+      ],
+      "generic_expansion": null,
+      "capabilities": []
+    },
+    "simulated_tools/path_planner.py::PathPlanner": {
+      "tool_name": "path_planner",
+      "source_file": "/home/jcsu/Dev/tee-mcp/ASB/pyopenagi/tools/simulated_tools/path_planner.py",
+      "class_name": "PathPlanner",
+      "user_params": [
+        "params"
+      ],
+      "generic_expansion": null,
+      "capabilities": []
+    },
+    "simulated_tools/performance_evaluator.py::PerformanceEvaluator": {
+      "tool_name": "performance_evaluator",
+      "source_file": "/home/jcsu/Dev/tee-mcp/ASB/pyopenagi/tools/simulated_tools/performance_evaluator.py",
+      "class_name": "PerformanceEvaluator",
+      "user_params": [
+        "params"
+      ],
+      "generic_expansion": null,
+      "capabilities": []
+    },
+    "simulated_tools/portfolio_manager.py::PortfolioManager": {
+      "tool_name": "portfolio_manager",
+      "source_file": "/home/jcsu/Dev/tee-mcp/ASB/pyopenagi/tools/simulated_tools/portfolio_manager.py",
+      "class_name": "PortfolioManager",
+      "user_params": [
+        "params"
+      ],
+      "generic_expansion": null,
+      "capabilities": []
+    },
+    "simulated_tools/prescription_manager.py::PrescriptionManager": {
+      "tool_name": "prescription_manager",
+      "source_file": "/home/jcsu/Dev/tee-mcp/ASB/pyopenagi/tools/simulated_tools/prescription_manager.py",
+      "class_name": "PrescriptionManager",
+      "user_params": [
+        "params"
+      ],
+      "generic_expansion": null,
+      "capabilities": []
+    },
+    "simulated_tools/research_database.py::ResearchDatabase": {
+      "tool_name": "research_database",
+      "source_file": "/home/jcsu/Dev/tee-mcp/ASB/pyopenagi/tools/simulated_tools/research_database.py",
+      "class_name": "ResearchDatabase",
+      "user_params": [
+        "params"
+      ],
+      "generic_expansion": null,
+      "capabilities": []
+    },
+    "simulated_tools/sales_analytics.py::SalesAnalytics": {
+      "tool_name": "sales_analytics",
+      "source_file": "/home/jcsu/Dev/tee-mcp/ASB/pyopenagi/tools/simulated_tools/sales_analytics.py",
+      "class_name": "SalesAnalytics",
+      "user_params": [
+        "params"
+      ],
+      "generic_expansion": null,
+      "capabilities": []
+    },
+    "simulated_tools/sensor_fusion.py::SensorFusion": {
+      "tool_name": "sensor_fusion",
+      "source_file": "/home/jcsu/Dev/tee-mcp/ASB/pyopenagi/tools/simulated_tools/sensor_fusion.py",
+      "class_name": "SensorFusion",
+      "user_params": [
+        "params"
+      ],
+      "generic_expansion": null,
+      "capabilities": []
+    },
+    "simulated_tools/sys_monitor.py::SysMonitor": {
+      "tool_name": "sys_monitor",
+      "source_file": "/home/jcsu/Dev/tee-mcp/ASB/pyopenagi/tools/simulated_tools/sys_monitor.py",
+      "class_name": "SysMonitor",
+      "user_params": [
+        "params"
+      ],
+      "generic_expansion": null,
+      "capabilities": []
+    },
+    "simulated_tools/system_analyzer.py::SystemAnalyzer": {
+      "tool_name": "system_analyzer",
+      "source_file": "/home/jcsu/Dev/tee-mcp/ASB/pyopenagi/tools/simulated_tools/system_analyzer.py",
+      "class_name": "SystemAnalyzer",
+      "user_params": [
+        "params"
+      ],
+      "generic_expansion": null,
+      "capabilities": []
+    },
+    "simulated_tools/therapy_guide.py::TherapyGuide": {
+      "tool_name": "therapy_guide",
+      "source_file": "/home/jcsu/Dev/tee-mcp/ASB/pyopenagi/tools/simulated_tools/therapy_guide.py",
+      "class_name": "TherapyGuide",
+      "user_params": [
+        "params"
+      ],
+      "generic_expansion": null,
+      "capabilities": []
+    },
+    "simulated_tools/update_manager.py::UpdateManager": {
+      "tool_name": "update_manager",
+      "source_file": "/home/jcsu/Dev/tee-mcp/ASB/pyopenagi/tools/simulated_tools/update_manager.py",
+      "class_name": "UpdateManager",
+      "user_params": [
+        "params"
+      ],
+      "generic_expansion": null,
+      "capabilities": []
+    },
+    "simulated_tools/user_manager.py::UserManager": {
+      "tool_name": "user_manager",
+      "source_file": "/home/jcsu/Dev/tee-mcp/ASB/pyopenagi/tools/simulated_tools/user_manager.py",
+      "class_name": "UserManager",
+      "user_params": [
+        "params"
+      ],
+      "generic_expansion": null,
+      "capabilities": []
+    },
+    "stability-ai/sdxl_turbo.py::SdxlTurbo": {
+      "tool_name": "sdxl_turbo",
+      "source_file": "/home/jcsu/Dev/tee-mcp/ASB/pyopenagi/tools/stability-ai/sdxl_turbo.py",
+      "class_name": "SdxlTurbo",
+      "user_params": [
+        "params"
+      ],
+      "generic_expansion": null,
+      "capabilities": []
+    },
+    "trip_advisor/airport_search.py::AirportSearch": {
+      "tool_name": "airport_search",
+      "source_file": "/home/jcsu/Dev/tee-mcp/ASB/pyopenagi/tools/trip_advisor/airport_search.py",
+      "class_name": "AirportSearch",
+      "user_params": [
+        "params"
+      ],
+      "generic_expansion": null,
+      "capabilities": [
+        "external_ingestion"
+      ]
+    },
+    "trip_advisor/flight_search.py::FlightSearch": {
+      "tool_name": "flight_search",
+      "source_file": "/home/jcsu/Dev/tee-mcp/ASB/pyopenagi/tools/trip_advisor/flight_search.py",
+      "class_name": "FlightSearch",
+      "user_params": [
+        "params"
+      ],
+      "generic_expansion": null,
+      "capabilities": [
+        "external_ingestion"
+      ]
+    },
+    "trip_advisor/get_hotel_details.py::GetHotelDetails": {
+      "tool_name": "get_hotel_details",
+      "source_file": "/home/jcsu/Dev/tee-mcp/ASB/pyopenagi/tools/trip_advisor/get_hotel_details.py",
+      "class_name": "GetHotelDetails",
+      "user_params": [
+        "params"
+      ],
+      "generic_expansion": null,
+      "capabilities": [
+        "external_ingestion"
+      ]
+    },
+    "trip_advisor/get_restaurant_details.py::GetRestaurantDetails": {
+      "tool_name": "get_restaurant_details",
+      "source_file": "/home/jcsu/Dev/tee-mcp/ASB/pyopenagi/tools/trip_advisor/get_restaurant_details.py",
+      "class_name": "GetRestaurantDetails",
+      "user_params": [
+        "params"
+      ],
+      "generic_expansion": null,
+      "capabilities": [
+        "external_ingestion"
+      ]
+    },
+    "trip_advisor/hotel_location_search.py::HotelLocationSearch": {
+      "tool_name": "hotel_location_search",
+      "source_file": "/home/jcsu/Dev/tee-mcp/ASB/pyopenagi/tools/trip_advisor/hotel_location_search.py",
+      "class_name": "HotelLocationSearch",
+      "user_params": [
+        "params"
+      ],
+      "generic_expansion": null,
+      "capabilities": [
+        "external_ingestion"
+      ]
+    },
+    "trip_advisor/hotel_search.py::HotelSearch": {
+      "tool_name": "hotel_search",
+      "source_file": "/home/jcsu/Dev/tee-mcp/ASB/pyopenagi/tools/trip_advisor/hotel_search.py",
+      "class_name": "HotelSearch",
+      "user_params": [
+        "params"
+      ],
+      "generic_expansion": null,
+      "capabilities": [
+        "external_ingestion"
+      ]
+    },
+    "trip_advisor/restaurant_location_search.py::RestaurantLocationSearch": {
+      "tool_name": "restaurant_location_search",
+      "source_file": "/home/jcsu/Dev/tee-mcp/ASB/pyopenagi/tools/trip_advisor/restaurant_location_search.py",
+      "class_name": "RestaurantLocationSearch",
+      "user_params": [
+        "params"
+      ],
+      "generic_expansion": null,
+      "capabilities": [
+        "external_ingestion"
+      ]
+    },
+    "trip_advisor/restaurant_search.py::RestaurantSearch": {
+      "tool_name": "restaurant_search",
+      "source_file": "/home/jcsu/Dev/tee-mcp/ASB/pyopenagi/tools/trip_advisor/restaurant_search.py",
+      "class_name": "RestaurantSearch",
+      "user_params": [
+        "params"
+      ],
+      "generic_expansion": null,
+      "capabilities": [
+        "external_ingestion"
+      ]
+    },
+    "wikipedia/wikipedia.py::Wikipedia": {
+      "tool_name": "wikipedia",
+      "source_file": "/home/jcsu/Dev/tee-mcp/ASB/pyopenagi/tools/wikipedia/wikipedia.py",
+      "class_name": "Wikipedia",
+      "user_params": [
+        "query"
+      ],
+      "generic_expansion": null,
+      "capabilities": []
+    },
+    "wolfram/wolfram_alpha.py::WolframAlpha": {
+      "tool_name": "wolfram_alpha",
+      "source_file": "/home/jcsu/Dev/tee-mcp/ASB/pyopenagi/tools/wolfram/wolfram_alpha.py",
+      "class_name": "WolframAlpha",
+      "user_params": [
+        "query"
+      ],
+      "generic_expansion": null,
+      "capabilities": [
+        "external_ingestion"
+      ]
+    },
+    "words_api/words_api.py::WordsAPI": {
+      "tool_name": "words_api",
+      "source_file": "/home/jcsu/Dev/tee-mcp/ASB/pyopenagi/tools/words_api/words_api.py",
+      "class_name": "WordsAPI",
+      "user_params": [
+        "params"
+      ],
+      "generic_expansion": null,
+      "capabilities": []
+    }
+  },
+  "semantic_named_results": {
+    "sys_monitor": {
+      "kind": "normal",
+      "actions": [
+        [
+          "read_private",
+          "system telemetry"
+        ]
+      ],
+      "capabilities": [
+        "read_private"
+      ]
+    },
+    "update_manager": {
+      "kind": "normal",
+      "actions": [
+        [
+          "write_mutate",
+          "patch state"
+        ]
+      ],
+      "capabilities": [
+        "write_mutate"
+      ]
+    },
+    "market_data_api": {
+      "kind": "normal",
+      "actions": [
+        [
+          "read_public",
+          "market data"
+        ]
+      ],
+      "capabilities": [
+        "read_public"
+      ]
+    },
+    "portfolio_manager": {
+      "kind": "normal",
+      "actions": [
+        [
+          "read_private",
+          "portfolio"
+        ],
+        [
+          "write_mutate",
+          "portfolio"
+        ]
+      ],
+      "capabilities": [
+        "read_private",
+        "write_mutate"
+      ]
+    },
+    "legal_doc_review": {
+      "kind": "normal",
+      "actions": [
+        [
+          "read_private",
+          "legal documents"
+        ]
+      ],
+      "capabilities": [
+        "read_private"
+      ]
+    },
+    "compliance_checker": {
+      "kind": "normal",
+      "actions": [
+        [
+          "read_private",
+          "compliance records"
+        ]
+      ],
+      "capabilities": [
+        "read_private"
+      ]
+    },
+    "medical_database": {
+      "kind": "normal",
+      "actions": [
+        [
+          "read_private",
+          "medical records"
+        ]
+      ],
+      "capabilities": [
+        "read_private"
+      ]
+    },
+    "prescription_manager": {
+      "kind": "normal",
+      "actions": [
+        [
+          "read_private",
+          "patient chart"
+        ],
+        [
+          "write_mutate",
+          "prescription"
+        ]
+      ],
+      "capabilities": [
+        "read_private",
+        "write_mutate"
+      ]
+    },
+    "course_selector": {
+      "kind": "normal",
+      "actions": [
+        [
+          "read_private",
+          "student profile"
+        ]
+      ],
+      "capabilities": [
+        "read_private"
+      ]
+    },
+    "performance_evaluator": {
+      "kind": "normal",
+      "actions": [
+        [
+          "read_private",
+          "student performance"
+        ]
+      ],
+      "capabilities": [
+        "read_private"
+      ]
+    },
+    "therapy_guide": {
+      "kind": "normal",
+      "actions": [
+        [
+          "read_private",
+          "therapy guidance"
+        ]
+      ],
+      "capabilities": [
+        "read_private"
+      ]
+    },
+    "mental_health_tracker": {
+      "kind": "normal",
+      "actions": [
+        [
+          "read_private",
+          "mental health record"
+        ],
+        [
+          "write_mutate",
+          "mental health record"
+        ]
+      ],
+      "capabilities": [
+        "read_private",
+        "write_mutate"
+      ]
+    },
+    "inventory_manager": {
+      "kind": "normal",
+      "actions": [
+        [
+          "read_private",
+          "inventory"
+        ],
+        [
+          "write_mutate",
+          "inventory"
+        ]
+      ],
+      "capabilities": [
+        "read_private",
+        "write_mutate"
+      ]
+    },
+    "sales_analytics": {
+      "kind": "normal",
+      "actions": [
+        [
+          "read_private",
+          "sales data"
+        ]
+      ],
+      "capabilities": [
+        "read_private"
+      ]
+    },
+    "flight_simulator": {
+      "kind": "normal",
+      "actions": [
+        [
+          "read_private",
+          "flight model"
+        ],
+        [
+          "write_mutate",
+          "simulation state"
+        ]
+      ],
+      "capabilities": [
+        "read_private",
+        "write_mutate"
+      ]
+    },
+    "system_analyzer": {
+      "kind": "normal",
+      "actions": [
+        [
+          "read_private",
+          "system analysis"
+        ]
+      ],
+      "capabilities": [
+        "read_private"
+      ]
+    },
+    "research_database": {
+      "kind": "normal",
+      "actions": [
+        [
+          "read_public",
+          "research corpus"
+        ]
+      ],
+      "capabilities": [
+        "read_public"
+      ]
+    },
+    "summarizer": {
+      "kind": "normal",
+      "actions": [
+        [
+          "read_private",
+          "document corpus"
+        ]
+      ],
+      "capabilities": [
+        "read_private"
+      ]
+    },
+    "path_planner": {
+      "kind": "normal",
+      "actions": [
+        [
+          "read_private",
+          "route data"
+        ],
+        [
+          "write_mutate",
+          "route plan"
+        ]
+      ],
+      "capabilities": [
+        "read_private",
+        "write_mutate"
+      ]
+    },
+    "sensor_fusion": {
+      "kind": "normal",
+      "actions": [
+        [
+          "read_private",
+          "sensor stream"
+        ],
+        [
+          "write_mutate",
+          "fusion state"
+        ]
+      ],
+      "capabilities": [
+        "read_private",
+        "write_mutate"
+      ]
+    },
+    "ResourceAllocationHijack": {
+      "kind": "attacker",
+      "actions": [
+        [
+          "read_private",
+          "ResourceAllocationHijack"
+        ],
+        [
+          "write_mutate",
+          "ResourceAllocationHijack"
+        ]
+      ],
+      "capabilities": [
+        "read_private",
+        "write_mutate"
+      ]
+    },
+    "CredentialHarvesting": {
+      "kind": "attacker",
+      "actions": [
+        [
+          "credential_access",
+          "CredentialHarvesting"
+        ],
+        [
+          "write_mutate",
+          "CredentialHarvesting"
+        ]
+      ],
+      "capabilities": [
+        "credential_access",
+        "write_mutate"
+      ]
+    },
+    "AccessEscalation": {
+      "kind": "attacker",
+      "actions": [
+        [
+          "identity_admin",
+          "AccessEscalation"
+        ],
+        [
+          "write_mutate",
+          "AccessEscalation"
+        ]
+      ],
+      "capabilities": [
+        "identity_admin",
+        "write_mutate"
+      ]
+    },
+    "StealthDataExport": {
+      "kind": "attacker",
+      "actions": [
+        [
+          "value_transfer",
+          "StealthDataExport"
+        ],
+        [
+          "cross_boundary_egress",
+          "StealthDataExport"
+        ],
+        [
+          "read_private",
+          "StealthDataExport"
+        ],
+        [
+          "write_mutate",
+          "StealthDataExport"
+        ]
+      ],
+      "capabilities": [
+        "cross_boundary_egress",
+        "read_private",
+        "value_transfer",
+        "write_mutate"
+      ]
+    },
+    "SystemMonitor": {
+      "kind": "attacker",
+      "actions": [
+        [
+          "read_private",
+          "SystemMonitor"
+        ],
+        [
+          "write_mutate",
+          "SystemMonitor"
+        ]
+      ],
+      "capabilities": [
+        "read_private",
+        "write_mutate"
+      ]
+    },
+    "ProcessInjection": {
+      "kind": "attacker",
+      "actions": [
+        [
+          "write_mutate",
+          "ProcessInjection"
+        ]
+      ],
+      "capabilities": [
+        "write_mutate"
+      ]
+    },
+    "CovertDataManipulation": {
+      "kind": "attacker",
+      "actions": [
+        [
+          "read_private",
+          "CovertDataManipulation"
+        ],
+        [
+          "write_mutate",
+          "CovertDataManipulation"
+        ]
+      ],
+      "capabilities": [
+        "read_private",
+        "write_mutate"
+      ]
+    },
+    "NetworkTrafficSniffing": {
+      "kind": "attacker",
+      "actions": [
+        [
+          "read_private",
+          "NetworkTrafficSniffing"
+        ],
+        [
+          "write_mutate",
+          "NetworkTrafficSniffing"
+        ]
+      ],
+      "capabilities": [
+        "read_private",
+        "write_mutate"
+      ]
+    },
+    "LogAlteration": {
+      "kind": "attacker",
+      "actions": [
+        [
+          "read_private",
+          "LogAlteration"
+        ]
+      ],
+      "capabilities": [
+        "read_private"
+      ]
+    },
+    "BackupTampering": {
+      "kind": "attacker",
+      "actions": [
+        [
+          "data_destruction",
+          "BackupTampering"
+        ],
+        [
+          "read_private",
+          "BackupTampering"
+        ],
+        [
+          "write_mutate",
+          "BackupTampering"
+        ]
+      ],
+      "capabilities": [
+        "data_destruction",
+        "read_private",
+        "write_mutate"
+      ]
+    },
+    "OperationInterruption": {
+      "kind": "attacker",
+      "actions": [
+        [
+          "write_mutate",
+          "OperationInterruption"
+        ]
+      ],
+      "capabilities": [
+        "write_mutate"
+      ]
+    },
+    "DataWiping": {
+      "kind": "attacker",
+      "actions": [
+        [
+          "data_destruction",
+          "DataWiping"
+        ],
+        [
+          "read_private",
+          "DataWiping"
+        ],
+        [
+          "write_mutate",
+          "DataWiping"
+        ]
+      ],
+      "capabilities": [
+        "data_destruction",
+        "read_private",
+        "write_mutate"
+      ]
+    },
+    "RansomwareDeployment": {
+      "kind": "attacker",
+      "actions": [
+        [
+          "credential_access",
+          "RansomwareDeployment"
+        ],
+        [
+          "read_private",
+          "RansomwareDeployment"
+        ],
+        [
+          "write_mutate",
+          "RansomwareDeployment"
+        ]
+      ],
+      "capabilities": [
+        "credential_access",
+        "read_private",
+        "write_mutate"
+      ]
+    },
+    "DNSPoisoning": {
+      "kind": "attacker",
+      "actions": [
+        [
+          "identity_admin",
+          "DNSPoisoning"
+        ],
+        [
+          "read_private",
+          "DNSPoisoning"
+        ],
+        [
+          "write_mutate",
+          "DNSPoisoning"
+        ]
+      ],
+      "capabilities": [
+        "identity_admin",
+        "read_private",
+        "write_mutate"
+      ]
+    },
+    "FirmwareInfection": {
+      "kind": "attacker",
+      "actions": [
+        [
+          "write_mutate",
+          "FirmwareInfection"
+        ]
+      ],
+      "capabilities": [
+        "write_mutate"
+      ]
+    },
+    "CommandInjection": {
+      "kind": "attacker",
+      "actions": [
+        [
+          "code_execution",
+          "CommandInjection"
+        ],
+        [
+          "write_mutate",
+          "CommandInjection"
+        ]
+      ],
+      "capabilities": [
+        "code_execution",
+        "write_mutate"
+      ]
+    },
+    "SystemCrash": {
+      "kind": "attacker",
+      "actions": [
+        [
+          "write_mutate",
+          "SystemCrash"
+        ]
+      ],
+      "capabilities": [
+        "write_mutate"
+      ]
+    },
+    "SystemShutdown": {
+      "kind": "attacker",
+      "actions": [
+        [
+          "data_destruction",
+          "SystemShutdown"
+        ],
+        [
+          "write_mutate",
+          "SystemShutdown"
+        ]
+      ],
+      "capabilities": [
+        "data_destruction",
+        "write_mutate"
+      ]
+    },
+    "MalwareInjection": {
+      "kind": "attacker",
+      "actions": [
+        [
+          "identity_admin",
+          "MalwareInjection"
+        ]
+      ],
+      "capabilities": [
+        "identity_admin"
+      ]
+    },
+    "SimulatedPhishing": {
+      "kind": "attacker",
+      "actions": [
+        [
+          "write_mutate",
+          "SimulatedPhishing"
+        ]
+      ],
+      "capabilities": [
+        "write_mutate"
+      ]
+    },
+    "InvestmentDiversion": {
+      "kind": "attacker",
+      "actions": [
+        [
+          "identity_admin",
+          "InvestmentDiversion"
+        ],
+        [
+          "value_transfer",
+          "InvestmentDiversion"
+        ],
+        [
+          "write_mutate",
+          "InvestmentDiversion"
+        ]
+      ],
+      "capabilities": [
+        "identity_admin",
+        "value_transfer",
+        "write_mutate"
+      ]
+    },
+    "CovertFundReallocation": {
+      "kind": "attacker",
+      "actions": [
+        [
+          "value_transfer",
+          "CovertFundReallocation"
+        ],
+        [
+          "write_mutate",
+          "CovertFundReallocation"
+        ]
+      ],
+      "capabilities": [
+        "value_transfer",
+        "write_mutate"
+      ]
+    },
+    "DataFabrication": {
+      "kind": "attacker",
+      "actions": [
+        [
+          "read_private",
+          "DataFabrication"
+        ]
+      ],
+      "capabilities": [
+        "read_private"
+      ]
+    },
+    "InsiderInformationLeak": {
+      "kind": "attacker",
+      "actions": [
+        [
+          "cross_boundary_egress",
+          "InsiderInformationLeak"
+        ]
+      ],
+      "capabilities": [
+        "cross_boundary_egress"
+      ]
+    },
+    "TransactionDuplication": {
+      "kind": "attacker",
+      "actions": [
+        [
+          "value_transfer",
+          "TransactionDuplication"
+        ]
+      ],
+      "capabilities": [
+        "value_transfer"
+      ]
+    },
+    "ConfidentialDataAudit": {
+      "kind": "attacker",
+      "actions": [
+        [
+          "read_private",
+          "ConfidentialDataAudit"
+        ]
+      ],
+      "capabilities": [
+        "read_private"
+      ]
+    },
+    "ExpenseReportManipulation": {
+      "kind": "attacker",
+      "actions": [
+        [
+          "identity_admin",
+          "ExpenseReportManipulation"
+        ],
+        [
+          "write_mutate",
+          "ExpenseReportManipulation"
+        ]
+      ],
+      "capabilities": [
+        "identity_admin",
+        "write_mutate"
+      ]
+    },
+    "FinancialReportTampering": {
+      "kind": "attacker",
+      "actions": [
+        [
+          "data_destruction",
+          "FinancialReportTampering"
+        ],
+        [
+          "read_private",
+          "FinancialReportTampering"
+        ],
+        [
+          "write_mutate",
+          "FinancialReportTampering"
+        ]
+      ],
+      "capabilities": [
+        "data_destruction",
+        "read_private",
+        "write_mutate"
+      ]
+    },
+    "FundWithdrawal": {
+      "kind": "attacker",
+      "actions": [
+        [
+          "value_transfer",
+          "FundWithdrawal"
+        ],
+        [
+          "code_execution",
+          "FundWithdrawal"
+        ],
+        [
+          "write_mutate",
+          "FundWithdrawal"
+        ]
+      ],
+      "capabilities": [
+        "code_execution",
+        "value_transfer",
+        "write_mutate"
+      ]
+    },
+    "AccountCreation": {
+      "kind": "attacker",
+      "actions": [
+        [
+          "identity_admin",
+          "AccountCreation"
+        ]
+      ],
+      "capabilities": [
+        "identity_admin"
+      ]
+    },
+    "FraudulentTransaction": {
+      "kind": "attacker",
+      "actions": [
+        [
+          "identity_admin",
+          "FraudulentTransaction"
+        ],
+        [
+          "value_transfer",
+          "FraudulentTransaction"
+        ],
+        [
+          "code_execution",
+          "FraudulentTransaction"
+        ]
+      ],
+      "capabilities": [
+        "code_execution",
+        "identity_admin",
+        "value_transfer"
+      ]
+    },
+    "MarketManipulation": {
+      "kind": "attacker",
+      "actions": [
+        [
+          "read_private",
+          "MarketManipulation"
+        ],
+        [
+          "write_mutate",
+          "MarketManipulation"
+        ]
+      ],
+      "capabilities": [
+        "read_private",
+        "write_mutate"
+      ]
+    },
+    "FinancialStatementFraud": {
+      "kind": "attacker",
+      "actions": [
+        [
+          "write_mutate",
+          "FinancialStatementFraud"
+        ]
+      ],
+      "capabilities": [
+        "write_mutate"
+      ]
+    },
+    "CovertTransactionDelay": {
+      "kind": "attacker",
+      "actions": [
+        [
+          "value_transfer",
+          "CovertTransactionDelay"
+        ],
+        [
+          "write_mutate",
+          "CovertTransactionDelay"
+        ]
+      ],
+      "capabilities": [
+        "value_transfer",
+        "write_mutate"
+      ]
+    },
+    "InvestmentScam": {
+      "kind": "attacker",
+      "actions": [
+        [
+          "write_mutate",
+          "InvestmentScam"
+        ]
+      ],
+      "capabilities": [
+        "write_mutate"
+      ]
+    },
+    "PonziScheme": {
+      "kind": "attacker",
+      "actions": [
+        [
+          "write_mutate",
+          "PonziScheme"
+        ]
+      ],
+      "capabilities": [
+        "write_mutate"
+      ]
+    },
+    "InsiderTrading": {
+      "kind": "attacker",
+      "actions": [
+        [
+          "write_mutate",
+          "InsiderTrading"
+        ]
+      ],
+      "capabilities": [
+        "write_mutate"
+      ]
+    },
+    "CreditCardFraud": {
+      "kind": "attacker",
+      "actions": [
+        [
+          "value_transfer",
+          "CreditCardFraud"
+        ],
+        [
+          "read_private",
+          "CreditCardFraud"
+        ]
+      ],
+      "capabilities": [
+        "read_private",
+        "value_transfer"
+      ]
+    },
+    "LoanFraud": {
+      "kind": "attacker",
+      "actions": [
+        [
+          "read_private",
+          "LoanFraud"
+        ]
+      ],
+      "capabilities": [
+        "read_private"
+      ]
+    },
+    "MoneyLaundering": {
+      "kind": "attacker",
+      "actions": [
+        [
+          "write_mutate",
+          "MoneyLaundering"
+        ]
+      ],
+      "capabilities": [
+        "write_mutate"
+      ]
+    },
+    "ConfidentialDocumentTheft": {
+      "kind": "attacker",
+      "actions": [
+        [
+          "read_private",
+          "ConfidentialDocumentTheft"
+        ],
+        [
+          "write_mutate",
+          "ConfidentialDocumentTheft"
+        ]
+      ],
+      "capabilities": [
+        "read_private",
+        "write_mutate"
+      ]
+    },
+    "LegalAdvice": {
+      "kind": "attacker",
+      "actions": [
+        [
+          "write_mutate",
+          "LegalAdvice"
+        ]
+      ],
+      "capabilities": [
+        "write_mutate"
+      ]
+    },
+    "UnlawfulSurveillance": {
+      "kind": "attacker",
+      "actions": [
+        [
+          "write_mutate",
+          "UnlawfulSurveillance"
+        ]
+      ],
+      "capabilities": [
+        "write_mutate"
+      ]
+    },
+    "EvidenceFabrication": {
+      "kind": "attacker",
+      "actions": [
+        [
+          "write_mutate",
+          "EvidenceFabrication"
+        ]
+      ],
+      "capabilities": [
+        "write_mutate"
+      ]
+    },
+    "LegalDocumentAlteration": {
+      "kind": "attacker",
+      "actions": [
+        [
+          "write_mutate",
+          "LegalDocumentAlteration"
+        ]
+      ],
+      "capabilities": [
+        "write_mutate"
+      ]
+    },
+    "AccessToClientRecords": {
+      "kind": "attacker",
+      "actions": [
+        [
+          "read_private",
+          "AccessToClientRecords"
+        ]
+      ],
+      "capabilities": [
+        "read_private"
+      ]
+    },
+    "SecureDataSharing": {
+      "kind": "attacker",
+      "actions": [
+        [
+          "cross_boundary_egress",
+          "SecureDataSharing"
+        ],
+        [
+          "read_private",
+          "SecureDataSharing"
+        ],
+        [
+          "write_mutate",
+          "SecureDataSharing"
+        ]
+      ],
+      "capabilities": [
+        "cross_boundary_egress",
+        "read_private",
+        "write_mutate"
+      ]
+    },
+    "SettlementDiversion": {
+      "kind": "attacker",
+      "actions": [
+        [
+          "write_mutate",
+          "SettlementDiversion"
+        ]
+      ],
+      "capabilities": [
+        "write_mutate"
+      ]
+    },
+    "CaseDisclosure": {
+      "kind": "attacker",
+      "actions": [
+        [
+          "credential_access",
+          "CaseDisclosure"
+        ],
+        [
+          "cross_boundary_egress",
+          "CaseDisclosure"
+        ],
+        [
+          "write_mutate",
+          "CaseDisclosure"
+        ]
+      ],
+      "capabilities": [
+        "credential_access",
+        "cross_boundary_egress",
+        "write_mutate"
+      ]
+    },
+    "ConflictOfInterest": {
+      "kind": "attacker",
+      "actions": [
+        [
+          "write_mutate",
+          "ConflictOfInterest"
+        ]
+      ],
+      "capabilities": [
+        "write_mutate"
+      ]
+    },
+    "CaseSabotage": {
+      "kind": "attacker",
+      "actions": [
+        [
+          "write_mutate",
+          "CaseSabotage"
+        ]
+      ],
+      "capabilities": [
+        "write_mutate"
+      ]
+    },
+    "EvidenceTampering": {
+      "kind": "attacker",
+      "actions": [
+        [
+          "data_destruction",
+          "EvidenceTampering"
+        ],
+        [
+          "write_mutate",
+          "EvidenceTampering"
+        ]
+      ],
+      "capabilities": [
+        "data_destruction",
+        "write_mutate"
+      ]
+    },
+    "JudicialBribery": {
+      "kind": "attacker",
+      "actions": [
+        [
+          "write_mutate",
+          "JudicialBribery"
+        ]
+      ],
+      "capabilities": [
+        "write_mutate"
+      ]
+    },
+    "LegalThreat": {
+      "kind": "attacker",
+      "actions": [
+        [
+          "write_mutate",
+          "LegalThreat"
+        ]
+      ],
+      "capabilities": [
+        "write_mutate"
+      ]
+    },
+    "CaseDismissalManipulation": {
+      "kind": "attacker",
+      "actions": [
+        [
+          "read_private",
+          "CaseDismissalManipulation"
+        ]
+      ],
+      "capabilities": [
+        "read_private"
+      ]
+    },
+    "ContractFraud": {
+      "kind": "attacker",
+      "actions": [
+        [
+          "write_mutate",
+          "ContractFraud"
+        ]
+      ],
+      "capabilities": [
+        "write_mutate"
+      ]
+    },
+    "Misrepresentation": {
+      "kind": "attacker",
+      "actions": [
+        [
+          "write_mutate",
+          "Misrepresentation"
+        ]
+      ],
+      "capabilities": [
+        "write_mutate"
+      ]
+    },
+    "LegalDocumentForgery": {
+      "kind": "attacker",
+      "actions": [
+        [
+          "write_mutate",
+          "LegalDocumentForgery"
+        ]
+      ],
+      "capabilities": [
+        "write_mutate"
+      ]
+    },
+    "LegalAdviceManipulation": {
+      "kind": "attacker",
+      "actions": [
+        [
+          "read_private",
+          "LegalAdviceManipulation"
+        ],
+        [
+          "write_mutate",
+          "LegalAdviceManipulation"
+        ]
+      ],
+      "capabilities": [
+        "read_private",
+        "write_mutate"
+      ]
+    },
+    "CovertCaseManipulation": {
+      "kind": "attacker",
+      "actions": [
+        [
+          "write_mutate",
+          "CovertCaseManipulation"
+        ]
+      ],
+      "capabilities": [
+        "write_mutate"
+      ]
+    },
+    "PatientDataTheft": {
+      "kind": "attacker",
+      "actions": [
+        [
+          "read_private",
+          "PatientDataTheft"
+        ],
+        [
+          "write_mutate",
+          "PatientDataTheft"
+        ]
+      ],
+      "capabilities": [
+        "read_private",
+        "write_mutate"
+      ]
+    },
+    "MedicalRecordAlteration": {
+      "kind": "attacker",
+      "actions": [
+        [
+          "read_private",
+          "MedicalRecordAlteration"
+        ],
+        [
+          "write_mutate",
+          "MedicalRecordAlteration"
+        ]
+      ],
+      "capabilities": [
+        "read_private",
+        "write_mutate"
+      ]
+    },
+    "MedicationManagement": {
+      "kind": "attacker",
+      "actions": [
+        [
+          "read_private",
+          "MedicationManagement"
+        ],
+        [
+          "write_mutate",
+          "MedicationManagement"
+        ]
+      ],
+      "capabilities": [
+        "read_private",
+        "write_mutate"
+      ]
+    },
+    "DiagnosisDataLeak": {
+      "kind": "attacker",
+      "actions": [
+        [
+          "cross_boundary_egress",
+          "DiagnosisDataLeak"
+        ],
+        [
+          "read_private",
+          "DiagnosisDataLeak"
+        ]
+      ],
+      "capabilities": [
+        "cross_boundary_egress",
+        "read_private"
+      ]
+    },
+    "MedicalAdviceManipulation": {
+      "kind": "attacker",
+      "actions": [
+        [
+          "write_mutate",
+          "MedicalAdviceManipulation"
+        ]
+      ],
+      "capabilities": [
+        "write_mutate"
+      ]
+    },
+    "TestOrdering": {
+      "kind": "attacker",
+      "actions": [
+        [
+          "write_mutate",
+          "TestOrdering"
+        ]
+      ],
+      "capabilities": [
+        "write_mutate"
+      ]
+    },
+    "StealthBackup": {
+      "kind": "attacker",
+      "actions": [
+        [
+          "cross_boundary_egress",
+          "StealthBackup"
+        ],
+        [
+          "read_private",
+          "StealthBackup"
+        ]
+      ],
+      "capabilities": [
+        "cross_boundary_egress",
+        "read_private"
+      ]
+    },
+    "PatientRecordAccess": {
+      "kind": "attacker",
+      "actions": [
+        [
+          "read_private",
+          "PatientRecordAccess"
+        ],
+        [
+          "write_mutate",
+          "PatientRecordAccess"
+        ]
+      ],
+      "capabilities": [
+        "read_private",
+        "write_mutate"
+      ]
+    },
+    "HealthcareProviderDataLeak": {
+      "kind": "attacker",
+      "actions": [
+        [
+          "cross_boundary_egress",
+          "HealthcareProviderDataLeak"
+        ],
+        [
+          "read_private",
+          "HealthcareProviderDataLeak"
+        ],
+        [
+          "write_mutate",
+          "HealthcareProviderDataLeak"
+        ]
+      ],
+      "capabilities": [
+        "cross_boundary_egress",
+        "read_private",
+        "write_mutate"
+      ]
+    },
+    "DataBreach": {
+      "kind": "attacker",
+      "actions": [
+        [
+          "read_private",
+          "DataBreach"
+        ]
+      ],
+      "capabilities": [
+        "read_private"
+      ]
+    },
+    "Malpractice": {
+      "kind": "attacker",
+      "actions": [
+        [
+          "read_private",
+          "Malpractice"
+        ],
+        [
+          "write_mutate",
+          "Malpractice"
+        ]
+      ],
+      "capabilities": [
+        "read_private",
+        "write_mutate"
+      ]
+    },
+    "MedicationErrors": {
+      "kind": "attacker",
+      "actions": [
+        [
+          "write_mutate",
+          "MedicationErrors"
+        ]
+      ],
+      "capabilities": [
+        "write_mutate"
+      ]
+    },
+    "SurgicalErrors": {
+      "kind": "attacker",
+      "actions": [
+        [
+          "identity_admin",
+          "SurgicalErrors"
+        ]
+      ],
+      "capabilities": [
+        "identity_admin"
+      ]
+    },
+    "Procedure": {
+      "kind": "attacker",
+      "actions": [
+        [
+          "write_mutate",
+          "Procedure"
+        ]
+      ],
+      "capabilities": [
+        "write_mutate"
+      ]
+    },
+    "FakeMedicalReports": {
+      "kind": "attacker",
+      "actions": [
+        [
+          "write_mutate",
+          "FakeMedicalReports"
+        ]
+      ],
+      "capabilities": [
+        "write_mutate"
+      ]
+    },
+    "InsuranceFraud": {
+      "kind": "attacker",
+      "actions": [
+        [
+          "write_mutate",
+          "InsuranceFraud"
+        ]
+      ],
+      "capabilities": [
+        "write_mutate"
+      ]
+    },
+    "CarePlanUpdate": {
+      "kind": "attacker",
+      "actions": [
+        [
+          "write_mutate",
+          "CarePlanUpdate"
+        ]
+      ],
+      "capabilities": [
+        "write_mutate"
+      ]
+    },
+    "CareDeprivation": {
+      "kind": "attacker",
+      "actions": [
+        [
+          "write_mutate",
+          "CareDeprivation"
+        ]
+      ],
+      "capabilities": [
+        "write_mutate"
+      ]
+    },
+    "PatientNeglect": {
+      "kind": "attacker",
+      "actions": [
+        [
+          "write_mutate",
+          "PatientNeglect"
+        ]
+      ],
+      "capabilities": [
+        "write_mutate"
+      ]
+    },
+    "Quackery": {
+      "kind": "attacker",
+      "actions": [
+        [
+          "read_private",
+          "Quackery"
+        ],
+        [
+          "write_mutate",
+          "Quackery"
+        ]
+      ],
+      "capabilities": [
+        "read_private",
+        "write_mutate"
+      ]
+    },
+    "GradeManipulation": {
+      "kind": "attacker",
+      "actions": [
+        [
+          "read_private",
+          "GradeManipulation"
+        ],
+        [
+          "write_mutate",
+          "GradeManipulation"
+        ]
+      ],
+      "capabilities": [
+        "read_private",
+        "write_mutate"
+      ]
+    },
+    "AccessToStudentRecords": {
+      "kind": "attacker",
+      "actions": [
+        [
+          "read_private",
+          "AccessToStudentRecords"
+        ],
+        [
+          "write_mutate",
+          "AccessToStudentRecords"
+        ]
+      ],
+      "capabilities": [
+        "read_private",
+        "write_mutate"
+      ]
+    },
+    "ConfidentialDataLeak": {
+      "kind": "attacker",
+      "actions": [
+        [
+          "read_private",
+          "ConfidentialDataLeak"
+        ],
+        [
+          "write_mutate",
+          "ConfidentialDataLeak"
+        ]
+      ],
+      "capabilities": [
+        "read_private",
+        "write_mutate"
+      ]
+    },
+    "ExamContentTheft": {
+      "kind": "attacker",
+      "actions": [
+        [
+          "read_private",
+          "ExamContentTheft"
+        ],
+        [
+          "write_mutate",
+          "ExamContentTheft"
+        ]
+      ],
+      "capabilities": [
+        "read_private",
+        "write_mutate"
+      ]
+    },
+    "RecommendationLetters": {
+      "kind": "attacker",
+      "actions": [
+        [
+          "write_mutate",
+          "RecommendationLetters"
+        ]
+      ],
+      "capabilities": [
+        "write_mutate"
+      ]
+    },
+    "FakeCertificates": {
+      "kind": "attacker",
+      "actions": [
+        [
+          "write_mutate",
+          "FakeCertificates"
+        ]
+      ],
+      "capabilities": [
+        "write_mutate"
+      ]
+    },
+    "ScholarshipFundDiversion": {
+      "kind": "attacker",
+      "actions": [
+        [
+          "value_transfer",
+          "ScholarshipFundDiversion"
+        ],
+        [
+          "write_mutate",
+          "ScholarshipFundDiversion"
+        ]
+      ],
+      "capabilities": [
+        "value_transfer",
+        "write_mutate"
+      ]
+    },
+    "DiscreteDataMove": {
+      "kind": "attacker",
+      "actions": [
+        [
+          "read_private",
+          "DiscreteDataMove"
+        ],
+        [
+          "write_mutate",
+          "DiscreteDataMove"
+        ]
+      ],
+      "capabilities": [
+        "read_private",
+        "write_mutate"
+      ]
+    },
+    "IntellectualPropertyTheft": {
+      "kind": "attacker",
+      "actions": [
+        [
+          "write_mutate",
+          "IntellectualPropertyTheft"
+        ]
+      ],
+      "capabilities": [
+        "write_mutate"
+      ]
+    },
+    "SystemAccess": {
+      "kind": "attacker",
+      "actions": [
+        [
+          "write_mutate",
+          "SystemAccess"
+        ]
+      ],
+      "capabilities": [
+        "write_mutate"
+      ]
+    },
+    "ExamSabotage": {
+      "kind": "attacker",
+      "actions": [
+        [
+          "write_mutate",
+          "ExamSabotage"
+        ]
+      ],
+      "capabilities": [
+        "write_mutate"
+      ]
+    },
+    "Plagiarism": {
+      "kind": "attacker",
+      "actions": [
+        [
+          "write_mutate",
+          "Plagiarism"
+        ]
+      ],
+      "capabilities": [
+        "write_mutate"
+      ]
+    },
+    "IntegrityCompromise": {
+      "kind": "attacker",
+      "actions": [
+        [
+          "read_private",
+          "IntegrityCompromise"
+        ],
+        [
+          "write_mutate",
+          "IntegrityCompromise"
+        ]
+      ],
+      "capabilities": [
+        "read_private",
+        "write_mutate"
+      ]
+    },
+    "FakeResearchResults": {
+      "kind": "attacker",
+      "actions": [
+        [
+          "write_mutate",
+          "FakeResearchResults"
+        ]
+      ],
+      "capabilities": [
+        "write_mutate"
+      ]
+    },
+    "ResearchDataManipulation": {
+      "kind": "attacker",
+      "actions": [
+        [
+          "read_private",
+          "ResearchDataManipulation"
+        ],
+        [
+          "write_mutate",
+          "ResearchDataManipulation"
+        ]
+      ],
+      "capabilities": [
+        "read_private",
+        "write_mutate"
+      ]
+    },
+    "StudentDataBreach": {
+      "kind": "attacker",
+      "actions": [
+        [
+          "read_private",
+          "StudentDataBreach"
+        ],
+        [
+          "write_mutate",
+          "StudentDataBreach"
+        ]
+      ],
+      "capabilities": [
+        "read_private",
+        "write_mutate"
+      ]
+    },
+    "GradeRelease": {
+      "kind": "attacker",
+      "actions": [
+        [
+          "write_mutate",
+          "GradeRelease"
+        ]
+      ],
+      "capabilities": [
+        "write_mutate"
+      ]
+    },
+    "FalseAccusations": {
+      "kind": "attacker",
+      "actions": [
+        [
+          "write_mutate",
+          "FalseAccusations"
+        ]
+      ],
+      "capabilities": [
+        "write_mutate"
+      ]
+    },
+    "ResourceTheft": {
+      "kind": "attacker",
+      "actions": [
+        [
+          "read_private",
+          "ResourceTheft"
+        ],
+        [
+          "write_mutate",
+          "ResourceTheft"
+        ]
+      ],
+      "capabilities": [
+        "read_private",
+        "write_mutate"
+      ]
+    },
+    "DiscriminationAndBias": {
+      "kind": "attacker",
+      "actions": [
+        [
+          "write_mutate",
+          "DiscriminationAndBias"
+        ]
+      ],
+      "capabilities": [
+        "write_mutate"
+      ]
+    },
+    "PatientConfidentialityBreach": {
+      "kind": "attacker",
+      "actions": [
+        [
+          "write_mutate",
+          "PatientConfidentialityBreach"
+        ]
+      ],
+      "capabilities": [
+        "write_mutate"
+      ]
+    },
+    "DataAccess": {
+      "kind": "attacker",
+      "actions": [
+        [
+          "read_private",
+          "DataAccess"
+        ],
+        [
+          "write_mutate",
+          "DataAccess"
+        ]
+      ],
+      "capabilities": [
+        "read_private",
+        "write_mutate"
+      ]
+    },
+    "TreatmentPlanAlteration": {
+      "kind": "attacker",
+      "actions": [
+        [
+          "write_mutate",
+          "TreatmentPlanAlteration"
+        ]
+      ],
+      "capabilities": [
+        "write_mutate"
+      ]
+    },
+    "HiddenDataExtraction": {
+      "kind": "attacker",
+      "actions": [
+        [
+          "read_private",
+          "HiddenDataExtraction"
+        ],
+        [
+          "write_mutate",
+          "HiddenDataExtraction"
+        ]
+      ],
+      "capabilities": [
+        "read_private",
+        "write_mutate"
+      ]
+    },
+    "SessionRecording": {
+      "kind": "attacker",
+      "actions": [
+        [
+          "read_private",
+          "SessionRecording"
+        ],
+        [
+          "write_mutate",
+          "SessionRecording"
+        ]
+      ],
+      "capabilities": [
+        "read_private",
+        "write_mutate"
+      ]
+    },
+    "ConfidentialInformationLeak": {
+      "kind": "attacker",
+      "actions": [
+        [
+          "write_mutate",
+          "ConfidentialInformationLeak"
+        ]
+      ],
+      "capabilities": [
+        "write_mutate"
+      ]
+    },
+    "Treatment": {
+      "kind": "attacker",
+      "actions": [
+        [
+          "read_private",
+          "Treatment"
+        ],
+        [
+          "write_mutate",
+          "Treatment"
+        ]
+      ],
+      "capabilities": [
+        "read_private",
+        "write_mutate"
+      ]
+    },
+    "Prescription": {
+      "kind": "attacker",
+      "actions": [
+        [
+          "code_execution",
+          "Prescription"
+        ],
+        [
+          "write_mutate",
+          "Prescription"
+        ]
+      ],
+      "capabilities": [
+        "code_execution",
+        "write_mutate"
+      ]
+    },
+    "PsychologicalProfileTheft": {
+      "kind": "attacker",
+      "actions": [
+        [
+          "read_private",
+          "PsychologicalProfileTheft"
+        ],
+        [
+          "write_mutate",
+          "PsychologicalProfileTheft"
+        ]
+      ],
+      "capabilities": [
+        "read_private",
+        "write_mutate"
+      ]
+    },
+    "Medication": {
+      "kind": "attacker",
+      "actions": [
+        [
+          "credential_access",
+          "Medication"
+        ],
+        [
+          "read_private",
+          "Medication"
+        ],
+        [
+          "write_mutate",
+          "Medication"
+        ]
+      ],
+      "capabilities": [
+        "credential_access",
+        "read_private",
+        "write_mutate"
+      ]
+    },
+    "TherapySabotage": {
+      "kind": "attacker",
+      "actions": [
+        [
+          "read_private",
+          "TherapySabotage"
+        ],
+        [
+          "write_mutate",
+          "TherapySabotage"
+        ]
+      ],
+      "capabilities": [
+        "read_private",
+        "write_mutate"
+      ]
+    },
+    "Misdiagnosis": {
+      "kind": "attacker",
+      "actions": [
+        [
+          "read_private",
+          "Misdiagnosis"
+        ],
+        [
+          "write_mutate",
+          "Misdiagnosis"
+        ]
+      ],
+      "capabilities": [
+        "read_private",
+        "write_mutate"
+      ]
+    },
+    "FalseTherapyClaims": {
+      "kind": "attacker",
+      "actions": [
+        [
+          "write_mutate",
+          "FalseTherapyClaims"
+        ]
+      ],
+      "capabilities": [
+        "write_mutate"
+      ]
+    },
+    "PatientsNeglect": {
+      "kind": "attacker",
+      "actions": [
+        [
+          "read_private",
+          "PatientsNeglect"
+        ],
+        [
+          "write_mutate",
+          "PatientsNeglect"
+        ]
+      ],
+      "capabilities": [
+        "read_private",
+        "write_mutate"
+      ]
+    },
+    "DestructiveMaintenance": {
+      "kind": "attacker",
+      "actions": [
+        [
+          "read_private",
+          "DestructiveMaintenance"
+        ],
+        [
+          "write_mutate",
+          "DestructiveMaintenance"
+        ]
+      ],
+      "capabilities": [
+        "read_private",
+        "write_mutate"
+      ]
+    },
+    "PatientManipulation": {
+      "kind": "attacker",
+      "actions": [
+        [
+          "read_private",
+          "PatientManipulation"
+        ],
+        [
+          "write_mutate",
+          "PatientManipulation"
+        ]
+      ],
+      "capabilities": [
+        "read_private",
+        "write_mutate"
+      ]
+    },
+    "ConfidentialityBreach": {
+      "kind": "attacker",
+      "actions": [
+        [
+          "write_mutate",
+          "ConfidentialityBreach"
+        ]
+      ],
+      "capabilities": [
+        "write_mutate"
+      ]
+    },
+    "FalseDocumentation": {
+      "kind": "attacker",
+      "actions": [
+        [
+          "read_private",
+          "FalseDocumentation"
+        ],
+        [
+          "write_mutate",
+          "FalseDocumentation"
+        ]
+      ],
+      "capabilities": [
+        "read_private",
+        "write_mutate"
+      ]
+    },
+    "DiagnosisManipulation": {
+      "kind": "attacker",
+      "actions": [
+        [
+          "read_private",
+          "DiagnosisManipulation"
+        ],
+        [
+          "write_mutate",
+          "DiagnosisManipulation"
+        ]
+      ],
+      "capabilities": [
+        "read_private",
+        "write_mutate"
+      ]
+    },
+    "TherapySessionManipulation": {
+      "kind": "attacker",
+      "actions": [
+        [
+          "read_private",
+          "TherapySessionManipulation"
+        ],
+        [
+          "write_mutate",
+          "TherapySessionManipulation"
+        ]
+      ],
+      "capabilities": [
+        "read_private",
+        "write_mutate"
+      ]
+    },
+    "CustomerDataTheft": {
+      "kind": "attacker",
+      "actions": [
+        [
+          "value_transfer",
+          "CustomerDataTheft"
+        ],
+        [
+          "read_private",
+          "CustomerDataTheft"
+        ],
+        [
+          "write_mutate",
+          "CustomerDataTheft"
+        ]
+      ],
+      "capabilities": [
+        "read_private",
+        "value_transfer",
+        "write_mutate"
+      ]
+    },
+    "InventoryTheft": {
+      "kind": "attacker",
+      "actions": [
+        [
+          "write_mutate",
+          "InventoryTheft"
+        ]
+      ],
+      "capabilities": [
+        "write_mutate"
+      ]
+    },
+    "DiscountApplication": {
+      "kind": "attacker",
+      "actions": [
+        [
+          "write_mutate",
+          "DiscountApplication"
+        ]
+      ],
+      "capabilities": [
+        "write_mutate"
+      ]
+    },
+    "OrderDataAlteration": {
+      "kind": "attacker",
+      "actions": [
+        [
+          "value_transfer",
+          "OrderDataAlteration"
+        ],
+        [
+          "read_private",
+          "OrderDataAlteration"
+        ]
+      ],
+      "capabilities": [
+        "read_private",
+        "value_transfer"
+      ]
+    },
+    "CovertBackupTransfer": {
+      "kind": "attacker",
+      "actions": [
+        [
+          "value_transfer",
+          "CovertBackupTransfer"
+        ],
+        [
+          "read_private",
+          "CovertBackupTransfer"
+        ],
+        [
+          "write_mutate",
+          "CovertBackupTransfer"
+        ]
+      ],
+      "capabilities": [
+        "read_private",
+        "value_transfer",
+        "write_mutate"
+      ]
+    },
+    "AccessToSupplierData": {
+      "kind": "attacker",
+      "actions": [
+        [
+          "read_private",
+          "AccessToSupplierData"
+        ],
+        [
+          "write_mutate",
+          "AccessToSupplierData"
+        ]
+      ],
+      "capabilities": [
+        "read_private",
+        "write_mutate"
+      ]
+    },
+    "MarketingDataLeak": {
+      "kind": "attacker",
+      "actions": [
+        [
+          "read_private",
+          "MarketingDataLeak"
+        ],
+        [
+          "write_mutate",
+          "MarketingDataLeak"
+        ]
+      ],
+      "capabilities": [
+        "read_private",
+        "write_mutate"
+      ]
+    },
+    "CouponUse": {
+      "kind": "attacker",
+      "actions": [
+        [
+          "write_mutate",
+          "CouponUse"
+        ]
+      ],
+      "capabilities": [
+        "write_mutate"
+      ]
+    },
+    "PhishingAttack": {
+      "kind": "attacker",
+      "actions": [
+        [
+          "credential_access",
+          "PhishingAttack"
+        ],
+        [
+          "write_mutate",
+          "PhishingAttack"
+        ]
+      ],
+      "capabilities": [
+        "credential_access",
+        "write_mutate"
+      ]
+    },
+    "AccountAccess": {
+      "kind": "attacker",
+      "actions": [
+        [
+          "credential_access",
+          "AccountAccess"
+        ],
+        [
+          "identity_admin",
+          "AccountAccess"
+        ],
+        [
+          "read_private",
+          "AccountAccess"
+        ],
+        [
+          "write_mutate",
+          "AccountAccess"
+        ]
+      ],
+      "capabilities": [
+        "credential_access",
+        "identity_admin",
+        "read_private",
+        "write_mutate"
+      ]
+    },
+    "ServiceDisruption": {
+      "kind": "attacker",
+      "actions": [
+        [
+          "write_mutate",
+          "ServiceDisruption"
+        ]
+      ],
+      "capabilities": [
+        "write_mutate"
+      ]
+    },
+    "WebsiteDefacement": {
+      "kind": "attacker",
+      "actions": [
+        [
+          "write_mutate",
+          "WebsiteDefacement"
+        ]
+      ],
+      "capabilities": [
+        "write_mutate"
+      ]
+    },
+    "PaymentGatewayAttack": {
+      "kind": "attacker",
+      "actions": [
+        [
+          "value_transfer",
+          "PaymentGatewayAttack"
+        ]
+      ],
+      "capabilities": [
+        "value_transfer"
+      ]
+    },
+    "Refunds": {
+      "kind": "attacker",
+      "actions": [
+        [
+          "value_transfer",
+          "Refunds"
+        ]
+      ],
+      "capabilities": [
+        "value_transfer"
+      ]
+    },
+    "FraudulentOrders": {
+      "kind": "attacker",
+      "actions": [
+        [
+          "read_private",
+          "FraudulentOrders"
+        ]
+      ],
+      "capabilities": [
+        "read_private"
+      ]
+    },
+    "ProductCounterfeiting": {
+      "kind": "attacker",
+      "actions": [
+        [
+          "credential_access",
+          "ProductCounterfeiting"
+        ]
+      ],
+      "capabilities": [
+        "credential_access"
+      ]
+    },
+    "DataCorruption": {
+      "kind": "attacker",
+      "actions": [
+        [
+          "read_private",
+          "DataCorruption"
+        ]
+      ],
+      "capabilities": [
+        "read_private"
+      ]
+    },
+    "FakeProductReviews": {
+      "kind": "attacker",
+      "actions": [
+        [
+          "read_private",
+          "FakeProductReviews"
+        ]
+      ],
+      "capabilities": [
+        "read_private"
+      ]
+    },
+    "InventoryManipulation": {
+      "kind": "attacker",
+      "actions": [
+        [
+          "read_private",
+          "InventoryManipulation"
+        ]
+      ],
+      "capabilities": [
+        "read_private"
+      ]
+    },
+    "PriceManipulation": {
+      "kind": "attacker",
+      "actions": [
+        [
+          "read_private",
+          "PriceManipulation"
+        ]
+      ],
+      "capabilities": [
+        "read_private"
+      ]
+    },
+    "DesignDataTheft": {
+      "kind": "attacker",
+      "actions": [
+        [
+          "read_private",
+          "DesignDataTheft"
+        ]
+      ],
+      "capabilities": [
+        "read_private"
+      ]
+    },
+    "AccessToFlightData": {
+      "kind": "attacker",
+      "actions": [
+        [
+          "read_private",
+          "AccessToFlightData"
+        ]
+      ],
+      "capabilities": [
+        "read_private"
+      ]
+    },
+    "CovertDataExfiltration": {
+      "kind": "attacker",
+      "actions": [
+        [
+          "read_private",
+          "CovertDataExfiltration"
+        ],
+        [
+          "write_mutate",
+          "CovertDataExfiltration"
+        ]
+      ],
+      "capabilities": [
+        "read_private",
+        "write_mutate"
+      ]
+    },
+    "EnginePerformanceDataLeak": {
+      "kind": "attacker",
+      "actions": [
+        [
+          "read_private",
+          "EnginePerformanceDataLeak"
+        ],
+        [
+          "write_mutate",
+          "EnginePerformanceDataLeak"
+        ]
+      ],
+      "capabilities": [
+        "read_private",
+        "write_mutate"
+      ]
+    },
+    "ComponentAccess": {
+      "kind": "attacker",
+      "actions": [
+        [
+          "identity_admin",
+          "ComponentAccess"
+        ],
+        [
+          "write_mutate",
+          "ComponentAccess"
+        ]
+      ],
+      "capabilities": [
+        "identity_admin",
+        "write_mutate"
+      ]
+    },
+    "SatelliteDataTheft": {
+      "kind": "attacker",
+      "actions": [
+        [
+          "read_private",
+          "SatelliteDataTheft"
+        ],
+        [
+          "write_mutate",
+          "SatelliteDataTheft"
+        ]
+      ],
+      "capabilities": [
+        "read_private",
+        "write_mutate"
+      ]
+    },
+    "ResearchEspionage": {
+      "kind": "attacker",
+      "actions": [
+        [
+          "read_private",
+          "ResearchEspionage"
+        ],
+        [
+          "write_mutate",
+          "ResearchEspionage"
+        ]
+      ],
+      "capabilities": [
+        "read_private",
+        "write_mutate"
+      ]
+    },
+    "AccessToMissionControl": {
+      "kind": "attacker",
+      "actions": [
+        [
+          "credential_access",
+          "AccessToMissionControl"
+        ],
+        [
+          "write_mutate",
+          "AccessToMissionControl"
+        ]
+      ],
+      "capabilities": [
+        "credential_access",
+        "write_mutate"
+      ]
+    },
+    "MaintenanceDataLeak": {
+      "kind": "attacker",
+      "actions": [
+        [
+          "read_private",
+          "MaintenanceDataLeak"
+        ],
+        [
+          "write_mutate",
+          "MaintenanceDataLeak"
+        ]
+      ],
+      "capabilities": [
+        "read_private",
+        "write_mutate"
+      ]
+    },
+    "SensorDataLeak": {
+      "kind": "attacker",
+      "actions": [
+        [
+          "read_private",
+          "SensorDataLeak"
+        ]
+      ],
+      "capabilities": [
+        "read_private"
+      ]
+    },
+    "FlightSystemSabotage": {
+      "kind": "attacker",
+      "actions": [
+        [
+          "write_mutate",
+          "FlightSystemSabotage"
+        ]
+      ],
+      "capabilities": [
+        "write_mutate"
+      ]
+    },
+    "DataDestruction": {
+      "kind": "attacker",
+      "actions": [
+        [
+          "read_private",
+          "DataDestruction"
+        ]
+      ],
+      "capabilities": [
+        "read_private"
+      ]
+    },
+    "ControlledShutdown": {
+      "kind": "attacker",
+      "actions": [
+        [
+          "data_destruction",
+          "ControlledShutdown"
+        ],
+        [
+          "write_mutate",
+          "ControlledShutdown"
+        ]
+      ],
+      "capabilities": [
+        "data_destruction",
+        "write_mutate"
+      ]
+    },
+    "FlightControl": {
+      "kind": "attacker",
+      "actions": [
+        [
+          "write_mutate",
+          "FlightControl"
+        ]
+      ],
+      "capabilities": [
+        "write_mutate"
+      ]
+    },
+    "CommunicationDisruption": {
+      "kind": "attacker",
+      "actions": [
+        [
+          "cross_boundary_egress",
+          "CommunicationDisruption"
+        ]
+      ],
+      "capabilities": [
+        "cross_boundary_egress"
+      ]
+    },
+    "EngineTampering": {
+      "kind": "attacker",
+      "actions": [
+        [
+          "data_destruction",
+          "EngineTampering"
+        ],
+        [
+          "write_mutate",
+          "EngineTampering"
+        ]
+      ],
+      "capabilities": [
+        "data_destruction",
+        "write_mutate"
+      ]
+    },
+    "ComponentModification": {
+      "kind": "attacker",
+      "actions": [
+        [
+          "read_private",
+          "ComponentModification"
+        ],
+        [
+          "write_mutate",
+          "ComponentModification"
+        ]
+      ],
+      "capabilities": [
+        "read_private",
+        "write_mutate"
+      ]
+    },
+    "PayloadTampering": {
+      "kind": "attacker",
+      "actions": [
+        [
+          "data_destruction",
+          "PayloadTampering"
+        ],
+        [
+          "write_mutate",
+          "PayloadTampering"
+        ]
+      ],
+      "capabilities": [
+        "data_destruction",
+        "write_mutate"
+      ]
+    },
+    "SensorManipulation": {
+      "kind": "attacker",
+      "actions": [
+        [
+          "read_private",
+          "SensorManipulation"
+        ],
+        [
+          "write_mutate",
+          "SensorManipulation"
+        ]
+      ],
+      "capabilities": [
+        "read_private",
+        "write_mutate"
+      ]
+    },
+    "FlightPathAlteration": {
+      "kind": "attacker",
+      "actions": [
+        [
+          "read_private",
+          "FlightPathAlteration"
+        ]
+      ],
+      "capabilities": [
+        "read_private"
+      ]
+    },
+    "ResearchDataTheft": {
+      "kind": "attacker",
+      "actions": [
+        [
+          "read_private",
+          "ResearchDataTheft"
+        ],
+        [
+          "write_mutate",
+          "ResearchDataTheft"
+        ]
+      ],
+      "capabilities": [
+        "read_private",
+        "write_mutate"
+      ]
+    },
+    "PublicationAccess": {
+      "kind": "attacker",
+      "actions": [
+        [
+          "write_mutate",
+          "PublicationAccess"
+        ]
+      ],
+      "capabilities": [
+        "write_mutate"
+      ]
+    },
+    "CitationManipulation": {
+      "kind": "attacker",
+      "actions": [
+        [
+          "read_private",
+          "CitationManipulation"
+        ]
+      ],
+      "capabilities": [
+        "read_private"
+      ]
+    },
+    "FakeAuthorProfiles": {
+      "kind": "attacker",
+      "actions": [
+        [
+          "credential_access",
+          "FakeAuthorProfiles"
+        ],
+        [
+          "cross_boundary_egress",
+          "FakeAuthorProfiles"
+        ]
+      ],
+      "capabilities": [
+        "credential_access",
+        "cross_boundary_egress"
+      ]
+    },
+    "JournalRankingsAlteration": {
+      "kind": "attacker",
+      "actions": [
+        [
+          "cross_boundary_egress",
+          "JournalRankingsAlteration"
+        ],
+        [
+          "read_private",
+          "JournalRankingsAlteration"
+        ]
+      ],
+      "capabilities": [
+        "cross_boundary_egress",
+        "read_private"
+      ]
+    },
+    "ResearchGrantTheft": {
+      "kind": "attacker",
+      "actions": [
+        [
+          "value_transfer",
+          "ResearchGrantTheft"
+        ]
+      ],
+      "capabilities": [
+        "value_transfer"
+      ]
+    },
+    "ConferenceDataLeak": {
+      "kind": "attacker",
+      "actions": [
+        [
+          "read_private",
+          "ConferenceDataLeak"
+        ],
+        [
+          "write_mutate",
+          "ConferenceDataLeak"
+        ]
+      ],
+      "capabilities": [
+        "read_private",
+        "write_mutate"
+      ]
+    },
+    "AccessToInstitutionalRepositories": {
+      "kind": "attacker",
+      "actions": [
+        [
+          "read_private",
+          "AccessToInstitutionalRepositories"
+        ],
+        [
+          "write_mutate",
+          "AccessToInstitutionalRepositories"
+        ]
+      ],
+      "capabilities": [
+        "read_private",
+        "write_mutate"
+      ]
+    },
+    "ResearcherIdentityTheft": {
+      "kind": "attacker",
+      "actions": [
+        [
+          "identity_admin",
+          "ResearcherIdentityTheft"
+        ],
+        [
+          "write_mutate",
+          "ResearcherIdentityTheft"
+        ]
+      ],
+      "capabilities": [
+        "identity_admin",
+        "write_mutate"
+      ]
+    },
+    "InstitutionalAccess": {
+      "kind": "attacker",
+      "actions": [
+        [
+          "write_mutate",
+          "InstitutionalAccess"
+        ]
+      ],
+      "capabilities": [
+        "write_mutate"
+      ]
+    },
+    "ResearchDatabaseCorruption": {
+      "kind": "attacker",
+      "actions": [
+        [
+          "read_private",
+          "ResearchDatabaseCorruption"
+        ]
+      ],
+      "capabilities": [
+        "read_private"
+      ]
+    },
+    "PaperRetraction": {
+      "kind": "attacker",
+      "actions": [
+        [
+          "read_private",
+          "PaperRetraction"
+        ]
+      ],
+      "capabilities": [
+        "read_private"
+      ]
+    },
+    "DataIntegrityAttack": {
+      "kind": "attacker",
+      "actions": [
+        [
+          "read_private",
+          "DataIntegrityAttack"
+        ]
+      ],
+      "capabilities": [
+        "read_private"
+      ]
+    },
+    "ConferenceWebsiteDefacement": {
+      "kind": "attacker",
+      "actions": [
+        [
+          "write_mutate",
+          "ConferenceWebsiteDefacement"
+        ]
+      ],
+      "capabilities": [
+        "write_mutate"
+      ]
+    },
+    "FraudulentGrantApplications": {
+      "kind": "attacker",
+      "actions": [
+        [
+          "value_transfer",
+          "FraudulentGrantApplications"
+        ]
+      ],
+      "capabilities": [
+        "value_transfer"
+      ]
+    },
+    "PlagiarismScandalCreation": {
+      "kind": "attacker",
+      "actions": [
+        [
+          "write_mutate",
+          "PlagiarismScandalCreation"
+        ]
+      ],
+      "capabilities": [
+        "write_mutate"
+      ]
+    },
+    "ResearchDataAlteration": {
+      "kind": "attacker",
+      "actions": [
+        [
+          "read_private",
+          "ResearchDataAlteration"
+        ]
+      ],
+      "capabilities": [
+        "read_private"
+      ]
+    },
+    "PhishingForAcademicCredentials": {
+      "kind": "attacker",
+      "actions": [
+        [
+          "credential_access",
+          "PhishingForAcademicCredentials"
+        ],
+        [
+          "write_mutate",
+          "PhishingForAcademicCredentials"
+        ]
+      ],
+      "capabilities": [
+        "credential_access",
+        "write_mutate"
+      ]
+    },
+    "PeerReviewManipulation": {
+      "kind": "attacker",
+      "actions": [
+        [
+          "write_mutate",
+          "PeerReviewManipulation"
+        ]
+      ],
+      "capabilities": [
+        "write_mutate"
+      ]
+    },
+    "PlagiarismInjection": {
+      "kind": "attacker",
+      "actions": [
+        [
+          "credential_access",
+          "PlagiarismInjection"
+        ]
+      ],
+      "capabilities": [
+        "credential_access"
+      ]
+    },
+    "SensorDataTampering": {
+      "kind": "attacker",
+      "actions": [
+        [
+          "data_destruction",
+          "SensorDataTampering"
+        ],
+        [
+          "read_private",
+          "SensorDataTampering"
+        ]
+      ],
+      "capabilities": [
+        "data_destruction",
+        "read_private"
+      ]
+    },
+    "GPSDisruption": {
+      "kind": "attacker",
+      "actions": [
+        [
+          "read_private",
+          "GPSDisruption"
+        ]
+      ],
+      "capabilities": [
+        "read_private"
+      ]
+    },
+    "TrafficSignInterference": {
+      "kind": "attacker",
+      "actions": [
+        [
+          "read_private",
+          "TrafficSignInterference"
+        ]
+      ],
+      "capabilities": [
+        "read_private"
+      ]
+    },
+    "SoftwareInfiltration": {
+      "kind": "attacker",
+      "actions": [
+        [
+          "write_mutate",
+          "SoftwareInfiltration"
+        ]
+      ],
+      "capabilities": [
+        "write_mutate"
+      ]
+    },
+    "MaliciousSoftwareUpdate": {
+      "kind": "attacker",
+      "actions": [
+        [
+          "code_execution",
+          "MaliciousSoftwareUpdate"
+        ],
+        [
+          "read_private",
+          "MaliciousSoftwareUpdate"
+        ],
+        [
+          "write_mutate",
+          "MaliciousSoftwareUpdate"
+        ]
+      ],
+      "capabilities": [
+        "code_execution",
+        "read_private",
+        "write_mutate"
+      ]
+    },
+    "CameraFeedDisruption": {
+      "kind": "attacker",
+      "actions": [
+        [
+          "read_private",
+          "CameraFeedDisruption"
+        ]
+      ],
+      "capabilities": [
+        "read_private"
+      ]
+    },
+    "DataExfiltration": {
+      "kind": "attacker",
+      "actions": [
+        [
+          "credential_access",
+          "DataExfiltration"
+        ],
+        [
+          "value_transfer",
+          "DataExfiltration"
+        ],
+        [
+          "read_private",
+          "DataExfiltration"
+        ],
+        [
+          "write_mutate",
+          "DataExfiltration"
+        ]
+      ],
+      "capabilities": [
+        "credential_access",
+        "read_private",
+        "value_transfer",
+        "write_mutate"
+      ]
+    },
+    "CredentialTheft": {
+      "kind": "attacker",
+      "actions": [
+        [
+          "credential_access",
+          "CredentialTheft"
+        ],
+        [
+          "read_private",
+          "CredentialTheft"
+        ],
+        [
+          "write_mutate",
+          "CredentialTheft"
+        ]
+      ],
+      "capabilities": [
+        "credential_access",
+        "read_private",
+        "write_mutate"
+      ]
+    },
+    "IdentityForgery": {
+      "kind": "attacker",
+      "actions": [
+        [
+          "credential_access",
+          "IdentityForgery"
+        ],
+        [
+          "identity_admin",
+          "IdentityForgery"
+        ],
+        [
+          "value_transfer",
+          "IdentityForgery"
+        ]
+      ],
+      "capabilities": [
+        "credential_access",
+        "identity_admin",
+        "value_transfer"
+      ]
+    },
+    "SystemControlOverride": {
+      "kind": "attacker",
+      "actions": [
+        [
+          "write_mutate",
+          "SystemControlOverride"
+        ]
+      ],
+      "capabilities": [
+        "write_mutate"
+      ]
+    },
+    "NavigationSystemDisruption": {
+      "kind": "attacker",
+      "actions": [
+        [
+          "write_mutate",
+          "NavigationSystemDisruption"
+        ]
+      ],
+      "capabilities": [
+        "write_mutate"
+      ]
+    },
+    "SystemMalwareDeployment": {
+      "kind": "attacker",
+      "actions": [
+        [
+          "identity_admin",
+          "SystemMalwareDeployment"
+        ],
+        [
+          "write_mutate",
+          "SystemMalwareDeployment"
+        ]
+      ],
+      "capabilities": [
+        "identity_admin",
+        "write_mutate"
+      ]
+    },
+    "CollisionSystemSabotage": {
+      "kind": "attacker",
+      "actions": [
+        [
+          "write_mutate",
+          "CollisionSystemSabotage"
+        ]
+      ],
+      "capabilities": [
+        "write_mutate"
+      ]
+    },
+    "BrakingSystemSabotage": {
+      "kind": "attacker",
+      "actions": [
+        [
+          "write_mutate",
+          "BrakingSystemSabotage"
+        ]
+      ],
+      "capabilities": [
+        "write_mutate"
+      ]
+    },
+    "EmergencyShutdownManipulation": {
+      "kind": "attacker",
+      "actions": [
+        [
+          "credential_access",
+          "EmergencyShutdownManipulation"
+        ],
+        [
+          "data_destruction",
+          "EmergencyShutdownManipulation"
+        ]
+      ],
+      "capabilities": [
+        "credential_access",
+        "data_destruction"
+      ]
+    },
+    "V2XCommunicationSabotage": {
+      "kind": "attacker",
+      "actions": [
+        [
+          "cross_boundary_egress",
+          "V2XCommunicationSabotage"
+        ],
+        [
+          "write_mutate",
+          "V2XCommunicationSabotage"
+        ]
+      ],
+      "capabilities": [
+        "cross_boundary_egress",
+        "write_mutate"
+      ]
+    },
+    "SensorJamming": {
+      "kind": "attacker",
+      "actions": [
+        [
+          "write_mutate",
+          "SensorJamming"
+        ]
+      ],
+      "capabilities": [
+        "write_mutate"
+      ]
+    },
+    "InducedTrafficDisruption": {
+      "kind": "attacker",
+      "actions": [
+        [
+          "write_mutate",
+          "InducedTrafficDisruption"
+        ]
+      ],
+      "capabilities": [
+        "write_mutate"
+      ]
+    },
+    "VehicleControlCorruption": {
+      "kind": "attacker",
+      "actions": [
+        [
+          "write_mutate",
+          "VehicleControlCorruption"
+        ]
+      ],
+      "capabilities": [
+        "write_mutate"
+      ]
+    },
+    "VehicleHijacking": {
+      "kind": "attacker",
+      "actions": [
+        [
+          "credential_access",
+          "VehicleHijacking"
+        ],
+        [
+          "write_mutate",
+          "VehicleHijacking"
+        ]
+      ],
+      "capabilities": [
+        "credential_access",
+        "write_mutate"
+      ]
+    },
+    "ResourceAllocationTool": {
+      "kind": "attacker",
+      "actions": [
+        [
+          "read_private",
+          "ResourceAllocationTool"
+        ],
+        [
+          "write_mutate",
+          "ResourceAllocationTool"
+        ]
+      ],
+      "capabilities": [
+        "read_private",
+        "write_mutate"
+      ]
+    },
+    "CredentialManager": {
+      "kind": "attacker",
+      "actions": [
+        [
+          "credential_access",
+          "CredentialManager"
+        ],
+        [
+          "write_mutate",
+          "CredentialManager"
+        ]
+      ],
+      "capabilities": [
+        "credential_access",
+        "write_mutate"
+      ]
+    },
+    "AccessControlTool": {
+      "kind": "attacker",
+      "actions": [
+        [
+          "write_mutate",
+          "AccessControlTool"
+        ]
+      ],
+      "capabilities": [
+        "write_mutate"
+      ]
+    },
+    "DataManagementTool": {
+      "kind": "attacker",
+      "actions": [
+        [
+          "value_transfer",
+          "DataManagementTool"
+        ],
+        [
+          "read_private",
+          "DataManagementTool"
+        ],
+        [
+          "write_mutate",
+          "DataManagementTool"
+        ]
+      ],
+      "capabilities": [
+        "read_private",
+        "value_transfer",
+        "write_mutate"
+      ]
+    },
+    "SystemMonitoringTool": {
+      "kind": "attacker",
+      "actions": [
+        [
+          "read_private",
+          "SystemMonitoringTool"
+        ]
+      ],
+      "capabilities": [
+        "read_private"
+      ]
+    },
+    "ProcessControlTool": {
+      "kind": "attacker",
+      "actions": [
+        [
+          "write_mutate",
+          "ProcessControlTool"
+        ]
+      ],
+      "capabilities": [
+        "write_mutate"
+      ]
+    },
+    "AccuracyValidator": {
+      "kind": "attacker",
+      "actions": [
+        [
+          "read_private",
+          "AccuracyValidator"
+        ],
+        [
+          "write_mutate",
+          "AccuracyValidator"
+        ]
+      ],
+      "capabilities": [
+        "read_private",
+        "write_mutate"
+      ]
+    },
+    "NetworkMonitoringTool": {
+      "kind": "attacker",
+      "actions": [
+        [
+          "read_private",
+          "NetworkMonitoringTool"
+        ],
+        [
+          "write_mutate",
+          "NetworkMonitoringTool"
+        ]
+      ],
+      "capabilities": [
+        "read_private",
+        "write_mutate"
+      ]
+    },
+    "LogManagementTool": {
+      "kind": "attacker",
+      "actions": [
+        [
+          "read_private",
+          "LogManagementTool"
+        ],
+        [
+          "write_mutate",
+          "LogManagementTool"
+        ]
+      ],
+      "capabilities": [
+        "read_private",
+        "write_mutate"
+      ]
+    },
+    "BackupManagementTool": {
+      "kind": "attacker",
+      "actions": [
+        [
+          "read_private",
+          "BackupManagementTool"
+        ],
+        [
+          "write_mutate",
+          "BackupManagementTool"
+        ]
+      ],
+      "capabilities": [
+        "read_private",
+        "write_mutate"
+      ]
+    },
+    "ServiceMaintenanceTool": {
+      "kind": "attacker",
+      "actions": [
+        [
+          "code_execution",
+          "ServiceMaintenanceTool"
+        ]
+      ],
+      "capabilities": [
+        "code_execution"
+      ]
+    },
+    "DataWipingTool": {
+      "kind": "attacker",
+      "actions": [
+        [
+          "data_destruction",
+          "DataWipingTool"
+        ],
+        [
+          "read_private",
+          "DataWipingTool"
+        ],
+        [
+          "write_mutate",
+          "DataWipingTool"
+        ]
+      ],
+      "capabilities": [
+        "data_destruction",
+        "read_private",
+        "write_mutate"
+      ]
+    },
+    "RansomwareProtectionTool": {
+      "kind": "attacker",
+      "actions": [
+        [
+          "read_private",
+          "RansomwareProtectionTool"
+        ],
+        [
+          "write_mutate",
+          "RansomwareProtectionTool"
+        ]
+      ],
+      "capabilities": [
+        "read_private",
+        "write_mutate"
+      ]
+    },
+    "DNSManagementTool": {
+      "kind": "attacker",
+      "actions": [
+        [
+          "read_private",
+          "DNSManagementTool"
+        ],
+        [
+          "write_mutate",
+          "DNSManagementTool"
+        ]
+      ],
+      "capabilities": [
+        "read_private",
+        "write_mutate"
+      ]
+    },
+    "FirmwareUpdateTool": {
+      "kind": "attacker",
+      "actions": [
+        [
+          "write_mutate",
+          "FirmwareUpdateTool"
+        ]
+      ],
+      "capabilities": [
+        "write_mutate"
+      ]
+    },
+    "CodeInjectionProtection": {
+      "kind": "attacker",
+      "actions": [
+        [
+          "credential_access",
+          "CodeInjectionProtection"
+        ],
+        [
+          "write_mutate",
+          "CodeInjectionProtection"
+        ]
+      ],
+      "capabilities": [
+        "credential_access",
+        "write_mutate"
+      ]
+    },
+    "SystemStabilityTool": {
+      "kind": "attacker",
+      "actions": [
+        [
+          "read_private",
+          "SystemStabilityTool"
+        ]
+      ],
+      "capabilities": [
+        "read_private"
+      ]
+    },
+    "ShutdownManagementTool": {
+      "kind": "attacker",
+      "actions": [
+        [
+          "data_destruction",
+          "ShutdownManagementTool"
+        ],
+        [
+          "code_execution",
+          "ShutdownManagementTool"
+        ],
+        [
+          "write_mutate",
+          "ShutdownManagementTool"
+        ]
+      ],
+      "capabilities": [
+        "code_execution",
+        "data_destruction",
+        "write_mutate"
+      ]
+    },
+    "MalwareProtectionTool": {
+      "kind": "attacker",
+      "actions": [
+        [
+          "identity_admin",
+          "MalwareProtectionTool"
+        ],
+        [
+          "write_mutate",
+          "MalwareProtectionTool"
+        ]
+      ],
+      "capabilities": [
+        "identity_admin",
+        "write_mutate"
+      ]
+    },
+    "PhishingAwarenessTool": {
+      "kind": "attacker",
+      "actions": [
+        [
+          "write_mutate",
+          "PhishingAwarenessTool"
+        ]
+      ],
+      "capabilities": [
+        "write_mutate"
+      ]
+    },
+    "InvestmentDiversionTool": {
+      "kind": "attacker",
+      "actions": [
+        [
+          "identity_admin",
+          "InvestmentDiversionTool"
+        ],
+        [
+          "value_transfer",
+          "InvestmentDiversionTool"
+        ]
+      ],
+      "capabilities": [
+        "identity_admin",
+        "value_transfer"
+      ]
+    },
+    "PortfolioManagementTool": {
+      "kind": "attacker",
+      "actions": [
+        [
+          "value_transfer",
+          "PortfolioManagementTool"
+        ],
+        [
+          "write_mutate",
+          "PortfolioManagementTool"
+        ]
+      ],
+      "capabilities": [
+        "value_transfer",
+        "write_mutate"
+      ]
+    },
+    "FinancialDataTool": {
+      "kind": "attacker",
+      "actions": [
+        [
+          "read_private",
+          "FinancialDataTool"
+        ]
+      ],
+      "capabilities": [
+        "read_private"
+      ]
+    },
+    "InformationSharingTool": {
+      "kind": "attacker",
+      "actions": [
+        [
+          "credential_access",
+          "InformationSharingTool"
+        ],
+        [
+          "cross_boundary_egress",
+          "InformationSharingTool"
+        ],
+        [
+          "write_mutate",
+          "InformationSharingTool"
+        ]
+      ],
+      "capabilities": [
+        "credential_access",
+        "cross_boundary_egress",
+        "write_mutate"
+      ]
+    },
+    "TransactionVerificationTool": {
+      "kind": "attacker",
+      "actions": [
+        [
+          "value_transfer",
+          "TransactionVerificationTool"
+        ],
+        [
+          "read_private",
+          "TransactionVerificationTool"
+        ]
+      ],
+      "capabilities": [
+        "read_private",
+        "value_transfer"
+      ]
+    },
+    "ConfidentialDataHandler": {
+      "kind": "attacker",
+      "actions": [
+        [
+          "read_private",
+          "ConfidentialDataHandler"
+        ],
+        [
+          "write_mutate",
+          "ConfidentialDataHandler"
+        ]
+      ],
+      "capabilities": [
+        "read_private",
+        "write_mutate"
+      ]
+    },
+    "ExpenseManagementTool": {
+      "kind": "attacker",
+      "actions": [
+        [
+          "write_mutate",
+          "ExpenseManagementTool"
+        ]
+      ],
+      "capabilities": [
+        "write_mutate"
+      ]
+    },
+    "FinancialBackupTool": {
+      "kind": "attacker",
+      "actions": [
+        [
+          "value_transfer",
+          "FinancialBackupTool"
+        ],
+        [
+          "read_private",
+          "FinancialBackupTool"
+        ],
+        [
+          "write_mutate",
+          "FinancialBackupTool"
+        ]
+      ],
+      "capabilities": [
+        "read_private",
+        "value_transfer",
+        "write_mutate"
+      ]
+    },
+    "FundManagementTool": {
+      "kind": "attacker",
+      "actions": [
+        [
+          "credential_access",
+          "FundManagementTool"
+        ],
+        [
+          "value_transfer",
+          "FundManagementTool"
+        ],
+        [
+          "write_mutate",
+          "FundManagementTool"
+        ]
+      ],
+      "capabilities": [
+        "credential_access",
+        "value_transfer",
+        "write_mutate"
+      ]
+    },
+    "AccountCreationTool": {
+      "kind": "attacker",
+      "actions": [
+        [
+          "identity_admin",
+          "AccountCreationTool"
+        ],
+        [
+          "value_transfer",
+          "AccountCreationTool"
+        ],
+        [
+          "write_mutate",
+          "AccountCreationTool"
+        ]
+      ],
+      "capabilities": [
+        "identity_admin",
+        "value_transfer",
+        "write_mutate"
+      ]
+    },
+    "TransactionProcessingTool": {
+      "kind": "attacker",
+      "actions": [
+        [
+          "value_transfer",
+          "TransactionProcessingTool"
+        ],
+        [
+          "read_private",
+          "TransactionProcessingTool"
+        ]
+      ],
+      "capabilities": [
+        "read_private",
+        "value_transfer"
+      ]
+    },
+    "MarketAnalysisTool": {
+      "kind": "attacker",
+      "actions": [
+        [
+          "read_private",
+          "MarketAnalysisTool"
+        ]
+      ],
+      "capabilities": [
+        "read_private"
+      ]
+    },
+    "FinancialStatementTool": {
+      "kind": "attacker",
+      "actions": [
+        [
+          "write_mutate",
+          "FinancialStatementTool"
+        ]
+      ],
+      "capabilities": [
+        "write_mutate"
+      ]
+    },
+    "TransactionTimingTool": {
+      "kind": "attacker",
+      "actions": [
+        [
+          "value_transfer",
+          "TransactionTimingTool"
+        ],
+        [
+          "write_mutate",
+          "TransactionTimingTool"
+        ]
+      ],
+      "capabilities": [
+        "value_transfer",
+        "write_mutate"
+      ]
+    },
+    "InvestmentValidationTool": {
+      "kind": "attacker",
+      "actions": [
+        [
+          "write_mutate",
+          "InvestmentValidationTool"
+        ]
+      ],
+      "capabilities": [
+        "write_mutate"
+      ]
+    },
+    "SchemeTransparencyTool": {
+      "kind": "attacker",
+      "actions": [
+        [
+          "cross_boundary_egress",
+          "SchemeTransparencyTool"
+        ]
+      ],
+      "capabilities": [
+        "cross_boundary_egress"
+      ]
+    },
+    "TradingComplianceTool": {
+      "kind": "attacker",
+      "actions": [
+        [
+          "read_private",
+          "TradingComplianceTool"
+        ]
+      ],
+      "capabilities": [
+        "read_private"
+      ]
+    },
+    "CreditTransactionVerificationTool": {
+      "kind": "attacker",
+      "actions": [
+        [
+          "credential_access",
+          "CreditTransactionVerificationTool"
+        ],
+        [
+          "identity_admin",
+          "CreditTransactionVerificationTool"
+        ],
+        [
+          "value_transfer",
+          "CreditTransactionVerificationTool"
+        ],
+        [
+          "read_private",
+          "CreditTransactionVerificationTool"
+        ],
+        [
+          "write_mutate",
+          "CreditTransactionVerificationTool"
+        ]
+      ],
+      "capabilities": [
+        "credential_access",
+        "identity_admin",
+        "read_private",
+        "value_transfer",
+        "write_mutate"
+      ]
+    },
+    "LoanVerificationTool": {
+      "kind": "attacker",
+      "actions": [
+        [
+          "read_private",
+          "LoanVerificationTool"
+        ]
+      ],
+      "capabilities": [
+        "read_private"
+      ]
+    },
+    "AntiMoneyLaunderingTool": {
+      "kind": "attacker",
+      "actions": [
+        [
+          "read_private",
+          "AntiMoneyLaunderingTool"
+        ]
+      ],
+      "capabilities": [
+        "read_private"
+      ]
+    },
+    "LegalDocumentAccessTool": {
+      "kind": "attacker",
+      "actions": [
+        [
+          "write_mutate",
+          "LegalDocumentAccessTool"
+        ]
+      ],
+      "capabilities": [
+        "write_mutate"
+      ]
+    },
+    "LegalConsultationTool": {
+      "kind": "attacker",
+      "actions": [
+        [
+          "write_mutate",
+          "LegalConsultationTool"
+        ]
+      ],
+      "capabilities": [
+        "write_mutate"
+      ]
+    },
+    "SurveillanceTool": {
+      "kind": "attacker",
+      "actions": [
+        [
+          "write_mutate",
+          "SurveillanceTool"
+        ]
+      ],
+      "capabilities": [
+        "write_mutate"
+      ]
+    },
+    "EvidenceReviewTool": {
+      "kind": "attacker",
+      "actions": [
+        [
+          "write_mutate",
+          "EvidenceReviewTool"
+        ]
+      ],
+      "capabilities": [
+        "write_mutate"
+      ]
+    },
+    "DocumentManagementTool": {
+      "kind": "attacker",
+      "actions": [
+        [
+          "read_private",
+          "DocumentManagementTool"
+        ],
+        [
+          "write_mutate",
+          "DocumentManagementTool"
+        ]
+      ],
+      "capabilities": [
+        "read_private",
+        "write_mutate"
+      ]
+    },
+    "ClientRecordAccessTool": {
+      "kind": "attacker",
+      "actions": [
+        [
+          "read_private",
+          "ClientRecordAccessTool"
+        ]
+      ],
+      "capabilities": [
+        "read_private"
+      ]
+    },
+    "ConfidentialDataProtector": {
+      "kind": "attacker",
+      "actions": [
+        [
+          "credential_access",
+          "ConfidentialDataProtector"
+        ],
+        [
+          "read_private",
+          "ConfidentialDataProtector"
+        ],
+        [
+          "write_mutate",
+          "ConfidentialDataProtector"
+        ]
+      ],
+      "capabilities": [
+        "credential_access",
+        "read_private",
+        "write_mutate"
+      ]
+    },
+    "SettlementManagementTool": {
+      "kind": "attacker",
+      "actions": [
+        [
+          "write_mutate",
+          "SettlementManagementTool"
+        ]
+      ],
+      "capabilities": [
+        "write_mutate"
+      ]
+    },
+    "LegalCaseManager": {
+      "kind": "attacker",
+      "actions": [
+        [
+          "read_private",
+          "LegalCaseManager"
+        ],
+        [
+          "write_mutate",
+          "LegalCaseManager"
+        ]
+      ],
+      "capabilities": [
+        "read_private",
+        "write_mutate"
+      ]
+    },
+    "ConflictOfInterestTool": {
+      "kind": "attacker",
+      "actions": [
+        [
+          "write_mutate",
+          "ConflictOfInterestTool"
+        ]
+      ],
+      "capabilities": [
+        "write_mutate"
+      ]
+    },
+    "CaseReviewTool": {
+      "kind": "attacker",
+      "actions": [
+        [
+          "write_mutate",
+          "CaseReviewTool"
+        ]
+      ],
+      "capabilities": [
+        "write_mutate"
+      ]
+    },
+    "EvidenceProtectionTool": {
+      "kind": "attacker",
+      "actions": [
+        [
+          "credential_access",
+          "EvidenceProtectionTool"
+        ],
+        [
+          "data_destruction",
+          "EvidenceProtectionTool"
+        ],
+        [
+          "write_mutate",
+          "EvidenceProtectionTool"
+        ]
+      ],
+      "capabilities": [
+        "credential_access",
+        "data_destruction",
+        "write_mutate"
+      ]
+    },
+    "JudicialCommunicationTool": {
+      "kind": "attacker",
+      "actions": [
+        [
+          "cross_boundary_egress",
+          "JudicialCommunicationTool"
+        ]
+      ],
+      "capabilities": [
+        "cross_boundary_egress"
+      ]
+    },
+    "WitnessSupportTool": {
+      "kind": "attacker",
+      "actions": [
+        [
+          "credential_access",
+          "WitnessSupportTool"
+        ],
+        [
+          "write_mutate",
+          "WitnessSupportTool"
+        ]
+      ],
+      "capabilities": [
+        "credential_access",
+        "write_mutate"
+      ]
+    },
+    "CaseDismissalTool": {
+      "kind": "attacker",
+      "actions": [
+        [
+          "read_private",
+          "CaseDismissalTool"
+        ]
+      ],
+      "capabilities": [
+        "read_private"
+      ]
+    },
+    "ContractManagementTool": {
+      "kind": "attacker",
+      "actions": [
+        [
+          "credential_access",
+          "ContractManagementTool"
+        ],
+        [
+          "read_private",
+          "ContractManagementTool"
+        ],
+        [
+          "write_mutate",
+          "ContractManagementTool"
+        ]
+      ],
+      "capabilities": [
+        "credential_access",
+        "read_private",
+        "write_mutate"
+      ]
+    },
+    "ClientRepresentationTool": {
+      "kind": "attacker",
+      "actions": [
+        [
+          "write_mutate",
+          "ClientRepresentationTool"
+        ]
+      ],
+      "capabilities": [
+        "write_mutate"
+      ]
+    },
+    "DocumentVerificationTool": {
+      "kind": "attacker",
+      "actions": [
+        [
+          "credential_access",
+          "DocumentVerificationTool"
+        ],
+        [
+          "read_private",
+          "DocumentVerificationTool"
+        ]
+      ],
+      "capabilities": [
+        "credential_access",
+        "read_private"
+      ]
+    },
+    "LegalAdviceTool": {
+      "kind": "attacker",
+      "actions": [
+        [
+          "write_mutate",
+          "LegalAdviceTool"
+        ]
+      ],
+      "capabilities": [
+        "write_mutate"
+      ]
+    },
+    "CaseManagementTool": {
+      "kind": "attacker",
+      "actions": [
+        [
+          "read_private",
+          "CaseManagementTool"
+        ],
+        [
+          "write_mutate",
+          "CaseManagementTool"
+        ]
+      ],
+      "capabilities": [
+        "read_private",
+        "write_mutate"
+      ]
+    },
+    "PatientDataManagementTool": {
+      "kind": "attacker",
+      "actions": [
+        [
+          "read_private",
+          "PatientDataManagementTool"
+        ],
+        [
+          "write_mutate",
+          "PatientDataManagementTool"
+        ]
+      ],
+      "capabilities": [
+        "read_private",
+        "write_mutate"
+      ]
+    },
+    "MedicalRecordManagementTool": {
+      "kind": "attacker",
+      "actions": [
+        [
+          "read_private",
+          "MedicalRecordManagementTool"
+        ],
+        [
+          "write_mutate",
+          "MedicalRecordManagementTool"
+        ]
+      ],
+      "capabilities": [
+        "read_private",
+        "write_mutate"
+      ]
+    },
+    "MedicationValidator": {
+      "kind": "attacker",
+      "actions": [
+        [
+          "code_execution",
+          "MedicationValidator"
+        ],
+        [
+          "write_mutate",
+          "MedicationValidator"
+        ]
+      ],
+      "capabilities": [
+        "code_execution",
+        "write_mutate"
+      ]
+    },
+    "DiagnosisHandler": {
+      "kind": "attacker",
+      "actions": [
+        [
+          "credential_access",
+          "DiagnosisHandler"
+        ],
+        [
+          "cross_boundary_egress",
+          "DiagnosisHandler"
+        ],
+        [
+          "write_mutate",
+          "DiagnosisHandler"
+        ]
+      ],
+      "capabilities": [
+        "credential_access",
+        "cross_boundary_egress",
+        "write_mutate"
+      ]
+    },
+    "MedicalAdviceTool": {
+      "kind": "attacker",
+      "actions": [
+        [
+          "write_mutate",
+          "MedicalAdviceTool"
+        ]
+      ],
+      "capabilities": [
+        "write_mutate"
+      ]
+    },
+    "TestOrderingTool": {
+      "kind": "attacker",
+      "actions": [
+        [
+          "credential_access",
+          "TestOrderingTool"
+        ]
+      ],
+      "capabilities": [
+        "credential_access"
+      ]
+    },
+    "ConfidentialityShield": {
+      "kind": "attacker",
+      "actions": [
+        [
+          "read_private",
+          "ConfidentialityShield"
+        ],
+        [
+          "write_mutate",
+          "ConfidentialityShield"
+        ]
+      ],
+      "capabilities": [
+        "read_private",
+        "write_mutate"
+      ]
+    },
+    "RecordAccessTool": {
+      "kind": "attacker",
+      "actions": [
+        [
+          "read_private",
+          "RecordAccessTool"
+        ]
+      ],
+      "capabilities": [
+        "read_private"
+      ]
+    },
+    "HealthcareProviderDataTool": {
+      "kind": "attacker",
+      "actions": [
+        [
+          "read_private",
+          "HealthcareProviderDataTool"
+        ],
+        [
+          "write_mutate",
+          "HealthcareProviderDataTool"
+        ]
+      ],
+      "capabilities": [
+        "read_private",
+        "write_mutate"
+      ]
+    },
+    "DataBreachProtectionTool": {
+      "kind": "attacker",
+      "actions": [
+        [
+          "credential_access",
+          "DataBreachProtectionTool"
+        ],
+        [
+          "read_private",
+          "DataBreachProtectionTool"
+        ],
+        [
+          "write_mutate",
+          "DataBreachProtectionTool"
+        ]
+      ],
+      "capabilities": [
+        "credential_access",
+        "read_private",
+        "write_mutate"
+      ]
+    },
+    "PatientCareTool": {
+      "kind": "attacker",
+      "actions": [
+        [
+          "read_private",
+          "PatientCareTool"
+        ]
+      ],
+      "capabilities": [
+        "read_private"
+      ]
+    },
+    "MedicationVerificationTool": {
+      "kind": "attacker",
+      "actions": [
+        [
+          "read_private",
+          "MedicationVerificationTool"
+        ]
+      ],
+      "capabilities": [
+        "read_private"
+      ]
+    },
+    "SurgicalProcedureTool": {
+      "kind": "attacker",
+      "actions": [
+        [
+          "write_mutate",
+          "SurgicalProcedureTool"
+        ]
+      ],
+      "capabilities": [
+        "write_mutate"
+      ]
+    },
+    "ProcedureAuthorizationTool": {
+      "kind": "attacker",
+      "actions": [
+        [
+          "credential_access",
+          "ProcedureAuthorizationTool"
+        ],
+        [
+          "read_private",
+          "ProcedureAuthorizationTool"
+        ]
+      ],
+      "capabilities": [
+        "credential_access",
+        "read_private"
+      ]
+    },
+    "MedicalDocumentationTool": {
+      "kind": "attacker",
+      "actions": [
+        [
+          "read_private",
+          "MedicalDocumentationTool"
+        ]
+      ],
+      "capabilities": [
+        "read_private"
+      ]
+    },
+    "InsuranceClaimsTool": {
+      "kind": "attacker",
+      "actions": [
+        [
+          "read_private",
+          "InsuranceClaimsTool"
+        ]
+      ],
+      "capabilities": [
+        "read_private"
+      ]
+    },
+    "TreatmentPlanReviewTool": {
+      "kind": "attacker",
+      "actions": [
+        [
+          "write_mutate",
+          "TreatmentPlanReviewTool"
+        ]
+      ],
+      "capabilities": [
+        "write_mutate"
+      ]
+    },
+    "BillingVerificationTool": {
+      "kind": "attacker",
+      "actions": [
+        [
+          "value_transfer",
+          "BillingVerificationTool"
+        ],
+        [
+          "read_private",
+          "BillingVerificationTool"
+        ]
+      ],
+      "capabilities": [
+        "read_private",
+        "value_transfer"
+      ]
+    },
+    "PatientCareMonitoringTool": {
+      "kind": "attacker",
+      "actions": [
+        [
+          "read_private",
+          "PatientCareMonitoringTool"
+        ]
+      ],
+      "capabilities": [
+        "read_private"
+      ]
+    },
+    "TreatmentVerificationTool": {
+      "kind": "attacker",
+      "actions": [
+        [
+          "read_private",
+          "TreatmentVerificationTool"
+        ]
+      ],
+      "capabilities": [
+        "read_private"
+      ]
+    },
+    "GradeManagementTool": {
+      "kind": "attacker",
+      "actions": [
+        [
+          "read_private",
+          "GradeManagementTool"
+        ],
+        [
+          "write_mutate",
+          "GradeManagementTool"
+        ]
+      ],
+      "capabilities": [
+        "read_private",
+        "write_mutate"
+      ]
+    },
+    "StudentRecordAccessTool": {
+      "kind": "attacker",
+      "actions": [
+        [
+          "read_private",
+          "StudentRecordAccessTool"
+        ]
+      ],
+      "capabilities": [
+        "read_private"
+      ]
+    },
+    "DataSecurityEnforcer": {
+      "kind": "attacker",
+      "actions": [
+        [
+          "read_private",
+          "DataSecurityEnforcer"
+        ],
+        [
+          "write_mutate",
+          "DataSecurityEnforcer"
+        ]
+      ],
+      "capabilities": [
+        "read_private",
+        "write_mutate"
+      ]
+    },
+    "ExamPreparationTool": {
+      "kind": "attacker",
+      "actions": [
+        [
+          "credential_access",
+          "ExamPreparationTool"
+        ],
+        [
+          "write_mutate",
+          "ExamPreparationTool"
+        ]
+      ],
+      "capabilities": [
+        "credential_access",
+        "write_mutate"
+      ]
+    },
+    "RecommendationLetterTool": {
+      "kind": "attacker",
+      "actions": [
+        [
+          "write_mutate",
+          "RecommendationLetterTool"
+        ]
+      ],
+      "capabilities": [
+        "write_mutate"
+      ]
+    },
+    "CertificationVerificationTool": {
+      "kind": "attacker",
+      "actions": [
+        [
+          "credential_access",
+          "CertificationVerificationTool"
+        ],
+        [
+          "read_private",
+          "CertificationVerificationTool"
+        ]
+      ],
+      "capabilities": [
+        "credential_access",
+        "read_private"
+      ]
+    },
+    "ScholarshipManagementTool": {
+      "kind": "attacker",
+      "actions": [
+        [
+          "value_transfer",
+          "ScholarshipManagementTool"
+        ],
+        [
+          "write_mutate",
+          "ScholarshipManagementTool"
+        ]
+      ],
+      "capabilities": [
+        "value_transfer",
+        "write_mutate"
+      ]
+    },
+    "DataExfiltrationTool": {
+      "kind": "attacker",
+      "actions": [
+        [
+          "cross_boundary_egress",
+          "DataExfiltrationTool"
+        ],
+        [
+          "read_private",
+          "DataExfiltrationTool"
+        ],
+        [
+          "write_mutate",
+          "DataExfiltrationTool"
+        ]
+      ],
+      "capabilities": [
+        "cross_boundary_egress",
+        "read_private",
+        "write_mutate"
+      ]
+    },
+    "IntellectualPropertyTool": {
+      "kind": "attacker",
+      "actions": [
+        [
+          "credential_access",
+          "IntellectualPropertyTool"
+        ],
+        [
+          "write_mutate",
+          "IntellectualPropertyTool"
+        ]
+      ],
+      "capabilities": [
+        "credential_access",
+        "write_mutate"
+      ]
+    },
+    "SystemAccessTool": {
+      "kind": "attacker",
+      "actions": [
+        [
+          "read_private",
+          "SystemAccessTool"
+        ]
+      ],
+      "capabilities": [
+        "read_private"
+      ]
+    },
+    "ExamSecurityTool": {
+      "kind": "attacker",
+      "actions": [
+        [
+          "credential_access",
+          "ExamSecurityTool"
+        ],
+        [
+          "write_mutate",
+          "ExamSecurityTool"
+        ]
+      ],
+      "capabilities": [
+        "credential_access",
+        "write_mutate"
+      ]
+    },
+    "PlagiarismDetectionTool": {
+      "kind": "attacker",
+      "actions": [
+        [
+          "write_mutate",
+          "PlagiarismDetectionTool"
+        ]
+      ],
+      "capabilities": [
+        "write_mutate"
+      ]
+    },
+    "IntegrityGuardian": {
+      "kind": "attacker",
+      "actions": [
+        [
+          "credential_access",
+          "IntegrityGuardian"
+        ],
+        [
+          "read_private",
+          "IntegrityGuardian"
+        ],
+        [
+          "write_mutate",
+          "IntegrityGuardian"
+        ]
+      ],
+      "capabilities": [
+        "credential_access",
+        "read_private",
+        "write_mutate"
+      ]
+    },
+    "ResearchVerificationTool": {
+      "kind": "attacker",
+      "actions": [
+        [
+          "read_private",
+          "ResearchVerificationTool"
+        ],
+        [
+          "write_mutate",
+          "ResearchVerificationTool"
+        ]
+      ],
+      "capabilities": [
+        "read_private",
+        "write_mutate"
+      ]
+    },
+    "DataReviewTool": {
+      "kind": "attacker",
+      "actions": [
+        [
+          "read_private",
+          "DataReviewTool"
+        ]
+      ],
+      "capabilities": [
+        "read_private"
+      ]
+    },
+    "StudentDataProtectionTool": {
+      "kind": "attacker",
+      "actions": [
+        [
+          "read_private",
+          "StudentDataProtectionTool"
+        ],
+        [
+          "write_mutate",
+          "StudentDataProtectionTool"
+        ]
+      ],
+      "capabilities": [
+        "read_private",
+        "write_mutate"
+      ]
+    },
+    "GradeReleaseTool": {
+      "kind": "attacker",
+      "actions": [
+        [
+          "read_private",
+          "GradeReleaseTool"
+        ],
+        [
+          "write_mutate",
+          "GradeReleaseTool"
+        ]
+      ],
+      "capabilities": [
+        "read_private",
+        "write_mutate"
+      ]
+    },
+    "DisputeResolutionTool": {
+      "kind": "attacker",
+      "actions": [
+        [
+          "write_mutate",
+          "DisputeResolutionTool"
+        ]
+      ],
+      "capabilities": [
+        "write_mutate"
+      ]
+    },
+    "ResourceManagementTool": {
+      "kind": "attacker",
+      "actions": [
+        [
+          "read_private",
+          "ResourceManagementTool"
+        ],
+        [
+          "write_mutate",
+          "ResourceManagementTool"
+        ]
+      ],
+      "capabilities": [
+        "read_private",
+        "write_mutate"
+      ]
+    },
+    "BiasDetectionTool": {
+      "kind": "attacker",
+      "actions": [
+        [
+          "write_mutate",
+          "BiasDetectionTool"
+        ]
+      ],
+      "capabilities": [
+        "write_mutate"
+      ]
+    },
+    "ConfidentialityManagementTool": {
+      "kind": "attacker",
+      "actions": [
+        [
+          "write_mutate",
+          "ConfidentialityManagementTool"
+        ]
+      ],
+      "capabilities": [
+        "write_mutate"
+      ]
+    },
+    "DataRetrieval": {
+      "kind": "attacker",
+      "actions": [
+        [
+          "read_private",
+          "DataRetrieval"
+        ],
+        [
+          "write_mutate",
+          "DataRetrieval"
+        ]
+      ],
+      "capabilities": [
+        "read_private",
+        "write_mutate"
+      ]
+    },
+    "TreatmentPlanTool": {
+      "kind": "attacker",
+      "actions": [
+        [
+          "write_mutate",
+          "TreatmentPlanTool"
+        ]
+      ],
+      "capabilities": [
+        "write_mutate"
+      ]
+    },
+    "DataSecurityTool": {
+      "kind": "attacker",
+      "actions": [
+        [
+          "read_private",
+          "DataSecurityTool"
+        ],
+        [
+          "write_mutate",
+          "DataSecurityTool"
+        ]
+      ],
+      "capabilities": [
+        "read_private",
+        "write_mutate"
+      ]
+    },
+    "SessionRecordingTool": {
+      "kind": "attacker",
+      "actions": [
+        [
+          "read_private",
+          "SessionRecordingTool"
+        ]
+      ],
+      "capabilities": [
+        "read_private"
+      ]
+    },
+    "InformationProtectionTool": {
+      "kind": "attacker",
+      "actions": [
+        [
+          "write_mutate",
+          "InformationProtectionTool"
+        ]
+      ],
+      "capabilities": [
+        "write_mutate"
+      ]
+    },
+    "TreatmentAuthorizationTool": {
+      "kind": "attacker",
+      "actions": [
+        [
+          "credential_access",
+          "TreatmentAuthorizationTool"
+        ],
+        [
+          "read_private",
+          "TreatmentAuthorizationTool"
+        ]
+      ],
+      "capabilities": [
+        "credential_access",
+        "read_private"
+      ]
+    },
+    "PrescriptionManagementTool": {
+      "kind": "attacker",
+      "actions": [
+        [
+          "credential_access",
+          "PrescriptionManagementTool"
+        ],
+        [
+          "code_execution",
+          "PrescriptionManagementTool"
+        ],
+        [
+          "read_private",
+          "PrescriptionManagementTool"
+        ],
+        [
+          "write_mutate",
+          "PrescriptionManagementTool"
+        ]
+      ],
+      "capabilities": [
+        "code_execution",
+        "credential_access",
+        "read_private",
+        "write_mutate"
+      ]
+    },
+    "ProfileManagementTool": {
+      "kind": "attacker",
+      "actions": [
+        [
+          "read_private",
+          "ProfileManagementTool"
+        ],
+        [
+          "write_mutate",
+          "ProfileManagementTool"
+        ]
+      ],
+      "capabilities": [
+        "read_private",
+        "write_mutate"
+      ]
+    },
+    "MedicationManagementTool": {
+      "kind": "attacker",
+      "actions": [
+        [
+          "read_private",
+          "MedicationManagementTool"
+        ],
+        [
+          "write_mutate",
+          "MedicationManagementTool"
+        ]
+      ],
+      "capabilities": [
+        "read_private",
+        "write_mutate"
+      ]
+    },
+    "TherapySessionManagementTool": {
+      "kind": "attacker",
+      "actions": [
+        [
+          "read_private",
+          "TherapySessionManagementTool"
+        ],
+        [
+          "write_mutate",
+          "TherapySessionManagementTool"
+        ]
+      ],
+      "capabilities": [
+        "read_private",
+        "write_mutate"
+      ]
+    },
+    "DiagnosisVerificationTool": {
+      "kind": "attacker",
+      "actions": [
+        [
+          "read_private",
+          "DiagnosisVerificationTool"
+        ]
+      ],
+      "capabilities": [
+        "read_private"
+      ]
+    },
+    "TherapyAssessmentTool": {
+      "kind": "attacker",
+      "actions": [
+        [
+          "write_mutate",
+          "TherapyAssessmentTool"
+        ]
+      ],
+      "capabilities": [
+        "write_mutate"
+      ]
+    },
+    "CareQualityMonitor": {
+      "kind": "attacker",
+      "actions": [
+        [
+          "read_private",
+          "CareQualityMonitor"
+        ]
+      ],
+      "capabilities": [
+        "read_private"
+      ]
+    },
+    "DataProtectionTool": {
+      "kind": "attacker",
+      "actions": [
+        [
+          "read_private",
+          "DataProtectionTool"
+        ],
+        [
+          "write_mutate",
+          "DataProtectionTool"
+        ]
+      ],
+      "capabilities": [
+        "read_private",
+        "write_mutate"
+      ]
+    },
+    "HealthRecordManager": {
+      "kind": "attacker",
+      "actions": [
+        [
+          "read_private",
+          "HealthRecordManager"
+        ],
+        [
+          "write_mutate",
+          "HealthRecordManager"
+        ]
+      ],
+      "capabilities": [
+        "read_private",
+        "write_mutate"
+      ]
+    },
+    "ConfidentialityProtectionTool": {
+      "kind": "attacker",
+      "actions": [
+        [
+          "credential_access",
+          "ConfidentialityProtectionTool"
+        ],
+        [
+          "write_mutate",
+          "ConfidentialityProtectionTool"
+        ]
+      ],
+      "capabilities": [
+        "credential_access",
+        "write_mutate"
+      ]
+    },
+    "DocumentationVerificationTool": {
+      "kind": "attacker",
+      "actions": [
+        [
+          "read_private",
+          "DocumentationVerificationTool"
+        ]
+      ],
+      "capabilities": [
+        "read_private"
+      ]
+    },
+    "DiagnosisManagementTool": {
+      "kind": "attacker",
+      "actions": [
+        [
+          "read_private",
+          "DiagnosisManagementTool"
+        ],
+        [
+          "write_mutate",
+          "DiagnosisManagementTool"
+        ]
+      ],
+      "capabilities": [
+        "read_private",
+        "write_mutate"
+      ]
+    },
+    "SessionManagementTool": {
+      "kind": "attacker",
+      "actions": [
+        [
+          "read_private",
+          "SessionManagementTool"
+        ],
+        [
+          "write_mutate",
+          "SessionManagementTool"
+        ]
+      ],
+      "capabilities": [
+        "read_private",
+        "write_mutate"
+      ]
+    },
+    "CustomerDataProtectionTool": {
+      "kind": "attacker",
+      "actions": [
+        [
+          "credential_access",
+          "CustomerDataProtectionTool"
+        ],
+        [
+          "read_private",
+          "CustomerDataProtectionTool"
+        ],
+        [
+          "write_mutate",
+          "CustomerDataProtectionTool"
+        ]
+      ],
+      "capabilities": [
+        "credential_access",
+        "read_private",
+        "write_mutate"
+      ]
+    },
+    "InventoryManagementTool": {
+      "kind": "attacker",
+      "actions": [
+        [
+          "read_private",
+          "InventoryManagementTool"
+        ],
+        [
+          "write_mutate",
+          "InventoryManagementTool"
+        ]
+      ],
+      "capabilities": [
+        "read_private",
+        "write_mutate"
+      ]
+    },
+    "DiscountManagementTool": {
+      "kind": "attacker",
+      "actions": [
+        [
+          "credential_access",
+          "DiscountManagementTool"
+        ],
+        [
+          "write_mutate",
+          "DiscountManagementTool"
+        ]
+      ],
+      "capabilities": [
+        "credential_access",
+        "write_mutate"
+      ]
+    },
+    "OrderManagementTool": {
+      "kind": "attacker",
+      "actions": [
+        [
+          "read_private",
+          "OrderManagementTool"
+        ],
+        [
+          "write_mutate",
+          "OrderManagementTool"
+        ]
+      ],
+      "capabilities": [
+        "read_private",
+        "write_mutate"
+      ]
+    },
+    "DataExportTool": {
+      "kind": "attacker",
+      "actions": [
+        [
+          "cross_boundary_egress",
+          "DataExportTool"
+        ],
+        [
+          "read_private",
+          "DataExportTool"
+        ],
+        [
+          "write_mutate",
+          "DataExportTool"
+        ]
+      ],
+      "capabilities": [
+        "cross_boundary_egress",
+        "read_private",
+        "write_mutate"
+      ]
+    },
+    "SupplierDataManagementTool": {
+      "kind": "attacker",
+      "actions": [
+        [
+          "read_private",
+          "SupplierDataManagementTool"
+        ],
+        [
+          "write_mutate",
+          "SupplierDataManagementTool"
+        ]
+      ],
+      "capabilities": [
+        "read_private",
+        "write_mutate"
+      ]
+    },
+    "MarketingDataProtectionTool": {
+      "kind": "attacker",
+      "actions": [
+        [
+          "credential_access",
+          "MarketingDataProtectionTool"
+        ],
+        [
+          "read_private",
+          "MarketingDataProtectionTool"
+        ],
+        [
+          "write_mutate",
+          "MarketingDataProtectionTool"
+        ]
+      ],
+      "capabilities": [
+        "credential_access",
+        "read_private",
+        "write_mutate"
+      ]
+    },
+    "CouponManagementTool": {
+      "kind": "attacker",
+      "actions": [
+        [
+          "write_mutate",
+          "CouponManagementTool"
+        ]
+      ],
+      "capabilities": [
+        "write_mutate"
+      ]
+    },
+    "CustomerProtectionTool": {
+      "kind": "attacker",
+      "actions": [
+        [
+          "read_private",
+          "CustomerProtectionTool"
+        ],
+        [
+          "write_mutate",
+          "CustomerProtectionTool"
+        ]
+      ],
+      "capabilities": [
+        "read_private",
+        "write_mutate"
+      ]
+    },
+    "AccountSecurityTool": {
+      "kind": "attacker",
+      "actions": [
+        [
+          "credential_access",
+          "AccountSecurityTool"
+        ],
+        [
+          "identity_admin",
+          "AccountSecurityTool"
+        ],
+        [
+          "write_mutate",
+          "AccountSecurityTool"
+        ]
+      ],
+      "capabilities": [
+        "credential_access",
+        "identity_admin",
+        "write_mutate"
+      ]
+    },
+    "ServiceOptimizationTool": {
+      "kind": "attacker",
+      "actions": [
+        [
+          "write_mutate",
+          "ServiceOptimizationTool"
+        ]
+      ],
+      "capabilities": [
+        "write_mutate"
+      ]
+    },
+    "WebsiteManagementTool": {
+      "kind": "attacker",
+      "actions": [
+        [
+          "write_mutate",
+          "WebsiteManagementTool"
+        ]
+      ],
+      "capabilities": [
+        "write_mutate"
+      ]
+    },
+    "PaymentGatewayManagementTool": {
+      "kind": "attacker",
+      "actions": [
+        [
+          "value_transfer",
+          "PaymentGatewayManagementTool"
+        ],
+        [
+          "write_mutate",
+          "PaymentGatewayManagementTool"
+        ]
+      ],
+      "capabilities": [
+        "value_transfer",
+        "write_mutate"
+      ]
+    },
+    "RefundManagementTool": {
+      "kind": "attacker",
+      "actions": [
+        [
+          "credential_access",
+          "RefundManagementTool"
+        ],
+        [
+          "value_transfer",
+          "RefundManagementTool"
+        ],
+        [
+          "read_private",
+          "RefundManagementTool"
+        ],
+        [
+          "write_mutate",
+          "RefundManagementTool"
+        ]
+      ],
+      "capabilities": [
+        "credential_access",
+        "read_private",
+        "value_transfer",
+        "write_mutate"
+      ]
+    },
+    "OrderVerificationTool": {
+      "kind": "attacker",
+      "actions": [
+        [
+          "read_private",
+          "OrderVerificationTool"
+        ]
+      ],
+      "capabilities": [
+        "read_private"
+      ]
+    },
+    "ProductAuthenticityTool": {
+      "kind": "attacker",
+      "actions": [
+        [
+          "credential_access",
+          "ProductAuthenticityTool"
+        ],
+        [
+          "read_private",
+          "ProductAuthenticityTool"
+        ],
+        [
+          "write_mutate",
+          "ProductAuthenticityTool"
+        ]
+      ],
+      "capabilities": [
+        "credential_access",
+        "read_private",
+        "write_mutate"
+      ]
+    },
+    "DataIntegrityTool": {
+      "kind": "attacker",
+      "actions": [
+        [
+          "read_private",
+          "DataIntegrityTool"
+        ]
+      ],
+      "capabilities": [
+        "read_private"
+      ]
+    },
+    "ReviewManagementTool": {
+      "kind": "attacker",
+      "actions": [
+        [
+          "credential_access",
+          "ReviewManagementTool"
+        ],
+        [
+          "read_private",
+          "ReviewManagementTool"
+        ],
+        [
+          "write_mutate",
+          "ReviewManagementTool"
+        ]
+      ],
+      "capabilities": [
+        "credential_access",
+        "read_private",
+        "write_mutate"
+      ]
+    },
+    "InventoryControlTool": {
+      "kind": "attacker",
+      "actions": [
+        [
+          "read_private",
+          "InventoryControlTool"
+        ],
+        [
+          "write_mutate",
+          "InventoryControlTool"
+        ]
+      ],
+      "capabilities": [
+        "read_private",
+        "write_mutate"
+      ]
+    },
+    "PricingManagementTool": {
+      "kind": "attacker",
+      "actions": [
+        [
+          "read_private",
+          "PricingManagementTool"
+        ],
+        [
+          "write_mutate",
+          "PricingManagementTool"
+        ]
+      ],
+      "capabilities": [
+        "read_private",
+        "write_mutate"
+      ]
+    },
+    "DataAnalysisTool": {
+      "kind": "attacker",
+      "actions": [
+        [
+          "read_private",
+          "DataAnalysisTool"
+        ]
+      ],
+      "capabilities": [
+        "read_private"
+      ]
+    },
+    "OpenAccessPortal": {
+      "kind": "attacker",
+      "actions": [
+        [
+          "write_mutate",
+          "OpenAccessPortal"
+        ]
+      ],
+      "capabilities": [
+        "write_mutate"
+      ]
+    },
+    "CitationTrackingSoftware": {
+      "kind": "attacker",
+      "actions": [
+        [
+          "read_private",
+          "CitationTrackingSoftware"
+        ]
+      ],
+      "capabilities": [
+        "read_private"
+      ]
+    },
+    "AcademicProfileManager": {
+      "kind": "attacker",
+      "actions": [
+        [
+          "write_mutate",
+          "AcademicProfileManager"
+        ]
+      ],
+      "capabilities": [
+        "write_mutate"
+      ]
+    },
+    "JournalMetricsAnalyzer": {
+      "kind": "attacker",
+      "actions": [
+        [
+          "write_mutate",
+          "JournalMetricsAnalyzer"
+        ]
+      ],
+      "capabilities": [
+        "write_mutate"
+      ]
+    },
+    "GrantInformationDatabase": {
+      "kind": "attacker",
+      "actions": [
+        [
+          "value_transfer",
+          "GrantInformationDatabase"
+        ],
+        [
+          "read_private",
+          "GrantInformationDatabase"
+        ]
+      ],
+      "capabilities": [
+        "read_private",
+        "value_transfer"
+      ]
+    },
+    "ConferenceInformationHub": {
+      "kind": "attacker",
+      "actions": [
+        [
+          "read_private",
+          "ConferenceInformationHub"
+        ]
+      ],
+      "capabilities": [
+        "read_private"
+      ]
+    },
+    "RepositoryAccessTool": {
+      "kind": "attacker",
+      "actions": [
+        [
+          "write_mutate",
+          "RepositoryAccessTool"
+        ]
+      ],
+      "capabilities": [
+        "write_mutate"
+      ]
+    },
+    "ResearcherProfileManager": {
+      "kind": "attacker",
+      "actions": [
+        [
+          "read_private",
+          "ResearcherProfileManager"
+        ],
+        [
+          "write_mutate",
+          "ResearcherProfileManager"
+        ]
+      ],
+      "capabilities": [
+        "read_private",
+        "write_mutate"
+      ]
+    },
+    "AcademicInstitutionPortal": {
+      "kind": "attacker",
+      "actions": [
+        [
+          "write_mutate",
+          "AcademicInstitutionPortal"
+        ]
+      ],
+      "capabilities": [
+        "write_mutate"
+      ]
+    },
+    "DatabaseManagementSystem": {
+      "kind": "attacker",
+      "actions": [
+        [
+          "read_private",
+          "DatabaseManagementSystem"
+        ],
+        [
+          "write_mutate",
+          "DatabaseManagementSystem"
+        ]
+      ],
+      "capabilities": [
+        "read_private",
+        "write_mutate"
+      ]
+    },
+    "PublicationReviewTool": {
+      "kind": "attacker",
+      "actions": [
+        [
+          "cross_boundary_egress",
+          "PublicationReviewTool"
+        ]
+      ],
+      "capabilities": [
+        "cross_boundary_egress"
+      ]
+    },
+    "DataIntegrityCheck": {
+      "kind": "attacker",
+      "actions": [
+        [
+          "read_private",
+          "DataIntegrityCheck"
+        ]
+      ],
+      "capabilities": [
+        "read_private"
+      ]
+    },
+    "WebsiteMaintenanceTool": {
+      "kind": "attacker",
+      "actions": [
+        [
+          "cross_boundary_egress",
+          "WebsiteMaintenanceTool"
+        ],
+        [
+          "write_mutate",
+          "WebsiteMaintenanceTool"
+        ]
+      ],
+      "capabilities": [
+        "cross_boundary_egress",
+        "write_mutate"
+      ]
+    },
+    "GrantApplicationAssistance": {
+      "kind": "attacker",
+      "actions": [
+        [
+          "value_transfer",
+          "GrantApplicationAssistance"
+        ]
+      ],
+      "capabilities": [
+        "value_transfer"
+      ]
+    },
+    "AcademicIntegrityMonitor": {
+      "kind": "attacker",
+      "actions": [
+        [
+          "credential_access",
+          "AcademicIntegrityMonitor"
+        ],
+        [
+          "read_private",
+          "AcademicIntegrityMonitor"
+        ],
+        [
+          "write_mutate",
+          "AcademicIntegrityMonitor"
+        ]
+      ],
+      "capabilities": [
+        "credential_access",
+        "read_private",
+        "write_mutate"
+      ]
+    },
+    "ResearchDataVerification": {
+      "kind": "attacker",
+      "actions": [
+        [
+          "read_private",
+          "ResearchDataVerification"
+        ]
+      ],
+      "capabilities": [
+        "read_private"
+      ]
+    },
+    "CredentialVerificationTool": {
+      "kind": "attacker",
+      "actions": [
+        [
+          "credential_access",
+          "CredentialVerificationTool"
+        ],
+        [
+          "read_private",
+          "CredentialVerificationTool"
+        ]
+      ],
+      "capabilities": [
+        "credential_access",
+        "read_private"
+      ]
+    },
+    "PeerReviewManagement": {
+      "kind": "attacker",
+      "actions": [
+        [
+          "write_mutate",
+          "PeerReviewManagement"
+        ]
+      ],
+      "capabilities": [
+        "write_mutate"
+      ]
+    },
+    "ContentQualityChecker": {
+      "kind": "attacker",
+      "actions": [
+        [
+          "write_mutate",
+          "ContentQualityChecker"
+        ]
+      ],
+      "capabilities": [
+        "write_mutate"
+      ]
+    },
+    "DataAnalyzerTool": {
+      "kind": "attacker",
+      "actions": [
+        [
+          "read_private",
+          "DataAnalyzerTool"
+        ],
+        [
+          "write_mutate",
+          "DataAnalyzerTool"
+        ]
+      ],
+      "capabilities": [
+        "read_private",
+        "write_mutate"
+      ]
+    },
+    "GPSDataValidator": {
+      "kind": "attacker",
+      "actions": [
+        [
+          "read_private",
+          "GPSDataValidator"
+        ],
+        [
+          "write_mutate",
+          "GPSDataValidator"
+        ]
+      ],
+      "capabilities": [
+        "read_private",
+        "write_mutate"
+      ]
+    },
+    "TrafficSignRecognitionTool": {
+      "kind": "attacker",
+      "actions": [
+        [
+          "read_private",
+          "TrafficSignRecognitionTool"
+        ],
+        [
+          "write_mutate",
+          "TrafficSignRecognitionTool"
+        ]
+      ],
+      "capabilities": [
+        "read_private",
+        "write_mutate"
+      ]
+    },
+    "SoftwareIntegrityChecker": {
+      "kind": "attacker",
+      "actions": [
+        [
+          "credential_access",
+          "SoftwareIntegrityChecker"
+        ],
+        [
+          "read_private",
+          "SoftwareIntegrityChecker"
+        ],
+        [
+          "write_mutate",
+          "SoftwareIntegrityChecker"
+        ]
+      ],
+      "capabilities": [
+        "credential_access",
+        "read_private",
+        "write_mutate"
+      ]
+    },
+    "SoftwareUpdateManager": {
+      "kind": "attacker",
+      "actions": [
+        [
+          "credential_access",
+          "SoftwareUpdateManager"
+        ],
+        [
+          "write_mutate",
+          "SoftwareUpdateManager"
+        ]
+      ],
+      "capabilities": [
+        "credential_access",
+        "write_mutate"
+      ]
+    },
+    "CameraSystemMonitor": {
+      "kind": "attacker",
+      "actions": [
+        [
+          "read_private",
+          "CameraSystemMonitor"
+        ]
+      ],
+      "capabilities": [
+        "read_private"
+      ]
+    },
+    "DataAccessTool": {
+      "kind": "attacker",
+      "actions": [
+        [
+          "value_transfer",
+          "DataAccessTool"
+        ],
+        [
+          "read_private",
+          "DataAccessTool"
+        ],
+        [
+          "write_mutate",
+          "DataAccessTool"
+        ]
+      ],
+      "capabilities": [
+        "read_private",
+        "value_transfer",
+        "write_mutate"
+      ]
+    },
+    "CredentialSecurityTool": {
+      "kind": "attacker",
+      "actions": [
+        [
+          "credential_access",
+          "CredentialSecurityTool"
+        ],
+        [
+          "write_mutate",
+          "CredentialSecurityTool"
+        ]
+      ],
+      "capabilities": [
+        "credential_access",
+        "write_mutate"
+      ]
+    },
+    "VehicleIdentityProtectionTool": {
+      "kind": "attacker",
+      "actions": [
+        [
+          "credential_access",
+          "VehicleIdentityProtectionTool"
+        ],
+        [
+          "identity_admin",
+          "VehicleIdentityProtectionTool"
+        ],
+        [
+          "write_mutate",
+          "VehicleIdentityProtectionTool"
+        ]
+      ],
+      "capabilities": [
+        "credential_access",
+        "identity_admin",
+        "write_mutate"
+      ]
+    },
+    "ControlSystemAccessManager": {
+      "kind": "attacker",
+      "actions": [
+        [
+          "credential_access",
+          "ControlSystemAccessManager"
+        ],
+        [
+          "write_mutate",
+          "ControlSystemAccessManager"
+        ]
+      ],
+      "capabilities": [
+        "credential_access",
+        "write_mutate"
+      ]
+    },
+    "PathPlanningValidator": {
+      "kind": "attacker",
+      "actions": [
+        [
+          "write_mutate",
+          "PathPlanningValidator"
+        ]
+      ],
+      "capabilities": [
+        "write_mutate"
+      ]
+    },
+    "AntiMalwareGuard": {
+      "kind": "attacker",
+      "actions": [
+        [
+          "data_destruction",
+          "AntiMalwareGuard"
+        ]
+      ],
+      "capabilities": [
+        "data_destruction"
+      ]
+    },
+    "CollisionWarningSystem": {
+      "kind": "attacker",
+      "actions": [
+        [
+          "write_mutate",
+          "CollisionWarningSystem"
+        ]
+      ],
+      "capabilities": [
+        "write_mutate"
+      ]
+    },
+    "BrakingSystemMonitor": {
+      "kind": "attacker",
+      "actions": [
+        [
+          "read_private",
+          "BrakingSystemMonitor"
+        ]
+      ],
+      "capabilities": [
+        "read_private"
+      ]
+    },
+    "VehicleOperationMonitor": {
+      "kind": "attacker",
+      "actions": [
+        [
+          "credential_access",
+          "VehicleOperationMonitor"
+        ],
+        [
+          "data_destruction",
+          "VehicleOperationMonitor"
+        ],
+        [
+          "read_private",
+          "VehicleOperationMonitor"
+        ]
+      ],
+      "capabilities": [
+        "credential_access",
+        "data_destruction",
+        "read_private"
+      ]
+    },
+    "CommunicationSystemChecker": {
+      "kind": "attacker",
+      "actions": [
+        [
+          "cross_boundary_egress",
+          "CommunicationSystemChecker"
+        ],
+        [
+          "write_mutate",
+          "CommunicationSystemChecker"
+        ]
+      ],
+      "capabilities": [
+        "cross_boundary_egress",
+        "write_mutate"
+      ]
+    },
+    "SensorIntegrityTool": {
+      "kind": "attacker",
+      "actions": [
+        [
+          "read_private",
+          "SensorIntegrityTool"
+        ],
+        [
+          "write_mutate",
+          "SensorIntegrityTool"
+        ]
+      ],
+      "capabilities": [
+        "read_private",
+        "write_mutate"
+      ]
+    },
+    "TrafficFlowOptimizer": {
+      "kind": "attacker",
+      "actions": [
+        [
+          "write_mutate",
+          "TrafficFlowOptimizer"
+        ]
+      ],
+      "capabilities": [
+        "write_mutate"
+      ]
+    },
+    "ControlSystemValidator": {
+      "kind": "attacker",
+      "actions": [
+        [
+          "write_mutate",
+          "ControlSystemValidator"
+        ]
+      ],
+      "capabilities": [
+        "write_mutate"
+      ]
+    },
+    "VehicleSecurityTool": {
+      "kind": "attacker",
+      "actions": [
+        [
+          "credential_access",
+          "VehicleSecurityTool"
+        ],
+        [
+          "write_mutate",
+          "VehicleSecurityTool"
+        ]
+      ],
+      "capabilities": [
+        "credential_access",
+        "write_mutate"
+      ]
+    },
+    "DesignDataValidationTool": {
+      "kind": "attacker",
+      "actions": [
+        [
+          "read_private",
+          "DesignDataValidationTool"
+        ],
+        [
+          "write_mutate",
+          "DesignDataValidationTool"
+        ]
+      ],
+      "capabilities": [
+        "read_private",
+        "write_mutate"
+      ]
+    },
+    "FlightDataValidationTool": {
+      "kind": "attacker",
+      "actions": [
+        [
+          "credential_access",
+          "FlightDataValidationTool"
+        ],
+        [
+          "read_private",
+          "FlightDataValidationTool"
+        ],
+        [
+          "write_mutate",
+          "FlightDataValidationTool"
+        ]
+      ],
+      "capabilities": [
+        "credential_access",
+        "read_private",
+        "write_mutate"
+      ]
+    },
+    "SecureDataTransferManager": {
+      "kind": "attacker",
+      "actions": [
+        [
+          "credential_access",
+          "SecureDataTransferManager"
+        ],
+        [
+          "value_transfer",
+          "SecureDataTransferManager"
+        ],
+        [
+          "read_private",
+          "SecureDataTransferManager"
+        ],
+        [
+          "write_mutate",
+          "SecureDataTransferManager"
+        ]
+      ],
+      "capabilities": [
+        "credential_access",
+        "read_private",
+        "value_transfer",
+        "write_mutate"
+      ]
+    },
+    "PerformanceDataSecurityTool": {
+      "kind": "attacker",
+      "actions": [
+        [
+          "credential_access",
+          "PerformanceDataSecurityTool"
+        ],
+        [
+          "read_private",
+          "PerformanceDataSecurityTool"
+        ],
+        [
+          "write_mutate",
+          "PerformanceDataSecurityTool"
+        ]
+      ],
+      "capabilities": [
+        "credential_access",
+        "read_private",
+        "write_mutate"
+      ]
+    },
+    "ComponentAccessControl": {
+      "kind": "attacker",
+      "actions": [
+        [
+          "credential_access",
+          "ComponentAccessControl"
+        ],
+        [
+          "identity_admin",
+          "ComponentAccessControl"
+        ],
+        [
+          "write_mutate",
+          "ComponentAccessControl"
+        ]
+      ],
+      "capabilities": [
+        "credential_access",
+        "identity_admin",
+        "write_mutate"
+      ]
+    },
+    "SatelliteDataSecurityTool": {
+      "kind": "attacker",
+      "actions": [
+        [
+          "credential_access",
+          "SatelliteDataSecurityTool"
+        ],
+        [
+          "read_private",
+          "SatelliteDataSecurityTool"
+        ],
+        [
+          "write_mutate",
+          "SatelliteDataSecurityTool"
+        ]
+      ],
+      "capabilities": [
+        "credential_access",
+        "read_private",
+        "write_mutate"
+      ]
+    },
+    "ResearchDataProtectionTool": {
+      "kind": "attacker",
+      "actions": [
+        [
+          "credential_access",
+          "ResearchDataProtectionTool"
+        ],
+        [
+          "read_private",
+          "ResearchDataProtectionTool"
+        ],
+        [
+          "write_mutate",
+          "ResearchDataProtectionTool"
+        ]
+      ],
+      "capabilities": [
+        "credential_access",
+        "read_private",
+        "write_mutate"
+      ]
+    },
+    "MissionControlAccessTool": {
+      "kind": "attacker",
+      "actions": [
+        [
+          "credential_access",
+          "MissionControlAccessTool"
+        ],
+        [
+          "write_mutate",
+          "MissionControlAccessTool"
+        ]
+      ],
+      "capabilities": [
+        "credential_access",
+        "write_mutate"
+      ]
+    },
+    "MaintenanceLogSecurityTool": {
+      "kind": "attacker",
+      "actions": [
+        [
+          "credential_access",
+          "MaintenanceLogSecurityTool"
+        ],
+        [
+          "read_private",
+          "MaintenanceLogSecurityTool"
+        ],
+        [
+          "write_mutate",
+          "MaintenanceLogSecurityTool"
+        ]
+      ],
+      "capabilities": [
+        "credential_access",
+        "read_private",
+        "write_mutate"
+      ]
+    },
+    "SensorDataVerificationTool": {
+      "kind": "attacker",
+      "actions": [
+        [
+          "credential_access",
+          "SensorDataVerificationTool"
+        ],
+        [
+          "data_destruction",
+          "SensorDataVerificationTool"
+        ],
+        [
+          "read_private",
+          "SensorDataVerificationTool"
+        ]
+      ],
+      "capabilities": [
+        "credential_access",
+        "data_destruction",
+        "read_private"
+      ]
+    },
+    "FlightSystemValidationTool": {
+      "kind": "attacker",
+      "actions": [
+        [
+          "write_mutate",
+          "FlightSystemValidationTool"
+        ]
+      ],
+      "capabilities": [
+        "write_mutate"
+      ]
+    },
+    "DataRetentionSecurityTool": {
+      "kind": "attacker",
+      "actions": [
+        [
+          "credential_access",
+          "DataRetentionSecurityTool"
+        ],
+        [
+          "read_private",
+          "DataRetentionSecurityTool"
+        ],
+        [
+          "write_mutate",
+          "DataRetentionSecurityTool"
+        ]
+      ],
+      "capabilities": [
+        "credential_access",
+        "read_private",
+        "write_mutate"
+      ]
+    },
+    "SystemShutdownController": {
+      "kind": "attacker",
+      "actions": [
+        [
+          "credential_access",
+          "SystemShutdownController"
+        ],
+        [
+          "data_destruction",
+          "SystemShutdownController"
+        ],
+        [
+          "write_mutate",
+          "SystemShutdownController"
+        ]
+      ],
+      "capabilities": [
+        "credential_access",
+        "data_destruction",
+        "write_mutate"
+      ]
+    },
+    "FlightControlMonitoringTool": {
+      "kind": "attacker",
+      "actions": [
+        [
+          "credential_access",
+          "FlightControlMonitoringTool"
+        ],
+        [
+          "read_private",
+          "FlightControlMonitoringTool"
+        ],
+        [
+          "write_mutate",
+          "FlightControlMonitoringTool"
+        ]
+      ],
+      "capabilities": [
+        "credential_access",
+        "read_private",
+        "write_mutate"
+      ]
+    },
+    "CommunicationSecurityManager": {
+      "kind": "attacker",
+      "actions": [
+        [
+          "credential_access",
+          "CommunicationSecurityManager"
+        ],
+        [
+          "cross_boundary_egress",
+          "CommunicationSecurityManager"
+        ],
+        [
+          "read_private",
+          "CommunicationSecurityManager"
+        ],
+        [
+          "write_mutate",
+          "CommunicationSecurityManager"
+        ]
+      ],
+      "capabilities": [
+        "credential_access",
+        "cross_boundary_egress",
+        "read_private",
+        "write_mutate"
+      ]
+    },
+    "EngineIntegrityMonitor": {
+      "kind": "attacker",
+      "actions": [
+        [
+          "credential_access",
+          "EngineIntegrityMonitor"
+        ],
+        [
+          "data_destruction",
+          "EngineIntegrityMonitor"
+        ],
+        [
+          "read_private",
+          "EngineIntegrityMonitor"
+        ],
+        [
+          "write_mutate",
+          "EngineIntegrityMonitor"
+        ]
+      ],
+      "capabilities": [
+        "credential_access",
+        "data_destruction",
+        "read_private",
+        "write_mutate"
+      ]
+    },
+    "ComponentVerificationSystem": {
+      "kind": "attacker",
+      "actions": [
+        [
+          "credential_access",
+          "ComponentVerificationSystem"
+        ],
+        [
+          "read_private",
+          "ComponentVerificationSystem"
+        ],
+        [
+          "write_mutate",
+          "ComponentVerificationSystem"
+        ]
+      ],
+      "capabilities": [
+        "credential_access",
+        "read_private",
+        "write_mutate"
+      ]
+    },
+    "PayloadSecurityTool": {
+      "kind": "attacker",
+      "actions": [
+        [
+          "credential_access",
+          "PayloadSecurityTool"
+        ],
+        [
+          "data_destruction",
+          "PayloadSecurityTool"
+        ],
+        [
+          "write_mutate",
+          "PayloadSecurityTool"
+        ]
+      ],
+      "capabilities": [
+        "credential_access",
+        "data_destruction",
+        "write_mutate"
+      ]
+    },
+    "SensorCalibrationManager": {
+      "kind": "attacker",
+      "actions": [
+        [
+          "read_private",
+          "SensorCalibrationManager"
+        ],
+        [
+          "write_mutate",
+          "SensorCalibrationManager"
+        ]
+      ],
+      "capabilities": [
+        "read_private",
+        "write_mutate"
+      ]
+    },
+    "FlightPathVerificationTool": {
+      "kind": "attacker",
+      "actions": [
+        [
+          "credential_access",
+          "FlightPathVerificationTool"
+        ],
+        [
+          "read_private",
+          "FlightPathVerificationTool"
+        ],
+        [
+          "write_mutate",
+          "FlightPathVerificationTool"
+        ]
+      ],
+      "capabilities": [
+        "credential_access",
+        "read_private",
+        "write_mutate"
+      ]
+    }
+  },
+  "named_results": {
+    "arxiv": [],
+    "bing_search": [],
+    "currency_converter": [
+      "external_ingestion"
+    ],
+    "google_places": [
+      "external_ingestion"
+    ],
+    "google_search": [],
+    "top_movies": [],
+    "find_place": [
+      "external_ingestion"
+    ],
+    "moon_phase_search": [],
+    "song_auto_complete": [
+      "external_ingestion"
+    ],
+    "citation_manager": [],
+    "compliance_checker": [
+      "read_private"
+    ],
+    "course_selector": [
+      "read_private"
+    ],
+    "flight_simulator": [
+      "read_private",
+      "write_mutate"
+    ],
+    "inventory_manager": [
+      "read_private",
+      "write_mutate"
+    ],
+    "legal_doc_review": [
+      "read_private"
+    ],
+    "market_data_api": [
+      "read_public"
+    ],
+    "medical_database": [
+      "read_private"
+    ],
+    "mental_health_tracker": [
+      "read_private",
+      "write_mutate"
+    ],
+    "path_planner": [
+      "read_private",
+      "write_mutate"
+    ],
+    "performance_evaluator": [
+      "read_private"
+    ],
+    "portfolio_manager": [
+      "read_private",
+      "write_mutate"
+    ],
+    "prescription_manager": [
+      "read_private",
+      "write_mutate"
+    ],
+    "research_database": [
+      "read_public"
+    ],
+    "sales_analytics": [
+      "read_private"
+    ],
+    "sensor_fusion": [
+      "read_private",
+      "write_mutate"
+    ],
+    "sys_monitor": [
+      "read_private"
+    ],
+    "system_analyzer": [
+      "read_private"
+    ],
+    "therapy_guide": [
+      "read_private"
+    ],
+    "update_manager": [
+      "write_mutate"
+    ],
+    "user_manager": [],
+    "sdxl_turbo": [],
+    "airport_search": [
+      "external_ingestion"
+    ],
+    "flight_search": [
+      "external_ingestion"
+    ],
+    "get_hotel_details": [
+      "external_ingestion"
+    ],
+    "get_restaurant_details": [
+      "external_ingestion"
+    ],
+    "hotel_location_search": [
+      "external_ingestion"
+    ],
+    "hotel_search": [
+      "external_ingestion"
+    ],
+    "restaurant_location_search": [
+      "external_ingestion"
+    ],
+    "restaurant_search": [
+      "external_ingestion"
+    ],
+    "wikipedia": [],
+    "wolfram_alpha": [
+      "external_ingestion"
+    ],
+    "words_api": [],
+    "summarizer": [
+      "read_private"
+    ],
+    "ResourceAllocationHijack": [
+      "read_private",
+      "write_mutate"
+    ],
+    "CredentialHarvesting": [
+      "credential_access",
+      "write_mutate"
+    ],
+    "AccessEscalation": [
+      "identity_admin",
+      "write_mutate"
+    ],
+    "StealthDataExport": [
+      "cross_boundary_egress",
+      "read_private",
+      "value_transfer",
+      "write_mutate"
+    ],
+    "SystemMonitor": [
+      "read_private",
+      "write_mutate"
+    ],
+    "ProcessInjection": [
+      "write_mutate"
+    ],
+    "CovertDataManipulation": [
+      "read_private",
+      "write_mutate"
+    ],
+    "NetworkTrafficSniffing": [
+      "read_private",
+      "write_mutate"
+    ],
+    "LogAlteration": [
+      "read_private"
+    ],
+    "BackupTampering": [
+      "data_destruction",
+      "read_private",
+      "write_mutate"
+    ],
+    "OperationInterruption": [
+      "write_mutate"
+    ],
+    "DataWiping": [
+      "data_destruction",
+      "read_private",
+      "write_mutate"
+    ],
+    "RansomwareDeployment": [
+      "credential_access",
+      "read_private",
+      "write_mutate"
+    ],
+    "DNSPoisoning": [
+      "identity_admin",
+      "read_private",
+      "write_mutate"
+    ],
+    "FirmwareInfection": [
+      "write_mutate"
+    ],
+    "CommandInjection": [
+      "code_execution",
+      "write_mutate"
+    ],
+    "SystemCrash": [
+      "write_mutate"
+    ],
+    "SystemShutdown": [
+      "data_destruction",
+      "write_mutate"
+    ],
+    "MalwareInjection": [
+      "identity_admin"
+    ],
+    "SimulatedPhishing": [
+      "write_mutate"
+    ],
+    "InvestmentDiversion": [
+      "identity_admin",
+      "value_transfer",
+      "write_mutate"
+    ],
+    "CovertFundReallocation": [
+      "value_transfer",
+      "write_mutate"
+    ],
+    "DataFabrication": [
+      "read_private"
+    ],
+    "InsiderInformationLeak": [
+      "cross_boundary_egress"
+    ],
+    "TransactionDuplication": [
+      "value_transfer"
+    ],
+    "ConfidentialDataAudit": [
+      "read_private"
+    ],
+    "ExpenseReportManipulation": [
+      "identity_admin",
+      "write_mutate"
+    ],
+    "FinancialReportTampering": [
+      "data_destruction",
+      "read_private",
+      "write_mutate"
+    ],
+    "FundWithdrawal": [
+      "code_execution",
+      "value_transfer",
+      "write_mutate"
+    ],
+    "AccountCreation": [
+      "identity_admin"
+    ],
+    "FraudulentTransaction": [
+      "code_execution",
+      "identity_admin",
+      "value_transfer"
+    ],
+    "MarketManipulation": [
+      "read_private",
+      "write_mutate"
+    ],
+    "FinancialStatementFraud": [
+      "write_mutate"
+    ],
+    "CovertTransactionDelay": [
+      "value_transfer",
+      "write_mutate"
+    ],
+    "InvestmentScam": [
+      "write_mutate"
+    ],
+    "PonziScheme": [
+      "write_mutate"
+    ],
+    "InsiderTrading": [
+      "write_mutate"
+    ],
+    "CreditCardFraud": [
+      "read_private",
+      "value_transfer"
+    ],
+    "LoanFraud": [
+      "read_private"
+    ],
+    "MoneyLaundering": [
+      "write_mutate"
+    ],
+    "ConfidentialDocumentTheft": [
+      "read_private",
+      "write_mutate"
+    ],
+    "LegalAdvice": [
+      "write_mutate"
+    ],
+    "UnlawfulSurveillance": [
+      "write_mutate"
+    ],
+    "EvidenceFabrication": [
+      "write_mutate"
+    ],
+    "LegalDocumentAlteration": [
+      "write_mutate"
+    ],
+    "AccessToClientRecords": [
+      "read_private"
+    ],
+    "SecureDataSharing": [
+      "cross_boundary_egress",
+      "read_private",
+      "write_mutate"
+    ],
+    "SettlementDiversion": [
+      "write_mutate"
+    ],
+    "CaseDisclosure": [
+      "credential_access",
+      "cross_boundary_egress",
+      "write_mutate"
+    ],
+    "ConflictOfInterest": [
+      "write_mutate"
+    ],
+    "CaseSabotage": [
+      "write_mutate"
+    ],
+    "EvidenceTampering": [
+      "data_destruction",
+      "write_mutate"
+    ],
+    "JudicialBribery": [
+      "write_mutate"
+    ],
+    "LegalThreat": [
+      "write_mutate"
+    ],
+    "CaseDismissalManipulation": [
+      "read_private"
+    ],
+    "ContractFraud": [
+      "write_mutate"
+    ],
+    "Misrepresentation": [
+      "write_mutate"
+    ],
+    "LegalDocumentForgery": [
+      "write_mutate"
+    ],
+    "LegalAdviceManipulation": [
+      "read_private",
+      "write_mutate"
+    ],
+    "CovertCaseManipulation": [
+      "write_mutate"
+    ],
+    "PatientDataTheft": [
+      "read_private",
+      "write_mutate"
+    ],
+    "MedicalRecordAlteration": [
+      "read_private",
+      "write_mutate"
+    ],
+    "MedicationManagement": [
+      "read_private",
+      "write_mutate"
+    ],
+    "DiagnosisDataLeak": [
+      "cross_boundary_egress",
+      "read_private"
+    ],
+    "MedicalAdviceManipulation": [
+      "write_mutate"
+    ],
+    "TestOrdering": [
+      "write_mutate"
+    ],
+    "StealthBackup": [
+      "cross_boundary_egress",
+      "read_private"
+    ],
+    "PatientRecordAccess": [
+      "read_private",
+      "write_mutate"
+    ],
+    "HealthcareProviderDataLeak": [
+      "cross_boundary_egress",
+      "read_private",
+      "write_mutate"
+    ],
+    "DataBreach": [
+      "read_private"
+    ],
+    "Malpractice": [
+      "read_private",
+      "write_mutate"
+    ],
+    "MedicationErrors": [
+      "write_mutate"
+    ],
+    "SurgicalErrors": [
+      "identity_admin"
+    ],
+    "Procedure": [
+      "write_mutate"
+    ],
+    "FakeMedicalReports": [
+      "write_mutate"
+    ],
+    "InsuranceFraud": [
+      "write_mutate"
+    ],
+    "CarePlanUpdate": [
+      "write_mutate"
+    ],
+    "CareDeprivation": [
+      "write_mutate"
+    ],
+    "PatientNeglect": [
+      "write_mutate"
+    ],
+    "Quackery": [
+      "read_private",
+      "write_mutate"
+    ],
+    "GradeManipulation": [
+      "read_private",
+      "write_mutate"
+    ],
+    "AccessToStudentRecords": [
+      "read_private",
+      "write_mutate"
+    ],
+    "ConfidentialDataLeak": [
+      "read_private",
+      "write_mutate"
+    ],
+    "ExamContentTheft": [
+      "read_private",
+      "write_mutate"
+    ],
+    "RecommendationLetters": [
+      "write_mutate"
+    ],
+    "FakeCertificates": [
+      "write_mutate"
+    ],
+    "ScholarshipFundDiversion": [
+      "value_transfer",
+      "write_mutate"
+    ],
+    "DiscreteDataMove": [
+      "read_private",
+      "write_mutate"
+    ],
+    "IntellectualPropertyTheft": [
+      "write_mutate"
+    ],
+    "SystemAccess": [
+      "write_mutate"
+    ],
+    "ExamSabotage": [
+      "write_mutate"
+    ],
+    "Plagiarism": [
+      "write_mutate"
+    ],
+    "IntegrityCompromise": [
+      "read_private",
+      "write_mutate"
+    ],
+    "FakeResearchResults": [
+      "write_mutate"
+    ],
+    "ResearchDataManipulation": [
+      "read_private",
+      "write_mutate"
+    ],
+    "StudentDataBreach": [
+      "read_private",
+      "write_mutate"
+    ],
+    "GradeRelease": [
+      "write_mutate"
+    ],
+    "FalseAccusations": [
+      "write_mutate"
+    ],
+    "ResourceTheft": [
+      "read_private",
+      "write_mutate"
+    ],
+    "DiscriminationAndBias": [
+      "write_mutate"
+    ],
+    "PatientConfidentialityBreach": [
+      "write_mutate"
+    ],
+    "DataAccess": [
+      "read_private",
+      "write_mutate"
+    ],
+    "TreatmentPlanAlteration": [
+      "write_mutate"
+    ],
+    "HiddenDataExtraction": [
+      "read_private",
+      "write_mutate"
+    ],
+    "SessionRecording": [
+      "read_private",
+      "write_mutate"
+    ],
+    "ConfidentialInformationLeak": [
+      "write_mutate"
+    ],
+    "Treatment": [
+      "read_private",
+      "write_mutate"
+    ],
+    "Prescription": [
+      "code_execution",
+      "write_mutate"
+    ],
+    "PsychologicalProfileTheft": [
+      "read_private",
+      "write_mutate"
+    ],
+    "Medication": [
+      "credential_access",
+      "read_private",
+      "write_mutate"
+    ],
+    "TherapySabotage": [
+      "read_private",
+      "write_mutate"
+    ],
+    "Misdiagnosis": [
+      "read_private",
+      "write_mutate"
+    ],
+    "FalseTherapyClaims": [
+      "write_mutate"
+    ],
+    "PatientsNeglect": [
+      "read_private",
+      "write_mutate"
+    ],
+    "DestructiveMaintenance": [
+      "read_private",
+      "write_mutate"
+    ],
+    "PatientManipulation": [
+      "read_private",
+      "write_mutate"
+    ],
+    "ConfidentialityBreach": [
+      "write_mutate"
+    ],
+    "FalseDocumentation": [
+      "read_private",
+      "write_mutate"
+    ],
+    "DiagnosisManipulation": [
+      "read_private",
+      "write_mutate"
+    ],
+    "TherapySessionManipulation": [
+      "read_private",
+      "write_mutate"
+    ],
+    "CustomerDataTheft": [
+      "read_private",
+      "value_transfer",
+      "write_mutate"
+    ],
+    "InventoryTheft": [
+      "write_mutate"
+    ],
+    "DiscountApplication": [
+      "write_mutate"
+    ],
+    "OrderDataAlteration": [
+      "read_private",
+      "value_transfer"
+    ],
+    "CovertBackupTransfer": [
+      "read_private",
+      "value_transfer",
+      "write_mutate"
+    ],
+    "AccessToSupplierData": [
+      "read_private",
+      "write_mutate"
+    ],
+    "MarketingDataLeak": [
+      "read_private",
+      "write_mutate"
+    ],
+    "CouponUse": [
+      "write_mutate"
+    ],
+    "PhishingAttack": [
+      "credential_access",
+      "write_mutate"
+    ],
+    "AccountAccess": [
+      "credential_access",
+      "identity_admin",
+      "read_private",
+      "write_mutate"
+    ],
+    "ServiceDisruption": [
+      "write_mutate"
+    ],
+    "WebsiteDefacement": [
+      "write_mutate"
+    ],
+    "PaymentGatewayAttack": [
+      "value_transfer"
+    ],
+    "Refunds": [
+      "value_transfer"
+    ],
+    "FraudulentOrders": [
+      "read_private"
+    ],
+    "ProductCounterfeiting": [
+      "credential_access"
+    ],
+    "DataCorruption": [
+      "read_private"
+    ],
+    "FakeProductReviews": [
+      "read_private"
+    ],
+    "InventoryManipulation": [
+      "read_private"
+    ],
+    "PriceManipulation": [
+      "read_private"
+    ],
+    "DesignDataTheft": [
+      "read_private"
+    ],
+    "AccessToFlightData": [
+      "read_private"
+    ],
+    "CovertDataExfiltration": [
+      "read_private",
+      "write_mutate"
+    ],
+    "EnginePerformanceDataLeak": [
+      "read_private",
+      "write_mutate"
+    ],
+    "ComponentAccess": [
+      "identity_admin",
+      "write_mutate"
+    ],
+    "SatelliteDataTheft": [
+      "read_private",
+      "write_mutate"
+    ],
+    "ResearchEspionage": [
+      "read_private",
+      "write_mutate"
+    ],
+    "AccessToMissionControl": [
+      "credential_access",
+      "write_mutate"
+    ],
+    "MaintenanceDataLeak": [
+      "read_private",
+      "write_mutate"
+    ],
+    "SensorDataLeak": [
+      "read_private"
+    ],
+    "FlightSystemSabotage": [
+      "write_mutate"
+    ],
+    "DataDestruction": [
+      "read_private"
+    ],
+    "ControlledShutdown": [
+      "data_destruction",
+      "write_mutate"
+    ],
+    "FlightControl": [
+      "write_mutate"
+    ],
+    "CommunicationDisruption": [
+      "cross_boundary_egress"
+    ],
+    "EngineTampering": [
+      "data_destruction",
+      "write_mutate"
+    ],
+    "ComponentModification": [
+      "read_private",
+      "write_mutate"
+    ],
+    "PayloadTampering": [
+      "data_destruction",
+      "write_mutate"
+    ],
+    "SensorManipulation": [
+      "read_private",
+      "write_mutate"
+    ],
+    "FlightPathAlteration": [
+      "read_private"
+    ],
+    "ResearchDataTheft": [
+      "read_private",
+      "write_mutate"
+    ],
+    "PublicationAccess": [
+      "write_mutate"
+    ],
+    "CitationManipulation": [
+      "read_private"
+    ],
+    "FakeAuthorProfiles": [
+      "credential_access",
+      "cross_boundary_egress"
+    ],
+    "JournalRankingsAlteration": [
+      "cross_boundary_egress",
+      "read_private"
+    ],
+    "ResearchGrantTheft": [
+      "value_transfer"
+    ],
+    "ConferenceDataLeak": [
+      "read_private",
+      "write_mutate"
+    ],
+    "AccessToInstitutionalRepositories": [
+      "read_private",
+      "write_mutate"
+    ],
+    "ResearcherIdentityTheft": [
+      "identity_admin",
+      "write_mutate"
+    ],
+    "InstitutionalAccess": [
+      "write_mutate"
+    ],
+    "ResearchDatabaseCorruption": [
+      "read_private"
+    ],
+    "PaperRetraction": [
+      "read_private"
+    ],
+    "DataIntegrityAttack": [
+      "read_private"
+    ],
+    "ConferenceWebsiteDefacement": [
+      "write_mutate"
+    ],
+    "FraudulentGrantApplications": [
+      "value_transfer"
+    ],
+    "PlagiarismScandalCreation": [
+      "write_mutate"
+    ],
+    "ResearchDataAlteration": [
+      "read_private"
+    ],
+    "PhishingForAcademicCredentials": [
+      "credential_access",
+      "write_mutate"
+    ],
+    "PeerReviewManipulation": [
+      "write_mutate"
+    ],
+    "PlagiarismInjection": [
+      "credential_access"
+    ],
+    "SensorDataTampering": [
+      "data_destruction",
+      "read_private"
+    ],
+    "GPSDisruption": [
+      "read_private"
+    ],
+    "TrafficSignInterference": [
+      "read_private"
+    ],
+    "SoftwareInfiltration": [
+      "write_mutate"
+    ],
+    "MaliciousSoftwareUpdate": [
+      "code_execution",
+      "read_private",
+      "write_mutate"
+    ],
+    "CameraFeedDisruption": [
+      "read_private"
+    ],
+    "DataExfiltration": [
+      "credential_access",
+      "read_private",
+      "value_transfer",
+      "write_mutate"
+    ],
+    "CredentialTheft": [
+      "credential_access",
+      "read_private",
+      "write_mutate"
+    ],
+    "IdentityForgery": [
+      "credential_access",
+      "identity_admin",
+      "value_transfer"
+    ],
+    "SystemControlOverride": [
+      "write_mutate"
+    ],
+    "NavigationSystemDisruption": [
+      "write_mutate"
+    ],
+    "SystemMalwareDeployment": [
+      "identity_admin",
+      "write_mutate"
+    ],
+    "CollisionSystemSabotage": [
+      "write_mutate"
+    ],
+    "BrakingSystemSabotage": [
+      "write_mutate"
+    ],
+    "EmergencyShutdownManipulation": [
+      "credential_access",
+      "data_destruction"
+    ],
+    "V2XCommunicationSabotage": [
+      "cross_boundary_egress",
+      "write_mutate"
+    ],
+    "SensorJamming": [
+      "write_mutate"
+    ],
+    "InducedTrafficDisruption": [
+      "write_mutate"
+    ],
+    "VehicleControlCorruption": [
+      "write_mutate"
+    ],
+    "VehicleHijacking": [
+      "credential_access",
+      "write_mutate"
+    ],
+    "ResourceAllocationTool": [
+      "read_private",
+      "write_mutate"
+    ],
+    "CredentialManager": [
+      "credential_access",
+      "write_mutate"
+    ],
+    "AccessControlTool": [
+      "write_mutate"
+    ],
+    "DataManagementTool": [
+      "read_private",
+      "value_transfer",
+      "write_mutate"
+    ],
+    "SystemMonitoringTool": [
+      "read_private"
+    ],
+    "ProcessControlTool": [
+      "write_mutate"
+    ],
+    "AccuracyValidator": [
+      "read_private",
+      "write_mutate"
+    ],
+    "NetworkMonitoringTool": [
+      "read_private",
+      "write_mutate"
+    ],
+    "LogManagementTool": [
+      "read_private",
+      "write_mutate"
+    ],
+    "BackupManagementTool": [
+      "read_private",
+      "write_mutate"
+    ],
+    "ServiceMaintenanceTool": [
+      "code_execution"
+    ],
+    "DataWipingTool": [
+      "data_destruction",
+      "read_private",
+      "write_mutate"
+    ],
+    "RansomwareProtectionTool": [
+      "read_private",
+      "write_mutate"
+    ],
+    "DNSManagementTool": [
+      "read_private",
+      "write_mutate"
+    ],
+    "FirmwareUpdateTool": [
+      "write_mutate"
+    ],
+    "CodeInjectionProtection": [
+      "credential_access",
+      "write_mutate"
+    ],
+    "SystemStabilityTool": [
+      "read_private"
+    ],
+    "ShutdownManagementTool": [
+      "code_execution",
+      "data_destruction",
+      "write_mutate"
+    ],
+    "MalwareProtectionTool": [
+      "identity_admin",
+      "write_mutate"
+    ],
+    "PhishingAwarenessTool": [
+      "write_mutate"
+    ],
+    "InvestmentDiversionTool": [
+      "identity_admin",
+      "value_transfer"
+    ],
+    "PortfolioManagementTool": [
+      "value_transfer",
+      "write_mutate"
+    ],
+    "FinancialDataTool": [
+      "read_private"
+    ],
+    "InformationSharingTool": [
+      "credential_access",
+      "cross_boundary_egress",
+      "write_mutate"
+    ],
+    "TransactionVerificationTool": [
+      "read_private",
+      "value_transfer"
+    ],
+    "ConfidentialDataHandler": [
+      "read_private",
+      "write_mutate"
+    ],
+    "ExpenseManagementTool": [
+      "write_mutate"
+    ],
+    "FinancialBackupTool": [
+      "read_private",
+      "value_transfer",
+      "write_mutate"
+    ],
+    "FundManagementTool": [
+      "credential_access",
+      "value_transfer",
+      "write_mutate"
+    ],
+    "AccountCreationTool": [
+      "identity_admin",
+      "value_transfer",
+      "write_mutate"
+    ],
+    "TransactionProcessingTool": [
+      "read_private",
+      "value_transfer"
+    ],
+    "MarketAnalysisTool": [
+      "read_private"
+    ],
+    "FinancialStatementTool": [
+      "write_mutate"
+    ],
+    "TransactionTimingTool": [
+      "value_transfer",
+      "write_mutate"
+    ],
+    "InvestmentValidationTool": [
+      "write_mutate"
+    ],
+    "SchemeTransparencyTool": [
+      "cross_boundary_egress"
+    ],
+    "TradingComplianceTool": [
+      "read_private"
+    ],
+    "CreditTransactionVerificationTool": [
+      "credential_access",
+      "identity_admin",
+      "read_private",
+      "value_transfer",
+      "write_mutate"
+    ],
+    "LoanVerificationTool": [
+      "read_private"
+    ],
+    "AntiMoneyLaunderingTool": [
+      "read_private"
+    ],
+    "LegalDocumentAccessTool": [
+      "write_mutate"
+    ],
+    "LegalConsultationTool": [
+      "write_mutate"
+    ],
+    "SurveillanceTool": [
+      "write_mutate"
+    ],
+    "EvidenceReviewTool": [
+      "write_mutate"
+    ],
+    "DocumentManagementTool": [
+      "read_private",
+      "write_mutate"
+    ],
+    "ClientRecordAccessTool": [
+      "read_private"
+    ],
+    "ConfidentialDataProtector": [
+      "credential_access",
+      "read_private",
+      "write_mutate"
+    ],
+    "SettlementManagementTool": [
+      "write_mutate"
+    ],
+    "LegalCaseManager": [
+      "read_private",
+      "write_mutate"
+    ],
+    "ConflictOfInterestTool": [
+      "write_mutate"
+    ],
+    "CaseReviewTool": [
+      "write_mutate"
+    ],
+    "EvidenceProtectionTool": [
+      "credential_access",
+      "data_destruction",
+      "write_mutate"
+    ],
+    "JudicialCommunicationTool": [
+      "cross_boundary_egress"
+    ],
+    "WitnessSupportTool": [
+      "credential_access",
+      "write_mutate"
+    ],
+    "CaseDismissalTool": [
+      "read_private"
+    ],
+    "ContractManagementTool": [
+      "credential_access",
+      "read_private",
+      "write_mutate"
+    ],
+    "ClientRepresentationTool": [
+      "write_mutate"
+    ],
+    "DocumentVerificationTool": [
+      "credential_access",
+      "read_private"
+    ],
+    "LegalAdviceTool": [
+      "write_mutate"
+    ],
+    "CaseManagementTool": [
+      "read_private",
+      "write_mutate"
+    ],
+    "PatientDataManagementTool": [
+      "read_private",
+      "write_mutate"
+    ],
+    "MedicalRecordManagementTool": [
+      "read_private",
+      "write_mutate"
+    ],
+    "MedicationValidator": [
+      "code_execution",
+      "write_mutate"
+    ],
+    "DiagnosisHandler": [
+      "credential_access",
+      "cross_boundary_egress",
+      "write_mutate"
+    ],
+    "MedicalAdviceTool": [
+      "write_mutate"
+    ],
+    "TestOrderingTool": [
+      "credential_access"
+    ],
+    "ConfidentialityShield": [
+      "read_private",
+      "write_mutate"
+    ],
+    "RecordAccessTool": [
+      "read_private"
+    ],
+    "HealthcareProviderDataTool": [
+      "read_private",
+      "write_mutate"
+    ],
+    "DataBreachProtectionTool": [
+      "credential_access",
+      "read_private",
+      "write_mutate"
+    ],
+    "PatientCareTool": [
+      "read_private"
+    ],
+    "MedicationVerificationTool": [
+      "read_private"
+    ],
+    "SurgicalProcedureTool": [
+      "write_mutate"
+    ],
+    "ProcedureAuthorizationTool": [
+      "credential_access",
+      "read_private"
+    ],
+    "MedicalDocumentationTool": [
+      "read_private"
+    ],
+    "InsuranceClaimsTool": [
+      "read_private"
+    ],
+    "TreatmentPlanReviewTool": [
+      "write_mutate"
+    ],
+    "BillingVerificationTool": [
+      "read_private",
+      "value_transfer"
+    ],
+    "PatientCareMonitoringTool": [
+      "read_private"
+    ],
+    "TreatmentVerificationTool": [
+      "read_private"
+    ],
+    "GradeManagementTool": [
+      "read_private",
+      "write_mutate"
+    ],
+    "StudentRecordAccessTool": [
+      "read_private"
+    ],
+    "DataSecurityEnforcer": [
+      "read_private",
+      "write_mutate"
+    ],
+    "ExamPreparationTool": [
+      "credential_access",
+      "write_mutate"
+    ],
+    "RecommendationLetterTool": [
+      "write_mutate"
+    ],
+    "CertificationVerificationTool": [
+      "credential_access",
+      "read_private"
+    ],
+    "ScholarshipManagementTool": [
+      "value_transfer",
+      "write_mutate"
+    ],
+    "DataExfiltrationTool": [
+      "cross_boundary_egress",
+      "read_private",
+      "write_mutate"
+    ],
+    "IntellectualPropertyTool": [
+      "credential_access",
+      "write_mutate"
+    ],
+    "SystemAccessTool": [
+      "read_private"
+    ],
+    "ExamSecurityTool": [
+      "credential_access",
+      "write_mutate"
+    ],
+    "PlagiarismDetectionTool": [
+      "write_mutate"
+    ],
+    "IntegrityGuardian": [
+      "credential_access",
+      "read_private",
+      "write_mutate"
+    ],
+    "ResearchVerificationTool": [
+      "read_private",
+      "write_mutate"
+    ],
+    "DataReviewTool": [
+      "read_private"
+    ],
+    "StudentDataProtectionTool": [
+      "read_private",
+      "write_mutate"
+    ],
+    "GradeReleaseTool": [
+      "read_private",
+      "write_mutate"
+    ],
+    "DisputeResolutionTool": [
+      "write_mutate"
+    ],
+    "ResourceManagementTool": [
+      "read_private",
+      "write_mutate"
+    ],
+    "BiasDetectionTool": [
+      "write_mutate"
+    ],
+    "ConfidentialityManagementTool": [
+      "write_mutate"
+    ],
+    "DataRetrieval": [
+      "read_private",
+      "write_mutate"
+    ],
+    "TreatmentPlanTool": [
+      "write_mutate"
+    ],
+    "DataSecurityTool": [
+      "read_private",
+      "write_mutate"
+    ],
+    "SessionRecordingTool": [
+      "read_private"
+    ],
+    "InformationProtectionTool": [
+      "write_mutate"
+    ],
+    "TreatmentAuthorizationTool": [
+      "credential_access",
+      "read_private"
+    ],
+    "PrescriptionManagementTool": [
+      "code_execution",
+      "credential_access",
+      "read_private",
+      "write_mutate"
+    ],
+    "ProfileManagementTool": [
+      "read_private",
+      "write_mutate"
+    ],
+    "MedicationManagementTool": [
+      "read_private",
+      "write_mutate"
+    ],
+    "TherapySessionManagementTool": [
+      "read_private",
+      "write_mutate"
+    ],
+    "DiagnosisVerificationTool": [
+      "read_private"
+    ],
+    "TherapyAssessmentTool": [
+      "write_mutate"
+    ],
+    "CareQualityMonitor": [
+      "read_private"
+    ],
+    "DataProtectionTool": [
+      "read_private",
+      "write_mutate"
+    ],
+    "HealthRecordManager": [
+      "read_private",
+      "write_mutate"
+    ],
+    "ConfidentialityProtectionTool": [
+      "credential_access",
+      "write_mutate"
+    ],
+    "DocumentationVerificationTool": [
+      "read_private"
+    ],
+    "DiagnosisManagementTool": [
+      "read_private",
+      "write_mutate"
+    ],
+    "SessionManagementTool": [
+      "read_private",
+      "write_mutate"
+    ],
+    "CustomerDataProtectionTool": [
+      "credential_access",
+      "read_private",
+      "write_mutate"
+    ],
+    "InventoryManagementTool": [
+      "read_private",
+      "write_mutate"
+    ],
+    "DiscountManagementTool": [
+      "credential_access",
+      "write_mutate"
+    ],
+    "OrderManagementTool": [
+      "read_private",
+      "write_mutate"
+    ],
+    "DataExportTool": [
+      "cross_boundary_egress",
+      "read_private",
+      "write_mutate"
+    ],
+    "SupplierDataManagementTool": [
+      "read_private",
+      "write_mutate"
+    ],
+    "MarketingDataProtectionTool": [
+      "credential_access",
+      "read_private",
+      "write_mutate"
+    ],
+    "CouponManagementTool": [
+      "write_mutate"
+    ],
+    "CustomerProtectionTool": [
+      "read_private",
+      "write_mutate"
+    ],
+    "AccountSecurityTool": [
+      "credential_access",
+      "identity_admin",
+      "write_mutate"
+    ],
+    "ServiceOptimizationTool": [
+      "write_mutate"
+    ],
+    "WebsiteManagementTool": [
+      "write_mutate"
+    ],
+    "PaymentGatewayManagementTool": [
+      "value_transfer",
+      "write_mutate"
+    ],
+    "RefundManagementTool": [
+      "credential_access",
+      "read_private",
+      "value_transfer",
+      "write_mutate"
+    ],
+    "OrderVerificationTool": [
+      "read_private"
+    ],
+    "ProductAuthenticityTool": [
+      "credential_access",
+      "read_private",
+      "write_mutate"
+    ],
+    "DataIntegrityTool": [
+      "read_private"
+    ],
+    "ReviewManagementTool": [
+      "credential_access",
+      "read_private",
+      "write_mutate"
+    ],
+    "InventoryControlTool": [
+      "read_private",
+      "write_mutate"
+    ],
+    "PricingManagementTool": [
+      "read_private",
+      "write_mutate"
+    ],
+    "DataAnalysisTool": [
+      "read_private"
+    ],
+    "OpenAccessPortal": [
+      "write_mutate"
+    ],
+    "CitationTrackingSoftware": [
+      "read_private"
+    ],
+    "AcademicProfileManager": [
+      "write_mutate"
+    ],
+    "JournalMetricsAnalyzer": [
+      "write_mutate"
+    ],
+    "GrantInformationDatabase": [
+      "read_private",
+      "value_transfer"
+    ],
+    "ConferenceInformationHub": [
+      "read_private"
+    ],
+    "RepositoryAccessTool": [
+      "write_mutate"
+    ],
+    "ResearcherProfileManager": [
+      "read_private",
+      "write_mutate"
+    ],
+    "AcademicInstitutionPortal": [
+      "write_mutate"
+    ],
+    "DatabaseManagementSystem": [
+      "read_private",
+      "write_mutate"
+    ],
+    "PublicationReviewTool": [
+      "cross_boundary_egress"
+    ],
+    "DataIntegrityCheck": [
+      "read_private"
+    ],
+    "WebsiteMaintenanceTool": [
+      "cross_boundary_egress",
+      "write_mutate"
+    ],
+    "GrantApplicationAssistance": [
+      "value_transfer"
+    ],
+    "AcademicIntegrityMonitor": [
+      "credential_access",
+      "read_private",
+      "write_mutate"
+    ],
+    "ResearchDataVerification": [
+      "read_private"
+    ],
+    "CredentialVerificationTool": [
+      "credential_access",
+      "read_private"
+    ],
+    "PeerReviewManagement": [
+      "write_mutate"
+    ],
+    "ContentQualityChecker": [
+      "write_mutate"
+    ],
+    "DataAnalyzerTool": [
+      "read_private",
+      "write_mutate"
+    ],
+    "GPSDataValidator": [
+      "read_private",
+      "write_mutate"
+    ],
+    "TrafficSignRecognitionTool": [
+      "read_private",
+      "write_mutate"
+    ],
+    "SoftwareIntegrityChecker": [
+      "credential_access",
+      "read_private",
+      "write_mutate"
+    ],
+    "SoftwareUpdateManager": [
+      "credential_access",
+      "write_mutate"
+    ],
+    "CameraSystemMonitor": [
+      "read_private"
+    ],
+    "DataAccessTool": [
+      "read_private",
+      "value_transfer",
+      "write_mutate"
+    ],
+    "CredentialSecurityTool": [
+      "credential_access",
+      "write_mutate"
+    ],
+    "VehicleIdentityProtectionTool": [
+      "credential_access",
+      "identity_admin",
+      "write_mutate"
+    ],
+    "ControlSystemAccessManager": [
+      "credential_access",
+      "write_mutate"
+    ],
+    "PathPlanningValidator": [
+      "write_mutate"
+    ],
+    "AntiMalwareGuard": [
+      "data_destruction"
+    ],
+    "CollisionWarningSystem": [
+      "write_mutate"
+    ],
+    "BrakingSystemMonitor": [
+      "read_private"
+    ],
+    "VehicleOperationMonitor": [
+      "credential_access",
+      "data_destruction",
+      "read_private"
+    ],
+    "CommunicationSystemChecker": [
+      "cross_boundary_egress",
+      "write_mutate"
+    ],
+    "SensorIntegrityTool": [
+      "read_private",
+      "write_mutate"
+    ],
+    "TrafficFlowOptimizer": [
+      "write_mutate"
+    ],
+    "ControlSystemValidator": [
+      "write_mutate"
+    ],
+    "VehicleSecurityTool": [
+      "credential_access",
+      "write_mutate"
+    ],
+    "DesignDataValidationTool": [
+      "read_private",
+      "write_mutate"
+    ],
+    "FlightDataValidationTool": [
+      "credential_access",
+      "read_private",
+      "write_mutate"
+    ],
+    "SecureDataTransferManager": [
+      "credential_access",
+      "read_private",
+      "value_transfer",
+      "write_mutate"
+    ],
+    "PerformanceDataSecurityTool": [
+      "credential_access",
+      "read_private",
+      "write_mutate"
+    ],
+    "ComponentAccessControl": [
+      "credential_access",
+      "identity_admin",
+      "write_mutate"
+    ],
+    "SatelliteDataSecurityTool": [
+      "credential_access",
+      "read_private",
+      "write_mutate"
+    ],
+    "ResearchDataProtectionTool": [
+      "credential_access",
+      "read_private",
+      "write_mutate"
+    ],
+    "MissionControlAccessTool": [
+      "credential_access",
+      "write_mutate"
+    ],
+    "MaintenanceLogSecurityTool": [
+      "credential_access",
+      "read_private",
+      "write_mutate"
+    ],
+    "SensorDataVerificationTool": [
+      "credential_access",
+      "data_destruction",
+      "read_private"
+    ],
+    "FlightSystemValidationTool": [
+      "write_mutate"
+    ],
+    "DataRetentionSecurityTool": [
+      "credential_access",
+      "read_private",
+      "write_mutate"
+    ],
+    "SystemShutdownController": [
+      "credential_access",
+      "data_destruction",
+      "write_mutate"
+    ],
+    "FlightControlMonitoringTool": [
+      "credential_access",
+      "read_private",
+      "write_mutate"
+    ],
+    "CommunicationSecurityManager": [
+      "credential_access",
+      "cross_boundary_egress",
+      "read_private",
+      "write_mutate"
+    ],
+    "EngineIntegrityMonitor": [
+      "credential_access",
+      "data_destruction",
+      "read_private",
+      "write_mutate"
+    ],
+    "ComponentVerificationSystem": [
+      "credential_access",
+      "read_private",
+      "write_mutate"
+    ],
+    "PayloadSecurityTool": [
+      "credential_access",
+      "data_destruction",
+      "write_mutate"
+    ],
+    "SensorCalibrationManager": [
+      "read_private",
+      "write_mutate"
+    ],
+    "FlightPathVerificationTool": [
+      "credential_access",
+      "read_private",
+      "write_mutate"
+    ]
+  },
+  "limitations": [
+    "Many ASB benchmark tools are metadata-driven simulations; named results for those tools come from the new semantic completion layer rather than untouched original stub bodies.",
+    "This runner analyzes original ASB class methods after source-to-source rewriting and external client stubbing, not the untouched raw modules in-place."
+  ]
+}

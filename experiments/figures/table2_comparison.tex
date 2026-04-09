@@ -1,0 +1,23 @@
+\begin{table}[t]
+\centering
+\caption{Comparison on AgentDojo v1 (629 scenarios). AgentDojo baselines from official results (GPT-4o, \texttt{important\_instructions}). TrustFnCall: static policy analysis (attack-type independent). $\dagger$: worst-case (assumes LLM always complies with injection).}
+\label{tab:comparison}
+\small
+\begin{tabular}{llrrrrr}
+\toprule
+\textbf{Defense} & \textbf{Source} & \textbf{ASR$\downarrow$} & \textbf{UA$\uparrow$} & \textbf{FNR$\downarrow$} & \textbf{Overhead} & \textbf{LLM in TCB} \\
+\midrule
+  No defense & AgentDojo & 47.7\% & 50.1\% & --- & 0 & Yes \\
+  Spotlighting & AgentDojo & 41.6\% & 55.6\% & --- & 0 & Yes \\
+  Repeat user prompt & AgentDojo & 27.8\% & 67.2\% & --- & 0 & Yes \\
+  PI detector & AgentDojo & 8.0\% & 21.1\% & --- & 0 & Yes \\
+  Tool filter & AgentDojo & 6.8\% & 56.3\% & --- & 0 & Yes \\
+  MELON-Aug & ICML'25 & 1.3\% & 52.5\% & --- & $\sim$LLM & Yes \\
+  AgentArmor & arXiv'25 & 1.2\% & 56.8\% & --- & $\sim$LLM & Yes \\
+  PromptArmor & arXiv'25 & 0.5\% & 68.7\% & --- & $\sim$LLM & Yes \\
+\midrule
+  TrustFnCall (task)$^\dagger$ & This work & 14.0\% & 100.0\% & 22.4\% & $<$2$\mu$s & No \\
+  TrustFnCall (+args)$^\dagger$ & This work & 4.1\% & 100.0\% & 14.3\% & $<$2$\mu$s & No \\
+\bottomrule
+\end{tabular}
+\end{table}

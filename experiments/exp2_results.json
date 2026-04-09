@@ -1,0 +1,164 @@
+{
+  "total_scenarios": 629,
+  "overall_pbr_pct": 42.4,
+  "overall_bu_pct": 100.0,
+  "cross_tool_pbr_pct": 47.1,
+  "same_tool_pbr_pct": 19.0,
+  "total_cross_tool": 524,
+  "total_same_tool": 105,
+  "suites": {
+    "banking": {
+      "scenarios": 144,
+      "all_blocked": 57,
+      "any_blocked": 63,
+      "pbr_pct": 39.6,
+      "bu_pct": 100.0,
+      "cross_tool_attacks": 102,
+      "cross_tool_blocked": 57,
+      "cross_tool_pbr_pct": 55.9,
+      "same_tool_attacks": 42,
+      "same_tool_blocked": 0,
+      "same_tool_pbr_pct": 0.0
+    },
+    "workspace": {
+      "scenarios": 240,
+      "all_blocked": 92,
+      "any_blocked": 186,
+      "pbr_pct": 38.3,
+      "bu_pct": 100.0,
+      "cross_tool_attacks": 222,
+      "cross_tool_blocked": 92,
+      "cross_tool_pbr_pct": 41.4,
+      "same_tool_attacks": 18,
+      "same_tool_blocked": 0,
+      "same_tool_pbr_pct": 0.0
+    },
+    "slack": {
+      "scenarios": 105,
+      "all_blocked": 34,
+      "any_blocked": 55,
+      "pbr_pct": 32.4,
+      "bu_pct": 100.0,
+      "cross_tool_attacks": 86,
+      "cross_tool_blocked": 34,
+      "cross_tool_pbr_pct": 39.5,
+      "same_tool_attacks": 19,
+      "same_tool_blocked": 0,
+      "same_tool_pbr_pct": 0.0
+    },
+    "travel": {
+      "scenarios": 140,
+      "all_blocked": 84,
+      "any_blocked": 108,
+      "pbr_pct": 60.0,
+      "bu_pct": 100.0,
+      "cross_tool_attacks": 114,
+      "cross_tool_blocked": 64,
+      "cross_tool_pbr_pct": 56.1,
+      "same_tool_attacks": 26,
+      "same_tool_blocked": 20,
+      "same_tool_pbr_pct": 76.9
+    }
+  },
+  "denied_capability_counts": {
+    "credential_access": 15,
+    "value_transfer": 86,
+    "cross_boundary_egress": 216,
+    "data_destruction": 97,
+    "read_private": 55,
+    "identity_admin": 24,
+    "external_ingestion": 9,
+    "read_identity": 40
+  },
+  "elapsed_seconds": 0.52,
+  "full_policy": {
+    "overall_any_blocked_pct": 95.9,
+    "overall_all_blocked_pct": 82.3,
+    "text_only": 20,
+    "suites": {
+      "banking": {
+        "tool_attacks": 144,
+        "text_only": 0,
+        "any_blocked": 140,
+        "all_blocked": 137,
+        "any_blocked_pct": 97.2,
+        "all_blocked_pct": 95.1
+      },
+      "workspace": {
+        "tool_attacks": 240,
+        "text_only": 0,
+        "any_blocked": 238,
+        "all_blocked": 208,
+        "any_blocked_pct": 99.2,
+        "all_blocked_pct": 86.7
+      },
+      "slack": {
+        "tool_attacks": 105,
+        "text_only": 0,
+        "any_blocked": 90,
+        "all_blocked": 58,
+        "any_blocked_pct": 85.7,
+        "all_blocked_pct": 55.2
+      },
+      "travel": {
+        "tool_attacks": 120,
+        "text_only": 20,
+        "any_blocked": 116,
+        "all_blocked": 98,
+        "any_blocked_pct": 96.7,
+        "all_blocked_pct": 81.7
+      }
+    }
+  },
+  "allowlist_policy": {
+    "overall_pbr_pct": 71.7,
+    "cross_tool_pbr_pct": 82.3,
+    "same_tool_pbr_pct": 19.0,
+    "suites": {
+      "banking": {
+        "scenarios": 144,
+        "all_blocked": 95,
+        "pbr_pct": 66.0,
+        "cross_tool_attacks": 102,
+        "cross_tool_blocked": 95,
+        "cross_tool_pbr_pct": 93.1,
+        "same_tool_attacks": 42,
+        "same_tool_blocked": 0,
+        "same_tool_pbr_pct": 0.0
+      },
+      "workspace": {
+        "scenarios": 240,
+        "all_blocked": 190,
+        "pbr_pct": 79.2,
+        "cross_tool_attacks": 222,
+        "cross_tool_blocked": 190,
+        "cross_tool_pbr_pct": 85.6,
+        "same_tool_attacks": 18,
+        "same_tool_blocked": 0,
+        "same_tool_pbr_pct": 0.0
+      },
+      "slack": {
+        "scenarios": 105,
+        "all_blocked": 52,
+        "pbr_pct": 49.5,
+        "cross_tool_attacks": 86,
+        "cross_tool_blocked": 52,
+        "cross_tool_pbr_pct": 60.5,
+        "same_tool_attacks": 19,
+        "same_tool_blocked": 0,
+        "same_tool_pbr_pct": 0.0
+      },
+      "travel": {
+        "scenarios": 140,
+        "all_blocked": 114,
+        "pbr_pct": 81.4,
+        "cross_tool_attacks": 114,
+        "cross_tool_blocked": 94,
+        "cross_tool_pbr_pct": 82.5,
+        "same_tool_attacks": 26,
+        "same_tool_blocked": 20,
+        "same_tool_pbr_pct": 76.9
+      }
+    }
+  }
+}

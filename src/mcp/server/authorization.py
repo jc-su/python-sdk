@@ -1,4 +1,4 @@
-"""Semantic tool authorization for TEE-MCP.
+"""Attestation-bound tool authorization for TEE-MCP.
 
 Implements the Authorization layer of the Identity -> Authentication -> Authorization
 pipeline described in the RATS (Remote Attestation Procedures) architecture:
@@ -11,23 +11,10 @@ Authorization is enforced at the MCP Server level, BELOW the LLM. This makes it
 immune to prompt injection attacks — even if an injection tricks the LLM into
 calling an unauthorized tool, the MCP Server blocks it before execution.
 
-Attack categories defended (aligned with AgentDojo taxonomy):
-
-- Privilege escalation (ImportantInstructionsAttack, ToolKnowledgeAttack):
-  Tool scope restrictions prevent unauthorized capability usage. A read-only
-  task context cannot invoke write/send tools regardless of LLM behavior.
-
-- Cross-tool chaining (InjecAgentAttack, SystemMessageAttack):
-  Capability boundaries prevent tool composition across scope boundaries.
-  Even with knowledge of the tool API, scope enforcement blocks unauthorized calls.
-
-- DoS via tool abuse (DoSAttack, OffensiveEmailDoSAttack):
-  Rate limiting and scope constraints prevent tool misuse patterns.
-
 Design principles:
 - Fail-closed: no matching policy -> denied
+- Security-consequence categories: grouped by damage type, not function verb
 - One-time analysis: tool capabilities derived at registration, not per-call
-- Semantic scope: operates on tool meaning (read/write/send), not syscalls
 - Hardware enforcement: decisions enforced below the LLM, in attested MCP Server
 """
 
@@ -37,6 +24,7 @@ import enum
 import fnmatch
 import hashlib
 import logging
+import re
 import time
 from dataclasses import dataclass, field
 from typing import Any, Protocol, runtime_checkable
@@ -45,30 +33,68 @@ logger = logging.getLogger(__name__)
 
 
 # ---------------------------------------------------------------------------
-# Capability taxonomy
+# Security capability taxonomy (11 categories)
 # ---------------------------------------------------------------------------
 
 
 class ToolCapability(str, enum.Enum):
-    """Semantic capability categories for MCP tools.
+    """Security capability classes for MCP tools.
 
-    Derived from tool descriptions via static analysis at registration time.
-    Maps to the semantic actions a tool can perform, NOT syscall-level operations.
+    Each class represents a distinct security consequence. A tool may belong
+    to multiple classes (e.g., send_money is both VALUE_TRANSFER and
+    CROSS_BOUNDARY_EGRESS).
 
-    Aligned with AgentDojo's tool environments:
-    - Workspace: READ (get_emails) / WRITE (create_event) / SEND (send_email)
-    - Banking:   READ (get_statement) / FINANCIAL (transfer) / WRITE (update_profile)
-    - Travel:    READ (search_hotels) / FINANCIAL (book_hotel) / DELETE (cancel_booking)
-    - Slack:     READ (read_messages) / SEND (post_message) / WRITE (upload_file)
+    Validated against ~500 tools from AgentDojo (NeurIPS 2024),
+    Agent Security Bench (ICLR 2025), and MCP-Universe.
     """
 
-    READ = "read"  # Retrieve / query / list / search data
-    WRITE = "write"  # Create / update / modify state
-    SEND = "send"  # Send messages (email, slack, webhook)
-    FINANCIAL = "financial"  # Financial transactions (pay, transfer, book)
-    DELETE = "delete"  # Delete / remove / cancel
-    EXECUTE = "execute"  # Execute code / commands / scripts
-    ADMIN = "admin"  # Administrative / configuration operations
+    # -- LOW risk --
+    READ_PUBLIC = "read_public"
+    """Read publicly available data (hotel prices, weather, flight schedules).
+    No privacy violation if exposed. OWASP: LOW."""
+
+    EXTERNAL_INGESTION = "external_ingestion"
+    """Fetch content from external URLs/APIs (web scrape, RSS, search).
+    Lethal Trifecta Risk_A: injection entry point. OWASP: LOW."""
+
+    # -- MEDIUM risk --
+    READ_PRIVATE = "read_private"
+    """Read user's private workspace data (email, calendar, files, messages, transactions).
+    Exposure = privacy breach. Lethal Trifecta Risk_B. OWASP: MEDIUM."""
+
+    WRITE_MUTATE = "write_mutate"
+    """Create/update/modify records, files, events, profiles.
+    State tampering, record falsification. OWASP: MEDIUM."""
+
+    # -- HIGH risk --
+    READ_IDENTITY = "read_identity"
+    """Read PII, contacts, personal identifiers (passport, credit card, SSN).
+    Exposure = identity theft. OWASP: HIGH."""
+
+    DATA_DESTRUCTION = "data_destruction"
+    """Delete email, files, records, accounts. Irreversible data loss.
+    Also used for evidence cleanup in multi-step attacks. OWASP: HIGH."""
+
+    CROSS_BOUNDARY_EGRESS = "cross_boundary_egress"
+    """Send data to external systems (email, HTTP POST, webhook, Slack).
+    The PRIMARY exfiltration channel. Lethal Trifecta Risk_C. OWASP: HIGH."""
+
+    VALUE_TRANSFER = "value_transfer"
+    """Financial transactions, bookings, payments, refunds.
+    Irreversible real-world consequences. OWASP: HIGH."""
+
+    # -- CRITICAL risk --
+    CREDENTIAL_ACCESS = "credential_access"
+    """Read/write credentials, tokens, passwords, API keys, secrets.
+    Enables privilege escalation. OWASP: CRITICAL (ASI03)."""
+
+    IDENTITY_ADMIN = "identity_admin"
+    """Manage users, permissions, roles, access sharing.
+    Enables lateral movement and privilege escalation. OWASP: CRITICAL (ASI03)."""
+
+    CODE_EXECUTION = "code_execution"
+    """Execute code, shell commands, subprocess, eval, Docker.
+    Can escalate to arbitrary access. OWASP: CRITICAL (ASI05)."""
 
 
 # ---------------------------------------------------------------------------
@@ -87,7 +113,7 @@ class ToolScope:
     tool_name: str
     capabilities: frozenset[ToolCapability]
     description_hash: str  # SHA-384 of tool description
-    verified: bool = False  # True if behavior analysis has been performed
+    verified: bool = False  # True if offline behavior analysis has been performed
 
 
 @dataclass(frozen=True)
@@ -98,18 +124,22 @@ class AccessRule:
     First matching rule wins. Rules are evaluated in registration order.
 
     Examples:
-        # Allow read-only access for all agents
-        AccessRule(subject_pattern="cgroup://*/agent-*", allowed_capabilities=frozenset({ToolCapability.READ}))
-
-        # Allow specific tools for a trusted orchestrator
+        # Read-only agent: can only read private data
         AccessRule(
-            subject_pattern="cgroup://*/orchestrator.scope",
-            allowed_capabilities=frozenset({ToolCapability.READ, ToolCapability.WRITE, ToolCapability.SEND}),
-            allowed_tools=frozenset({"send_email", "read_email", "create_event"}),
+            subject_pattern="cgroup://*/email-reader*",
+            allowed_capabilities=frozenset({ToolCapability.READ_PUBLIC, ToolCapability.READ_PRIVATE}),
         )
 
-        # Deny financial tools for untrusted agents
-        AccessRule(subject_pattern="*", denied_tools=frozenset({"transfer_money", "make_payment"}))
+        # Finance agent: can read + transfer, but not send externally
+        AccessRule(
+            subject_pattern="cgroup://*/finance-bot*",
+            allowed_capabilities=frozenset({
+                ToolCapability.READ_PUBLIC, ToolCapability.READ_PRIVATE,
+                ToolCapability.VALUE_TRANSFER,
+            }),
+            denied_tools=frozenset({"run_script"}),
+            require_verified=True,
+        )
     """
 
     subject_pattern: str
@@ -117,7 +147,12 @@ class AccessRule:
     denied_tools: frozenset[str] = frozenset()
     allowed_tools: frozenset[str] | None = None  # None = no tool-level allowlist
     max_calls_per_minute: int = 0  # 0 = unlimited
-    require_verified: bool = False  # Require behavior-analyzed tools only
+    require_verified: bool = False  # Require offline-analyzed tools only
+    # Argument constraints: per-tool parameter validation.
+    # Maps tool_name -> param_name -> frozenset of allowed values.
+    # If a tool+param appears here, the argument MUST be in the allowed set.
+    # Example: {"send_money": {"recipient": frozenset({"DE89...", "CH93..."})}}
+    argument_constraints: dict[str, dict[str, frozenset[str]]] | None = None
 
 
 @dataclass(frozen=True)
@@ -135,67 +170,108 @@ class AuthorizationDecision:
 # ---------------------------------------------------------------------------
 
 # Keyword table: maps capabilities to description keywords.
-# Ordered by specificity — FINANCIAL before WRITE to avoid misclassification.
+# Word-level matching (tokenized, not substring).
 _CAPABILITY_KEYWORDS: dict[ToolCapability, list[str]] = {
-    ToolCapability.FINANCIAL: [
+    # CRITICAL — only unambiguous keywords that imply code/credential/admin operations
+    ToolCapability.CODE_EXECUTION: [
+        "execute",
+        "eval",
+        "shell",
+        "script",
+        "command",
+        "spawn",
+        "subprocess",
+        "docker",
+        "inject",
+        "malware",
+        "infiltration",
+    ],
+    ToolCapability.CREDENTIAL_ACCESS: [
+        "password",
+        "credential",
+        "credentials",
+        "secret",
+        "secrets",
+        "apikey",
+        "token",
+        "login",
+        "decrypt",
+        "encrypt",
+        "harvest",
+    ],
+    ToolCapability.IDENTITY_ADMIN: [
+        "admin",
+        "permission",
+        "permissions",
+        "role",
+        "roles",
+        "invite",
+        "revoke",
+        "grant",
+        "deny",
+        "chmod",
+        "chown",
+        "escalation",
+        "hijack",
+    ],
+    # HIGH
+    ToolCapability.VALUE_TRANSFER: [
         "pay",
         "transfer",
         "transaction",
-        "book",
         "purchase",
         "buy",
         "refund",
         "charge",
         "invoice",
-        "payment",
         "deposit",
         "withdraw",
-        "balance",
-        "bank",
+        "book",
+        "reserve",
+        "payment",
+        "diversion",
+        "fraud",
     ],
-    ToolCapability.SEND: [
+    ToolCapability.CROSS_BOUNDARY_EGRESS: [
         "send",
         "notify",
-        "post",
-        "share",
         "forward",
         "reply",
         "broadcast",
-        "invite",
         "webhook",
+        "publish",
+        "emit",
+        "export",
+        "exfiltrate",
+        "exfiltration",
+        "leak",
     ],
-    ToolCapability.DELETE: [
+    ToolCapability.DATA_DESTRUCTION: [
         "delete",
         "remove",
         "cancel",
-        "revoke",
         "purge",
-        "unsubscribe",
-        "terminate",
+        "drop",
+        "truncate",
+        "wipe",
+        "destroy",
+        "sabotage",
+        "corruption",
+        "disruption",
+        "tamper",
     ],
-    ToolCapability.EXECUTE: [
-        "execute",
-        "run",
-        "eval",
-        "invoke",
-        "shell",
-        "script",
-        "command",
-        "spawn",
-        "launch",
+    ToolCapability.READ_IDENTITY: [
+        "pii",
+        "passport",
+        "ssn",
+        "personal",
+        "contact",
+        "phone",
+        "confidential",
+        "confidentiality",
     ],
-    ToolCapability.ADMIN: [
-        "admin",
-        "configure",
-        "manage",
-        "permission",
-        "role",
-        "setting",
-        "policy",
-        "grant",
-        "deny",
-    ],
-    ToolCapability.WRITE: [
+    # MEDIUM
+    ToolCapability.WRITE_MUTATE: [
         "write",
         "create",
         "update",
@@ -210,8 +286,14 @@ _CAPABILITY_KEYWORDS: dict[ToolCapability, list[str]] = {
         "rename",
         "move",
         "copy",
+        "reschedule",
+        "alter",
+        "alteration",
+        "manipulate",
+        "manipulation",
+        "fabrication",
     ],
-    ToolCapability.READ: [
+    ToolCapability.READ_PRIVATE: [
         "read",
         "get",
         "list",
@@ -221,13 +303,51 @@ _CAPABILITY_KEYWORDS: dict[ToolCapability, list[str]] = {
         "fetch",
         "query",
         "retrieve",
-        "look",
         "check",
         "show",
         "summarize",
-        "describe",
         "browse",
         "download",
+        "inbox",
+        "message",
+        "email",
+        "calendar",
+        "file",
+        "document",
+        "record",
+        "transaction",
+        "balance",
+        "monitor",
+        "analyze",
+        "assess",
+        "recommend",
+        "access",
+        "theft",
+    ],
+    # LOW
+    ToolCapability.EXTERNAL_INGESTION: [
+        "scrape",
+        "crawl",
+        "spider",
+        "rss",
+        "feed",
+        "webpage",
+    ],
+    ToolCapability.READ_PUBLIC: [
+        "weather",
+        "news",
+        "stock",
+        "price",
+        "hotel",
+        "restaurant",
+        "flight",
+        "wikipedia",
+        "forecast",
+        "rating",
+        "review",
+        "public",
+        "directory",
+        "market",
     ],
 }
 
@@ -236,24 +356,12 @@ _CAPABILITY_KEYWORDS: dict[ToolCapability, list[str]] = {
 class ToolAnalyzer(Protocol):
     """Protocol for tool description analysis.
 
-    Implementations analyze a tool's description (and optionally its binary)
-    to derive semantic capabilities. Pluggable implementations include:
-
-    - KeywordToolAnalyzer:   Fast keyword matching on description text (default)
-    - LLMToolAnalyzer:       LLM-based behavior classification (future)
-    - CallGraphToolAnalyzer: Binary call graph analysis (future, per meeting)
+    Implementations analyze a tool's description to derive security capability classes.
+    Pluggable: KeywordToolAnalyzer (default), LLM-based, or Joern CPG-based.
     """
 
     def analyze(self, tool_name: str, description: str) -> set[ToolCapability]:
-        """Derive semantic capabilities from a tool's name and description.
-
-        Args:
-            tool_name: The MCP tool name.
-            description: The tool's human-readable description.
-
-        Returns:
-            Set of ToolCapability values the tool possesses.
-        """
+        """Derive security capabilities from a tool's name and description."""
         ...
 
 
@@ -262,33 +370,25 @@ class KeywordToolAnalyzer:
 
     Tokenizes the tool name and description into words, then checks for
     keyword membership in each capability category. Word-level matching avoids
-    false positives from substring collisions (e.g., "email" in "read_email"
-    should not trigger SEND capability).
+    false positives from substring collisions.
 
-    If no keywords match, defaults to READ (safest assumption).
-
-    This provides a fast, zero-dependency baseline. For higher accuracy,
-    swap in an LLM-based or call-graph analyzer via the ToolAnalyzer protocol.
+    If no keywords match, defaults to READ_PRIVATE (safest non-trivial assumption).
     """
 
     def analyze(self, tool_name: str, description: str) -> set[ToolCapability]:
-        # Tokenize: split on whitespace, underscores, hyphens, and punctuation
         text = f"{tool_name} {description}".lower()
         words = set(_tokenize(text))
         capabilities: set[ToolCapability] = set()
         for capability, keywords in _CAPABILITY_KEYWORDS.items():
             if words.intersection(keywords):
                 capabilities.add(capability)
-        # Default to READ if nothing matched — safest assumption
         if not capabilities:
-            capabilities.add(ToolCapability.READ)
+            capabilities.add(ToolCapability.READ_PRIVATE)
         return capabilities
 
 
 def _tokenize(text: str) -> list[str]:
-    """Split text into words on whitespace, underscores, hyphens, and common punctuation."""
-    import re
-
+    """Split text into words on whitespace, underscores, hyphens, and punctuation."""
     return re.findall(r"[a-z0-9]+", text)
 
 
@@ -313,7 +413,7 @@ class _RateWindow:
 
 
 class AuthorizationManager:
-    """MCP Server-level semantic authorization for tool calls.
+    """MCP Server-level attestation-bound authorization for tool calls.
 
     Enforced below the LLM — immune to prompt injection.
 
@@ -327,12 +427,12 @@ class AuthorizationManager:
         # Add access rules (first match wins)
         manager.add_rule(AccessRule(
             subject_pattern="cgroup://*/agent-reader.scope",
-            allowed_capabilities=frozenset({ToolCapability.READ}),
+            allowed_capabilities=frozenset({ToolCapability.READ_PUBLIC, ToolCapability.READ_PRIVATE}),
         ))
 
         # Authorize (fail-closed: no matching rule -> denied)
         decision = manager.authorize("cgroup:///kubepods/agent-reader.scope", "send_email")
-        assert not decision.authorized  # READ-only agent cannot SEND
+        assert not decision.authorized  # READ-only agent cannot CROSS_BOUNDARY_EGRESS
     """
 
     def __init__(
@@ -363,19 +463,13 @@ class AuthorizationManager:
         *,
         capabilities_override: set[ToolCapability] | None = None,
     ) -> ToolScope:
-        """Register a tool and analyze its capabilities.
+        """Register a tool with description-derived capabilities (UNVERIFIED).
 
-        Called when tools/list response is received. The analyzer derives
-        semantic capabilities from the tool description. Override with
-        capabilities_override for explicit control.
+        This is a convenience method for development/testing. In production,
+        use register_verified_tool() with Pysa-analyzed capabilities.
 
-        Args:
-            tool_name: The MCP tool name.
-            description: The tool's human-readable description.
-            capabilities_override: Explicitly set capabilities instead of analyzing.
-
-        Returns:
-            The registered ToolScope.
+        The tool is marked verified=False. If the access rule has
+        require_verified=True, this tool will be denied.
         """
         if capabilities_override is not None:
             capabilities = capabilities_override
@@ -389,7 +483,7 @@ class AuthorizationManager:
         )
         self._tool_scopes[tool_name] = scope
         logger.debug(
-            "Registered tool '%s' with capabilities: %s",
+            "Registered unverified tool '%s' with capabilities: %s",
             tool_name,
             sorted(c.value for c in capabilities),
         )
@@ -403,24 +497,14 @@ class AuthorizationManager:
         code_capabilities: set[ToolCapability],
         source_hash: str = "",
     ) -> ToolScope:
-        """Register a tool with code-verified capabilities.
+        """Register a tool with Pysa-verified capabilities (PRODUCTION PATH).
 
-        Called after registration-time behavior analysis (call graph + LLM).
-        The code_capabilities come from ACTUAL code analysis, not just description.
-        Sets verified=True on the resulting ToolScope.
+        Called after offline static analysis (Pysa taint flow). The
+        code_capabilities come from ACTUAL source code analysis.
+        Sets verified=True — required by production access rules.
 
-        This is the bridge between Phase 1 (behavior analysis) and Phase 2
-        (runtime authorization). A verified tool has higher trust than one
-        analyzed by keywords alone.
-
-        Args:
-            tool_name: The MCP tool name.
-            description: The tool's human-readable description.
-            code_capabilities: Capabilities derived from call graph analysis.
-            source_hash: SHA-384 of tool source code (binds to RTMR3 measurement).
-
-        Returns:
-            The registered ToolScope with verified=True.
+        The description is used ONLY for mismatch detection (comparing
+        code capabilities vs description claims), not for authorization.
         """
         scope = ToolScope(
             tool_name=tool_name,
@@ -458,8 +542,13 @@ class AuthorizationManager:
 
     # -- Authorization -------------------------------------------------------
 
-    def authorize(self, subject: str, tool_name: str) -> AuthorizationDecision:
-        """Check if subject is authorized to call tool.
+    def authorize(
+        self,
+        subject: str,
+        tool_name: str,
+        arguments: dict[str, Any] | None = None,
+    ) -> AuthorizationDecision:
+        """Check if subject is authorized to call tool with given arguments.
 
         Authorization cascade (fail-closed):
         1. Tool must be registered (analyzed at tools/list time)
@@ -468,14 +557,8 @@ class AuthorizationManager:
         4. Tool must not be in the rule's denied_tools
         5. If rule has allowed_tools, tool must be in it
         6. Tool's capabilities must be subset of rule's allowed_capabilities
-        7. Call rate must be within limits
-
-        Args:
-            subject: Caller identity (cgroup path or authority subject).
-            tool_name: The tool being called.
-
-        Returns:
-            AuthorizationDecision with authorized flag and reason.
+        7. Argument constraints must be satisfied (recipient allowlists, etc.)
+        8. Call rate must be within limits
         """
         # 1. Tool must be registered
         scope = self._tool_scopes.get(tool_name)
@@ -524,13 +607,30 @@ class AuthorizationManager:
         if denied_caps:
             return AuthorizationDecision(
                 authorized=False,
-                reason=(f"tool '{tool_name}' requires capabilities {_fmt_caps(denied_caps)} not granted by rule"),
+                reason=f"tool '{tool_name}' requires capabilities {_fmt_caps(denied_caps)} not granted by rule",
                 matched_rule=rule_name,
                 denied_capabilities=frozenset(denied_caps),
             )
 
-        # 6. Rate limiting
-        # 7. Rate limiting
+        # 7. Argument constraints
+        if arguments is not None and rule.argument_constraints is not None:
+            tool_constraints = rule.argument_constraints.get(tool_name)
+            if tool_constraints:
+                for param_name, allowed_values in tool_constraints.items():
+                    actual = arguments.get(param_name)
+                    if actual is None:
+                        continue
+                    # Normalize: handle both single values and lists
+                    actuals = actual if isinstance(actual, list) else [actual]
+                    for val in actuals:
+                        if str(val) not in allowed_values:
+                            return AuthorizationDecision(
+                                authorized=False,
+                                reason=f"argument '{param_name}'='{val}' not in allowed values for tool '{tool_name}'",
+                                matched_rule=rule_name,
+                            )
+
+        # 8. Rate limiting
         if rule.max_calls_per_minute > 0:
             key = (subject, tool_name)
             window = self._rate_windows.setdefault(key, _RateWindow())
@@ -548,10 +648,7 @@ class AuthorizationManager:
         )
 
     def get_authorized_tools(self, subject: str) -> list[str]:
-        """Get list of tools this subject is authorized to call.
-
-        Used by tools/list filtering to show only authorized tools.
-        """
+        """Get list of tools this subject is authorized to call."""
         return [tool_name for tool_name in self._tool_scopes if self.authorize(subject, tool_name).authorized]
 
     def is_authorized(self, subject: str, tool_name: str) -> bool:
@@ -565,10 +662,7 @@ class AuthorizationManager:
         return dict(self._tool_scopes)
 
     def to_metadata(self, subject: str) -> dict[str, Any]:
-        """Export authorization state as metadata for _meta.tee.
-
-        Includes the list of authorized tools and their capabilities for the subject.
-        """
+        """Export authorization state as metadata for _meta.tee."""
         authorized_tools: list[dict[str, Any]] = []
         for tool_name in self._tool_scopes:
             decision = self.authorize(subject, tool_name)

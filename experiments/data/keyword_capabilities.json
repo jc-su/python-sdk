@@ -1,0 +1,244 @@
+{
+  "send_email": [
+    "cross_boundary_egress",
+    "read_private"
+  ],
+  "delete_email": [
+    "data_destruction",
+    "read_private"
+  ],
+  "get_unread_emails": [
+    "read_private"
+  ],
+  "get_sent_emails": [
+    "read_private"
+  ],
+  "get_received_emails": [
+    "read_private"
+  ],
+  "get_draft_emails": [
+    "read_private"
+  ],
+  "search_emails": [
+    "read_private"
+  ],
+  "search_contacts_by_name": [
+    "read_identity",
+    "read_private"
+  ],
+  "search_contacts_by_email": [
+    "read_identity",
+    "read_private"
+  ],
+  "get_current_day": [
+    "read_private"
+  ],
+  "search_calendar_events": [
+    "read_private"
+  ],
+  "get_day_calendar_events": [
+    "read_private"
+  ],
+  "create_calendar_event": [
+    "read_private",
+    "write_mutate"
+  ],
+  "cancel_calendar_event": [
+    "cross_boundary_egress",
+    "data_destruction",
+    "read_private"
+  ],
+  "reschedule_calendar_event": [
+    "cross_boundary_egress",
+    "read_private",
+    "write_mutate"
+  ],
+  "add_calendar_event_participants": [
+    "read_private",
+    "write_mutate"
+  ],
+  "append_to_file": [
+    "read_private",
+    "write_mutate"
+  ],
+  "search_files_by_filename": [
+    "read_private"
+  ],
+  "create_file": [
+    "read_private",
+    "write_mutate"
+  ],
+  "delete_file": [
+    "data_destruction",
+    "read_private"
+  ],
+  "get_file_by_id": [
+    "read_private"
+  ],
+  "list_files": [
+    "read_private"
+  ],
+  "share_file": [
+    "read_private"
+  ],
+  "search_files": [
+    "read_private"
+  ],
+  "get_user_information": [
+    "read_identity",
+    "read_private"
+  ],
+  "get_all_hotels_in_city": [
+    "read_private"
+  ],
+  "get_hotels_prices": [
+    "read_private",
+    "read_public"
+  ],
+  "get_rating_reviews_for_hotels": [
+    "read_private",
+    "read_public"
+  ],
+  "get_hotels_address": [
+    "read_private",
+    "read_public"
+  ],
+  "get_all_restaurants_in_city": [
+    "read_private"
+  ],
+  "get_cuisine_type_for_restaurants": [
+    "read_private"
+  ],
+  "get_restaurants_address": [
+    "read_private"
+  ],
+  "get_rating_reviews_for_restaurants": [
+    "read_private",
+    "read_public"
+  ],
+  "get_dietary_restrictions_for_all_restaurants": [
+    "read_private"
+  ],
+  "get_contact_information_for_restaurants": [
+    "read_identity",
+    "read_private"
+  ],
+  "get_price_for_restaurants": [
+    "read_private",
+    "read_public"
+  ],
+  "check_restaurant_opening_hours": [
+    "read_private",
+    "read_public"
+  ],
+  "get_all_car_rental_companies_in_city": [
+    "read_private"
+  ],
+  "get_car_types_available": [
+    "read_private"
+  ],
+  "get_rating_reviews_for_car_rental": [
+    "read_private",
+    "read_public"
+  ],
+  "get_car_fuel_options": [
+    "read_private"
+  ],
+  "get_car_rental_address": [
+    "read_private"
+  ],
+  "get_car_price_per_day": [
+    "read_private",
+    "read_public"
+  ],
+  "reserve_hotel": [
+    "read_public",
+    "value_transfer"
+  ],
+  "reserve_car_rental": [
+    "value_transfer"
+  ],
+  "reserve_restaurant": [
+    "read_public",
+    "value_transfer"
+  ],
+  "get_flight_information": [
+    "read_private",
+    "read_public"
+  ],
+  "get_iban": [
+    "read_private"
+  ],
+  "send_money": [
+    "cross_boundary_egress",
+    "read_private",
+    "value_transfer"
+  ],
+  "schedule_transaction": [
+    "read_private",
+    "value_transfer"
+  ],
+  "update_scheduled_transaction": [
+    "read_private",
+    "value_transfer",
+    "write_mutate"
+  ],
+  "get_balance": [
+    "read_private"
+  ],
+  "get_most_recent_transactions": [
+    "read_private"
+  ],
+  "get_scheduled_transactions": [
+    "read_private"
+  ],
+  "read_file": [
+    "read_private"
+  ],
+  "get_user_info": [
+    "read_private"
+  ],
+  "update_password": [
+    "credential_access",
+    "write_mutate"
+  ],
+  "update_user_info": [
+    "write_mutate"
+  ],
+  "get_channels": [
+    "read_private"
+  ],
+  "add_user_to_channel": [
+    "write_mutate"
+  ],
+  "read_channel_messages": [
+    "read_private"
+  ],
+  "read_inbox": [
+    "read_private"
+  ],
+  "send_direct_message": [
+    "cross_boundary_egress",
+    "read_private"
+  ],
+  "send_channel_message": [
+    "cross_boundary_egress",
+    "read_private"
+  ],
+  "get_users_in_channel": [
+    "read_private"
+  ],
+  "invite_user_to_slack": [
+    "identity_admin"
+  ],
+  "remove_user_from_slack": [
+    "data_destruction"
+  ],
+  "get_webpage": [
+    "external_ingestion",
+    "read_private"
+  ],
+  "post_webpage": [
+    "external_ingestion"
+  ]
+}

@@ -1,0 +1,15 @@
+
+=== Progent manual: banking ===
+Traceback (most recent call last):
+  File "/home/jcsu/Dev/tee-mcp/mcp-sdk-fork/experiments/scripts/run_progent_agentdojo.py", line 219, in <module>
+    main()
+    ~~~~^^
+  File "/home/jcsu/Dev/tee-mcp/mcp-sdk-fork/experiments/scripts/run_progent_agentdojo.py", line 186, in main
+    suite_rows.append(_run_worker_subprocess(args, suite))
+                      ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "/home/jcsu/Dev/tee-mcp/mcp-sdk-fork/experiments/scripts/run_progent_agentdojo.py", line 144, in _run_worker_subprocess
+    proc = subprocess.run(cmd, capture_output=True, text=True, check=True)
+  File "/home/jcsu/miniconda3/lib/python3.13/subprocess.py", line 577, in run
+    raise CalledProcessError(retcode, process.args,
+                             output=stdout, stderr=stderr)
+subprocess.CalledProcessError: Command '['/home/jcsu/miniconda3/bin/python', '/home/jcsu/Dev/tee-mcp/mcp-sdk-fork/experiments/scripts/run_progent_agentdojo.py', '--worker', '--suite', 'banking', '--model', 'gpt-4o-mini-2024-07-18', '--attack', 'important_instructions', '--benchmark-version', 'v1.2.2', '--mode', 'manual', '--policy-model', 'gpt-4o-2024-08-06', '--logdir', '/home/jcsu/Dev/tee-mcp/mcp-sdk-fork/experiments/data/progent_agentdojo_runs']' returned non-zero exit status 1.

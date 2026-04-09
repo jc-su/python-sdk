@@ -1,0 +1,238 @@
+{
+  "get_iban": [
+    "read_identity",
+    "read_private"
+  ],
+  "send_money": [
+    "value_transfer"
+  ],
+  "schedule_transaction": [
+    "value_transfer",
+    "write_mutate"
+  ],
+  "update_scheduled_transaction": [
+    "value_transfer",
+    "write_mutate"
+  ],
+  "get_balance": [
+    "read_private"
+  ],
+  "get_most_recent_transactions": [
+    "read_private"
+  ],
+  "get_scheduled_transactions": [
+    "read_private"
+  ],
+  "read_file": [
+    "read_private"
+  ],
+  "get_user_info": [
+    "read_identity",
+    "read_private"
+  ],
+  "update_password": [
+    "credential_access",
+    "write_mutate"
+  ],
+  "update_user_info": [
+    "read_identity",
+    "write_mutate"
+  ],
+  "send_email": [
+    "cross_boundary_egress"
+  ],
+  "delete_email": [
+    "data_destruction"
+  ],
+  "get_unread_emails": [
+    "read_private"
+  ],
+  "get_sent_emails": [
+    "read_private"
+  ],
+  "get_received_emails": [
+    "read_private"
+  ],
+  "get_draft_emails": [
+    "read_private"
+  ],
+  "search_emails": [
+    "read_private"
+  ],
+  "search_contacts_by_name": [
+    "read_private"
+  ],
+  "search_contacts_by_email": [
+    "read_private"
+  ],
+  "get_current_day": [
+    "read_public"
+  ],
+  "search_calendar_events": [
+    "read_private"
+  ],
+  "get_day_calendar_events": [
+    "read_private"
+  ],
+  "create_calendar_event": [
+    "cross_boundary_egress",
+    "write_mutate"
+  ],
+  "cancel_calendar_event": [
+    "cross_boundary_egress",
+    "data_destruction"
+  ],
+  "reschedule_calendar_event": [
+    "cross_boundary_egress",
+    "write_mutate"
+  ],
+  "add_calendar_event_participants": [
+    "cross_boundary_egress",
+    "write_mutate"
+  ],
+  "append_to_file": [
+    "write_mutate"
+  ],
+  "search_files_by_filename": [
+    "read_private"
+  ],
+  "create_file": [
+    "write_mutate"
+  ],
+  "delete_file": [
+    "data_destruction"
+  ],
+  "get_file_by_id": [
+    "read_private"
+  ],
+  "list_files": [
+    "read_private"
+  ],
+  "share_file": [
+    "cross_boundary_egress",
+    "identity_admin"
+  ],
+  "search_files": [
+    "read_private"
+  ],
+  "get_channels": [
+    "read_private"
+  ],
+  "add_user_to_channel": [
+    "identity_admin",
+    "write_mutate"
+  ],
+  "read_channel_messages": [
+    "read_private"
+  ],
+  "read_inbox": [
+    "read_private"
+  ],
+  "send_direct_message": [
+    "cross_boundary_egress"
+  ],
+  "send_channel_message": [
+    "cross_boundary_egress"
+  ],
+  "get_users_in_channel": [
+    "read_private"
+  ],
+  "invite_user_to_slack": [
+    "identity_admin"
+  ],
+  "remove_user_from_slack": [
+    "data_destruction",
+    "identity_admin"
+  ],
+  "get_webpage": [
+    "external_ingestion"
+  ],
+  "post_webpage": [
+    "cross_boundary_egress",
+    "write_mutate"
+  ],
+  "get_user_information": [
+    "read_identity",
+    "read_private"
+  ],
+  "get_all_hotels_in_city": [
+    "read_public"
+  ],
+  "get_hotels_prices": [
+    "read_public"
+  ],
+  "get_hotels_address": [
+    "read_public"
+  ],
+  "get_rating_reviews_for_hotels": [
+    "read_public"
+  ],
+  "get_all_restaurants_in_city": [
+    "read_public"
+  ],
+  "get_restaurants_address": [
+    "read_public"
+  ],
+  "get_rating_reviews_for_restaurants": [
+    "read_public"
+  ],
+  "get_cuisine_type_for_restaurants": [
+    "read_public"
+  ],
+  "get_dietary_restrictions_for_all_restaurants": [
+    "read_public"
+  ],
+  "get_contact_information_for_restaurants": [
+    "read_public"
+  ],
+  "get_price_for_restaurants": [
+    "read_public"
+  ],
+  "check_restaurant_opening_hours": [
+    "read_public"
+  ],
+  "get_all_car_rental_companies_in_city": [
+    "read_public"
+  ],
+  "get_car_types_available": [
+    "read_public"
+  ],
+  "get_rating_reviews_for_car_rental": [
+    "read_public"
+  ],
+  "get_car_fuel_options": [
+    "read_public"
+  ],
+  "get_car_rental_address": [
+    "read_public"
+  ],
+  "get_car_price_per_day": [
+    "read_public"
+  ],
+  "reserve_hotel": [
+    "value_transfer"
+  ],
+  "reserve_restaurant": [
+    "value_transfer"
+  ],
+  "reserve_car_rental": [
+    "value_transfer"
+  ],
+  "get_flight_information": [
+    "read_public"
+  ],
+  "download_file": [
+    "external_ingestion",
+    "write_mutate"
+  ],
+  "standardize_url": [],
+  "next_id": [
+    "read_private"
+  ],
+  "set_balance": [
+    "write_mutate"
+  ],
+  "set_iban": [
+    "write_mutate"
+  ]
+}

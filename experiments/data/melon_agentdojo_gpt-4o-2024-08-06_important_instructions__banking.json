@@ -1,0 +1,15 @@
+{
+  "suite": "banking",
+  "elapsed_sec": 862.0,
+  "Utility": 75.0,
+  "Utility_under_attack": 44.44,
+  "Targeted_ASR": 0.0,
+  "counts": {
+    "benign_total": 16,
+    "benign_success": 12,
+    "attacked_total": 144,
+    "attacked_utility_success": 64,
+    "attacked_asr_success": 0
+  },
+  "partial": false
+}

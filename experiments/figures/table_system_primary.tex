@@ -1,0 +1,20 @@
+\begin{table}[t]
+\centering
+\caption{TrustFnCall online enforcement overhead on real AgentDojo-derived policies.}
+\label{tab:system-primary}
+\small
+\begin{tabular}{lrrrr}
+\toprule
+\textbf{Configuration} & \textbf{p50} & \textbf{p95} & \textbf{p99} & \textbf{Mean} \\
+ & ($\mu$s) & ($\mu$s) & ($\mu$s) & ($\mu$s) \\
+\midrule
+Real policy: allowlist & 1.22 & 1.41 & 1.64 & 1.25 \\
+Real policy: + arg constraints & 1.28 & 1.71 & 2.04 & 1.35 \\
+Synthetic worst-case (100 rules) & 27.58 & 28.64 & 30.81 & 27.58 \\
+\midrule
+Throughput & \multicolumn{4}{r}{976,697 calls/sec} \\
+Memory (100 tools) & \multicolumn{4}{r}{93.3 KB} \\
+Memory (1000 tools) & \multicolumn{4}{r}{560.2 KB} \\
+\bottomrule
+\end{tabular}
+\end{table}

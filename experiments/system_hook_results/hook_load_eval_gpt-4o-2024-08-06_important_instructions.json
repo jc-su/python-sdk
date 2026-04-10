@@ -1,0 +1,422 @@
+{
+  "schema_version": "hook_load_sim_v1",
+  "input": "/home/jcsu/Dev/tee-mcp/mcp-sdk-fork/experiments/system_hook_results/hook_eval_real_gpt-4o-2024-08-06_important_instructions.json",
+  "n_events_per_point": 4000,
+  "seed": 7,
+  "shared_offered_rate_grid_ops_per_sec": [
+    1.0,
+    10.0,
+    100.0,
+    1000.0,
+    10000.0,
+    100000.0,
+    1000000.0
+  ],
+  "notes": [
+    "These figures are queueing-style load simulations based on empirical service-time traces from the real hook benchmark.",
+    "They model a single online decision stage under increasing offered rate.",
+    "All methods are evaluated on the same offered-rate grid so the x-axis is directly comparable across lines.",
+    "Tool Filter remains prep-only in this figure because the remote OpenAI filtering call is not available offline."
+  ],
+  "methods": {
+    "repeat_user_prompt": {
+      "label": "Repeat Prompt",
+      "color": "#3182bd",
+      "measured_throughput_ops_per_sec": 818232.0,
+      "service_trace_samples": 23925,
+      "points": [
+        {
+          "offered_rate_ops_per_sec": 1.0,
+          "achieved_throughput_ops_per_sec": 1.0,
+          "p95_latency_us": 1.25599990496994,
+          "p99_latency_us": 1.4560000067831425,
+          "mean_latency_us": 1.0885909994080532
+        },
+        {
+          "offered_rate_ops_per_sec": 10.0,
+          "achieved_throughput_ops_per_sec": 10.0,
+          "p95_latency_us": 1.2720000004406984,
+          "p99_latency_us": 1.4860000021599262,
+          "mean_latency_us": 1.0943390005852882
+        },
+        {
+          "offered_rate_ops_per_sec": 100.0,
+          "achieved_throughput_ops_per_sec": 100.0,
+          "p95_latency_us": 1.2729999996352603,
+          "p99_latency_us": 1.480000001663484,
+          "mean_latency_us": 1.0938554999747336
+        },
+        {
+          "offered_rate_ops_per_sec": 1000.0,
+          "achieved_throughput_ops_per_sec": 1000.0,
+          "p95_latency_us": 1.263000000029102,
+          "p99_latency_us": 1.4470000000432748,
+          "mean_latency_us": 1.0881969999990597
+        },
+        {
+          "offered_rate_ops_per_sec": 10000.0,
+          "achieved_throughput_ops_per_sec": 10000.0,
+          "p95_latency_us": 1.2650000000002937,
+          "p99_latency_us": 1.4500000000000624,
+          "mean_latency_us": 1.092663750000245
+        },
+        {
+          "offered_rate_ops_per_sec": 100000.0,
+          "achieved_throughput_ops_per_sec": 100000.0,
+          "p95_latency_us": 1.2619999999999212,
+          "p99_latency_us": 1.4500000000000624,
+          "mean_latency_us": 1.0885417500000025
+        },
+        {
+          "offered_rate_ops_per_sec": 1000000.0,
+          "achieved_throughput_ops_per_sec": 911635.4078280776,
+          "p95_latency_us": 370.9249999999946,
+          "p99_latency_us": 384.12799999999487,
+          "mean_latency_us": 203.59731499999964
+        }
+      ]
+    },
+    "spotlighting_with_delimiting": {
+      "label": "Spotlighting",
+      "color": "#31a354",
+      "measured_throughput_ops_per_sec": 3779447.0,
+      "service_trace_samples": 23525,
+      "points": [
+        {
+          "offered_rate_ops_per_sec": 1.0,
+          "achieved_throughput_ops_per_sec": 1.0,
+          "p95_latency_us": 0.264999926002929,
+          "p99_latency_us": 0.577000037083053,
+          "mean_latency_us": 0.15986674910807977
+        },
+        {
+          "offered_rate_ops_per_sec": 10.0,
+          "achieved_throughput_ops_per_sec": 10.0,
+          "p95_latency_us": 0.2810000125919032,
+          "p99_latency_us": 0.5449999775919423,
+          "mean_latency_us": 0.15737350022042168
+        },
+        {
+          "offered_rate_ops_per_sec": 100.0,
+          "achieved_throughput_ops_per_sec": 100.0,
+          "p95_latency_us": 0.2750000001050523,
+          "p99_latency_us": 0.616000001230077,
+          "mean_latency_us": 0.1597607500190837
+        },
+        {
+          "offered_rate_ops_per_sec": 1000.0,
+          "achieved_throughput_ops_per_sec": 1000.0,
+          "p95_latency_us": 0.28700000020975835,
+          "p99_latency_us": 0.5469999999618835,
+          "mean_latency_us": 0.158598250002703
+        },
+        {
+          "offered_rate_ops_per_sec": 10000.0,
+          "achieved_throughput_ops_per_sec": 10000.0,
+          "p95_latency_us": 0.27599999999350366,
+          "p99_latency_us": 0.5780000000010777,
+          "mean_latency_us": 0.15703324999980328
+        },
+        {
+          "offered_rate_ops_per_sec": 100000.0,
+          "achieved_throughput_ops_per_sec": 100000.0,
+          "p95_latency_us": 0.2810000000012802,
+          "p99_latency_us": 0.5270000000001662,
+          "mean_latency_us": 0.15632899999996963
+        },
+        {
+          "offered_rate_ops_per_sec": 1000000.0,
+          "achieved_throughput_ops_per_sec": 1000000.0,
+          "p95_latency_us": 0.29000000000001247,
+          "p99_latency_us": 0.637999999999854,
+          "mean_latency_us": 0.16122724999999813
+        }
+      ]
+    },
+    "tool_filter": {
+      "label": "Tool Filter (prep)",
+      "color": "#fd8d3c",
+      "measured_throughput_ops_per_sec": 395332.0,
+      "service_trace_samples": 14375,
+      "points": [
+        {
+          "offered_rate_ops_per_sec": 1.0,
+          "achieved_throughput_ops_per_sec": 1.0,
+          "p95_latency_us": 2.5200001800840255,
+          "p99_latency_us": 3.6080000427318737,
+          "mean_latency_us": 2.40951275068711
+        },
+        {
+          "offered_rate_ops_per_sec": 10.0,
+          "achieved_throughput_ops_per_sec": 10.0,
+          "p95_latency_us": 2.510000001620938,
+          "p99_latency_us": 3.4839999898395035,
+          "mean_latency_us": 2.4368302502336365
+        },
+        {
+          "offered_rate_ops_per_sec": 100.0,
+          "achieved_throughput_ops_per_sec": 100.0,
+          "p95_latency_us": 2.5269999994748105,
+          "p99_latency_us": 3.5450000002157367,
+          "mean_latency_us": 2.4841397499822695
+        },
+        {
+          "offered_rate_ops_per_sec": 1000.0,
+          "achieved_throughput_ops_per_sec": 1000.0,
+          "p95_latency_us": 2.52800000000164,
+          "p99_latency_us": 3.5969999999663216,
+          "mean_latency_us": 2.4167180000028705
+        },
+        {
+          "offered_rate_ops_per_sec": 10000.0,
+          "achieved_throughput_ops_per_sec": 10000.0,
+          "p95_latency_us": 2.5130000000025965,
+          "p99_latency_us": 3.5989999999930244,
+          "mean_latency_us": 2.4113544999999985
+        },
+        {
+          "offered_rate_ops_per_sec": 100000.0,
+          "achieved_throughput_ops_per_sec": 100000.0,
+          "p95_latency_us": 2.519999999998912,
+          "p99_latency_us": 3.5330000000000084,
+          "mean_latency_us": 2.4078907499999977
+        },
+        {
+          "offered_rate_ops_per_sec": 1000000.0,
+          "achieved_throughput_ops_per_sec": 413371.19400099193,
+          "p95_latency_us": 5397.090000000006,
+          "p99_latency_us": 5623.348000000007,
+          "mean_latency_us": 2854.351597750001
+        }
+      ]
+    },
+    "transformers_pi_detector": {
+      "label": "PI Detector",
+      "color": "#756bb1",
+      "measured_throughput_ops_per_sec": 14.0,
+      "service_trace_samples": 480,
+      "points": [
+        {
+          "offered_rate_ops_per_sec": 1.0,
+          "achieved_throughput_ops_per_sec": 1.0,
+          "p95_latency_us": 241243.12099999655,
+          "p99_latency_us": 250615.15800007328,
+          "mean_latency_us": 70931.49215224959
+        },
+        {
+          "offered_rate_ops_per_sec": 10.0,
+          "achieved_throughput_ops_per_sec": 10.0,
+          "p95_latency_us": 361419.760999997,
+          "p99_latency_us": 543155.2790000183,
+          "mean_latency_us": 132258.02593200182
+        },
+        {
+          "offered_rate_ops_per_sec": 100.0,
+          "achieved_throughput_ops_per_sec": 13.217532166061474,
+          "p95_latency_us": 250273049.70400074,
+          "p99_latency_us": 260462818.18900105,
+          "mean_latency_us": 132300834.6616186
+        },
+        {
+          "offered_rate_ops_per_sec": 1000.0,
+          "achieved_throughput_ops_per_sec": 13.647041910841896,
+          "p95_latency_us": 275961977.2709995,
+          "p99_latency_us": 286253195.24599975,
+          "mean_latency_us": 145015730.42911348
+        },
+        {
+          "offered_rate_ops_per_sec": 10000.0,
+          "achieved_throughput_ops_per_sec": 13.695948134978387,
+          "p95_latency_us": 276137482.3419992,
+          "p99_latency_us": 288381229.79199934,
+          "mean_latency_us": 144098476.48993647
+        },
+        {
+          "offered_rate_ops_per_sec": 100000.0,
+          "achieved_throughput_ops_per_sec": 13.668811239217645,
+          "p95_latency_us": 278650543.61700034,
+          "p99_latency_us": 289732866.8600001,
+          "mean_latency_us": 147989063.3358104
+        },
+        {
+          "offered_rate_ops_per_sec": 1000000.0,
+          "achieved_throughput_ops_per_sec": 13.569937726492045,
+          "p95_latency_us": 280231380.03999966,
+          "p99_latency_us": 292007473.6340002,
+          "mean_latency_us": 147789465.3853233
+        }
+      ]
+    },
+    "trustfncall_trace_args": {
+      "label": "TrustFnCall-Trace",
+      "color": "#08519c",
+      "measured_throughput_ops_per_sec": 688510.0,
+      "service_trace_samples": 31860,
+      "points": [
+        {
+          "offered_rate_ops_per_sec": 1.0,
+          "achieved_throughput_ops_per_sec": 1.0,
+          "p95_latency_us": 1.7889999526232714,
+          "p99_latency_us": 2.2459999939883346,
+          "mean_latency_us": 1.3926867495057889
+        },
+        {
+          "offered_rate_ops_per_sec": 10.0,
+          "achieved_throughput_ops_per_sec": 10.0,
+          "p95_latency_us": 1.8129999972416044,
+          "p99_latency_us": 2.1879999962948204,
+          "mean_latency_us": 1.3992750002680006
+        },
+        {
+          "offered_rate_ops_per_sec": 100.0,
+          "achieved_throughput_ops_per_sec": 100.0,
+          "p95_latency_us": 1.8199999995971439,
+          "p99_latency_us": 2.160999999389901,
+          "mean_latency_us": 1.4264602499963095
+        },
+        {
+          "offered_rate_ops_per_sec": 1000.0,
+          "achieved_throughput_ops_per_sec": 1000.0,
+          "p95_latency_us": 1.8399999999196837,
+          "p99_latency_us": 2.355999999981151,
+          "mean_latency_us": 1.4183302500029744
+        },
+        {
+          "offered_rate_ops_per_sec": 10000.0,
+          "achieved_throughput_ops_per_sec": 10000.0,
+          "p95_latency_us": 1.8520000000243897,
+          "p99_latency_us": 2.692999999998058,
+          "mean_latency_us": 4.68232649999987
+        },
+        {
+          "offered_rate_ops_per_sec": 100000.0,
+          "achieved_throughput_ops_per_sec": 100000.0,
+          "p95_latency_us": 1.8290000000000668,
+          "p99_latency_us": 2.171000000002199,
+          "mean_latency_us": 1.3938967499999657
+        },
+        {
+          "offered_rate_ops_per_sec": 1000000.0,
+          "achieved_throughput_ops_per_sec": 715551.2177250619,
+          "p95_latency_us": 1513.7240000000058,
+          "p99_latency_us": 1574.502000000003,
+          "mean_latency_us": 802.8979239999999
+        }
+      ]
+    },
+    "trustfncall_manual": {
+      "label": "TrustFnCall-Manual",
+      "color": "#6baed6",
+      "measured_throughput_ops_per_sec": 719012.0,
+      "service_trace_samples": 31860,
+      "points": [
+        {
+          "offered_rate_ops_per_sec": 1.0,
+          "achieved_throughput_ops_per_sec": 1.0,
+          "p95_latency_us": 1.705000158835901,
+          "p99_latency_us": 2.090000009502546,
+          "mean_latency_us": 1.3729004989969138
+        },
+        {
+          "offered_rate_ops_per_sec": 10.0,
+          "achieved_throughput_ops_per_sec": 10.0,
+          "p95_latency_us": 1.691000022674416,
+          "p99_latency_us": 2.0229999790899456,
+          "mean_latency_us": 1.3685542498890242
+        },
+        {
+          "offered_rate_ops_per_sec": 100.0,
+          "achieved_throughput_ops_per_sec": 100.0,
+          "p95_latency_us": 1.6850000008616917,
+          "p99_latency_us": 1.9880000010630283,
+          "mean_latency_us": 1.368354000006559
+        },
+        {
+          "offered_rate_ops_per_sec": 1000.0,
+          "achieved_throughput_ops_per_sec": 1000.0,
+          "p95_latency_us": 1.6869999999724605,
+          "p99_latency_us": 1.9419999999215065,
+          "mean_latency_us": 1.4112307499979906
+        },
+        {
+          "offered_rate_ops_per_sec": 10000.0,
+          "achieved_throughput_ops_per_sec": 10000.0,
+          "p95_latency_us": 1.6999999999933735,
+          "p99_latency_us": 2.060999999997648,
+          "mean_latency_us": 1.8181874999999519
+        },
+        {
+          "offered_rate_ops_per_sec": 100000.0,
+          "achieved_throughput_ops_per_sec": 100000.0,
+          "p95_latency_us": 1.714999999999356,
+          "p99_latency_us": 2.0609999999998165,
+          "mean_latency_us": 1.3684080000000194
+        },
+        {
+          "offered_rate_ops_per_sec": 1000000.0,
+          "achieved_throughput_ops_per_sec": 731015.5267697881,
+          "p95_latency_us": 1388.4030000000012,
+          "p99_latency_us": 1460.601000000004,
+          "mean_latency_us": 732.408215500001
+        }
+      ]
+    },
+    "progent_manual_check_tool_call": {
+      "label": "Progent-Manual",
+      "color": "#de2d26",
+      "measured_throughput_ops_per_sec": 68721.0,
+      "service_trace_samples": 31860,
+      "points": [
+        {
+          "offered_rate_ops_per_sec": 1.0,
+          "achieved_throughput_ops_per_sec": 1.0,
+          "p95_latency_us": 296.6420001939696,
+          "p99_latency_us": 623.1580000530812,
+          "mean_latency_us": 52.467935748304264
+        },
+        {
+          "offered_rate_ops_per_sec": 10.0,
+          "achieved_throughput_ops_per_sec": 10.0,
+          "p95_latency_us": 298.5700000124325,
+          "p99_latency_us": 629.0150000154426,
+          "mean_latency_us": 55.36798249991882
+        },
+        {
+          "offered_rate_ops_per_sec": 100.0,
+          "achieved_throughput_ops_per_sec": 100.0,
+          "p95_latency_us": 294.14699999996685,
+          "p99_latency_us": 629.473000000047,
+          "mean_latency_us": 52.78872524997709
+        },
+        {
+          "offered_rate_ops_per_sec": 1000.0,
+          "achieved_throughput_ops_per_sec": 1000.0,
+          "p95_latency_us": 290.42900000009195,
+          "p99_latency_us": 624.9400000000182,
+          "mean_latency_us": 49.92903175000203
+        },
+        {
+          "offered_rate_ops_per_sec": 10000.0,
+          "achieved_throughput_ops_per_sec": 9984.333357880649,
+          "p95_latency_us": 667.1999999999789,
+          "p99_latency_us": 1060.1579999999776,
+          "mean_latency_us": 173.23339099999748
+        },
+        {
+          "offered_rate_ops_per_sec": 100000.0,
+          "achieved_throughput_ops_per_sec": 18999.65613472343,
+          "p95_latency_us": 162652.41900000017,
+          "p99_latency_us": 169271.99600000016,
+          "mean_latency_us": 87186.09062250011
+        },
+        {
+          "offered_rate_ops_per_sec": 1000000.0,
+          "achieved_throughput_ops_per_sec": 18361.575586419767,
+          "p95_latency_us": 198992.07499999934,
+          "p99_latency_us": 211871.9149999995,
+          "mean_latency_us": 104569.07925124986
+        }
+      ]
+    }
+  }
+}

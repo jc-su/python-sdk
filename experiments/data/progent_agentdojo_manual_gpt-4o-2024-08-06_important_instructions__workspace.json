@@ -1,0 +1,14 @@
+{
+  "suite": "workspace",
+  "Utility": 67.5,
+  "Utility_under_attack": 54.17,
+  "Targeted_ASR": 0.0,
+  "counts": {
+    "benign_total": 40,
+    "benign_success": 27,
+    "attacked_total": 240,
+    "attacked_utility_success": 130,
+    "attacked_asr_success": 0
+  },
+  "partial": false
+}

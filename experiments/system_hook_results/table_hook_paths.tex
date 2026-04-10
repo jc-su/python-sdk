@@ -1,0 +1,21 @@
+\begin{table*}[t]
+\centering
+\caption{Allowed-path and blocked-path latency for online defense decisions. For non-blocking prompt defenses, the allowed path is the pass-through hook and the blocked path is not applicable. Tool Filter and MELON require remote-model decisions, so blocked-path latency is not observable in the offline hook harness.}
+\label{tab:system-hook-paths}
+\small
+\begin{tabular}{lrrrrl}
+\toprule
+\textbf{Method} & \textbf{Allow p50} & \textbf{Allow p95} & \textbf{Block p50} & \textbf{Block p95} & \textbf{Notes} \\
+ & ($\mu$s) & ($\mu$s) & ($\mu$s) & ($\mu$s) &  \\
+\midrule
+Repeat Prompt & 1.06 & 1.27 & -- & -- & non-blocking \\
+Spotlighting & 0.13 & 0.28 & -- & -- & non-blocking \\
+Tool Filter & -- & -- & -- & -- & remote-only \\
+PI Detector & 36995.67 & 109607.86 & 51698.59 & 246847.16 & redacted \\
+TrustFnCall-Trace & 1.33 & 1.82 & 1.26 & 1.81 & blocked \\
+TrustFnCall-Manual & 1.29 & 1.60 & 1.62 & 1.97 & blocked \\
+Progent-Manual & 0.45 & 182.98 & 179.99 & 641.37 & blocked \\
+MELON & -- & -- & -- & -- & remote-only \\
+\bottomrule
+\end{tabular}
+\end{table*}

@@ -1,0 +1,772 @@
+{
+  "schema_version": "system_decision_load_v1",
+  "model": "gpt-4o-2024-08-06",
+  "attack": "important_instructions",
+  "worker_counts": [
+    4,
+    8,
+    12,
+    16,
+    24,
+    32,
+    48,
+    64,
+    96,
+    128,
+    192,
+    256
+  ],
+  "throughput_duration_sec": 1.0,
+  "latency_duration_sec": 1.0,
+  "sample_limit_per_worker": 2048,
+  "methods": {
+    "trustfncall_trace_args": {
+      "available": true,
+      "points": [
+        {
+          "workers": 4,
+          "throughput_phase_sec": 1.001,
+          "latency_phase_sec": 1.001,
+          "completed_ops": 3125760,
+          "achieved_throughput_ops_per_sec": 3124103.485,
+          "latency_us": {
+            "n_samples": 8192,
+            "p50": 1.274,
+            "p95": 1.731,
+            "p99": 2.023
+          },
+          "latency_sample_count": 8192,
+          "latency_phase_completed_ops": 3097600
+        },
+        {
+          "workers": 8,
+          "throughput_phase_sec": 1.001,
+          "latency_phase_sec": 1.001,
+          "completed_ops": 6392832,
+          "achieved_throughput_ops_per_sec": 6387612.209,
+          "latency_us": {
+            "n_samples": 16384,
+            "p50": 1.288,
+            "p95": 1.773,
+            "p99": 2.31
+          },
+          "latency_sample_count": 16384,
+          "latency_phase_completed_ops": 6105088
+        },
+        {
+          "workers": 12,
+          "throughput_phase_sec": 1.001,
+          "latency_phase_sec": 1.001,
+          "completed_ops": 9442304,
+          "achieved_throughput_ops_per_sec": 9435188.82,
+          "latency_us": {
+            "n_samples": 24576,
+            "p50": 1.29,
+            "p95": 1.773,
+            "p99": 2.407
+          },
+          "latency_sample_count": 24576,
+          "latency_phase_completed_ops": 9136896
+        },
+        {
+          "workers": 16,
+          "throughput_phase_sec": 1.001,
+          "latency_phase_sec": 1.001,
+          "completed_ops": 12520448,
+          "achieved_throughput_ops_per_sec": 12510991.792,
+          "latency_us": {
+            "n_samples": 32768,
+            "p50": 1.294,
+            "p95": 1.797,
+            "p99": 2.612
+          },
+          "latency_sample_count": 32768,
+          "latency_phase_completed_ops": 12051200
+        },
+        {
+          "workers": 24,
+          "throughput_phase_sec": 1.001,
+          "latency_phase_sec": 1.001,
+          "completed_ops": 18570240,
+          "achieved_throughput_ops_per_sec": 18558386.091,
+          "latency_us": {
+            "n_samples": 49152,
+            "p50": 1.309,
+            "p95": 1.793,
+            "p99": 2.759
+          },
+          "latency_sample_count": 49152,
+          "latency_phase_completed_ops": 17826816
+        },
+        {
+          "workers": 32,
+          "throughput_phase_sec": 1.001,
+          "latency_phase_sec": 1.001,
+          "completed_ops": 23467520,
+          "achieved_throughput_ops_per_sec": 23436665.536,
+          "latency_us": {
+            "n_samples": 65536,
+            "p50": 1.391,
+            "p95": 1.956,
+            "p99": 3.537
+          },
+          "latency_sample_count": 65536,
+          "latency_phase_completed_ops": 22170624
+        },
+        {
+          "workers": 48,
+          "throughput_phase_sec": 1.002,
+          "latency_phase_sec": 1.002,
+          "completed_ops": 30263808,
+          "achieved_throughput_ops_per_sec": 30209814.512,
+          "latency_us": {
+            "n_samples": 94061,
+            "p50": 1.549,
+            "p95": 2.696,
+            "p99": 5.971
+          },
+          "latency_sample_count": 94061,
+          "latency_phase_completed_ops": 28510976
+        },
+        {
+          "workers": 64,
+          "throughput_phase_sec": 1.005,
+          "latency_phase_sec": 1.003,
+          "completed_ops": 31445504,
+          "achieved_throughput_ops_per_sec": 31304102.524,
+          "latency_us": {
+            "n_samples": 108101,
+            "p50": 2.478,
+            "p95": 3.349,
+            "p99": 6.735
+          },
+          "latency_sample_count": 108101,
+          "latency_phase_completed_ops": 29990400
+        },
+        {
+          "workers": 96,
+          "throughput_phase_sec": 1.006,
+          "latency_phase_sec": 1.005,
+          "completed_ops": 41854464,
+          "achieved_throughput_ops_per_sec": 41608766.853,
+          "latency_us": {
+            "n_samples": 148267,
+            "p50": 2.612,
+            "p95": 3.499,
+            "p99": 8.945
+          },
+          "latency_sample_count": 148267,
+          "latency_phase_completed_ops": 39887104
+        },
+        {
+          "workers": 128,
+          "throughput_phase_sec": 1.004,
+          "latency_phase_sec": 1.006,
+          "completed_ops": 54252032,
+          "achieved_throughput_ops_per_sec": 54013134.553,
+          "latency_us": {
+            "n_samples": 196307,
+            "p50": 2.787,
+            "p95": 3.793,
+            "p99": 8.165
+          },
+          "latency_sample_count": 196307,
+          "latency_phase_completed_ops": 50844416
+        },
+        {
+          "workers": 192,
+          "throughput_phase_sec": 1.006,
+          "latency_phase_sec": 1.006,
+          "completed_ops": 54431232,
+          "achieved_throughput_ops_per_sec": 54101803.306,
+          "latency_us": {
+            "n_samples": 130398,
+            "p50": 3.062,
+            "p95": 4.309,
+            "p99": 12.941
+          },
+          "latency_sample_count": 130398,
+          "latency_phase_completed_ops": 32595456
+        },
+        {
+          "workers": 256,
+          "throughput_phase_sec": 1.021,
+          "latency_phase_sec": 1.003,
+          "completed_ops": 53282816,
+          "achieved_throughput_ops_per_sec": 52208663.728,
+          "latency_us": {
+            "n_samples": 81805,
+            "p50": 2.355,
+            "p95": 4.861,
+            "p99": 19.55
+          },
+          "latency_sample_count": 81805,
+          "latency_phase_completed_ops": 19893504
+        }
+      ]
+    },
+    "trustfncall_manual": {
+      "available": true,
+      "points": [
+        {
+          "workers": 4,
+          "throughput_phase_sec": 1.0,
+          "latency_phase_sec": 1.0,
+          "completed_ops": 3151360,
+          "achieved_throughput_ops_per_sec": 3150194.142,
+          "latency_us": {
+            "n_samples": 8192,
+            "p50": 1.319,
+            "p95": 1.698,
+            "p99": 1.968
+          },
+          "latency_sample_count": 8192,
+          "latency_phase_completed_ops": 3014912
+        },
+        {
+          "workers": 8,
+          "throughput_phase_sec": 1.001,
+          "latency_phase_sec": 1.001,
+          "completed_ops": 6303232,
+          "achieved_throughput_ops_per_sec": 6299984.377,
+          "latency_us": {
+            "n_samples": 16384,
+            "p50": 1.33,
+            "p95": 1.74,
+            "p99": 2.232
+          },
+          "latency_sample_count": 16384,
+          "latency_phase_completed_ops": 5976576
+        },
+        {
+          "workers": 12,
+          "throughput_phase_sec": 1.001,
+          "latency_phase_sec": 1.0,
+          "completed_ops": 9406976,
+          "achieved_throughput_ops_per_sec": 9400220.804,
+          "latency_us": {
+            "n_samples": 24576,
+            "p50": 1.317,
+            "p95": 1.714,
+            "p99": 2.348
+          },
+          "latency_sample_count": 24576,
+          "latency_phase_completed_ops": 8999424
+        },
+        {
+          "workers": 16,
+          "throughput_phase_sec": 1.001,
+          "latency_phase_sec": 1.001,
+          "completed_ops": 12481536,
+          "achieved_throughput_ops_per_sec": 12471534.902,
+          "latency_us": {
+            "n_samples": 32768,
+            "p50": 1.317,
+            "p95": 1.714,
+            "p99": 2.73
+          },
+          "latency_sample_count": 32768,
+          "latency_phase_completed_ops": 11943936
+        },
+        {
+          "workers": 24,
+          "throughput_phase_sec": 1.001,
+          "latency_phase_sec": 1.002,
+          "completed_ops": 18249728,
+          "achieved_throughput_ops_per_sec": 18224738.639,
+          "latency_us": {
+            "n_samples": 49152,
+            "p50": 1.347,
+            "p95": 1.758,
+            "p99": 3.631
+          },
+          "latency_sample_count": 49152,
+          "latency_phase_completed_ops": 17362176
+        },
+        {
+          "workers": 32,
+          "throughput_phase_sec": 1.001,
+          "latency_phase_sec": 1.001,
+          "completed_ops": 22883840,
+          "achieved_throughput_ops_per_sec": 22854343.75,
+          "latency_us": {
+            "n_samples": 65536,
+            "p50": 1.42,
+            "p95": 1.851,
+            "p99": 3.724
+          },
+          "latency_sample_count": 65536,
+          "latency_phase_completed_ops": 21967616
+        },
+        {
+          "workers": 48,
+          "throughput_phase_sec": 1.001,
+          "latency_phase_sec": 1.001,
+          "completed_ops": 30898688,
+          "achieved_throughput_ops_per_sec": 30855494.134,
+          "latency_us": {
+            "n_samples": 98304,
+            "p50": 1.52,
+            "p95": 2.071,
+            "p99": 5.789
+          },
+          "latency_sample_count": 98304,
+          "latency_phase_completed_ops": 30826752
+        },
+        {
+          "workers": 64,
+          "throughput_phase_sec": 1.001,
+          "latency_phase_sec": 1.001,
+          "completed_ops": 42993152,
+          "achieved_throughput_ops_per_sec": 42930637.565,
+          "latency_us": {
+            "n_samples": 130150,
+            "p50": 1.518,
+            "p95": 2.54,
+            "p99": 5.864
+          },
+          "latency_sample_count": 130150,
+          "latency_phase_completed_ops": 40676096
+        },
+        {
+          "workers": 96,
+          "throughput_phase_sec": 1.006,
+          "latency_phase_sec": 1.003,
+          "completed_ops": 49994240,
+          "achieved_throughput_ops_per_sec": 49706592.226,
+          "latency_us": {
+            "n_samples": 146155,
+            "p50": 2.644,
+            "p95": 3.297,
+            "p99": 8.856
+          },
+          "latency_sample_count": 146155,
+          "latency_phase_completed_ops": 39172608
+        },
+        {
+          "workers": 128,
+          "throughput_phase_sec": 1.002,
+          "latency_phase_sec": 1.01,
+          "completed_ops": 52899328,
+          "achieved_throughput_ops_per_sec": 52789283.565,
+          "latency_us": {
+            "n_samples": 192938,
+            "p50": 2.867,
+            "p95": 3.669,
+            "p99": 9.741
+          },
+          "latency_sample_count": 192938,
+          "latency_phase_completed_ops": 49534464
+        },
+        {
+          "workers": 192,
+          "throughput_phase_sec": 1.012,
+          "latency_phase_sec": 1.02,
+          "completed_ops": 53310976,
+          "achieved_throughput_ops_per_sec": 52668216.873,
+          "latency_us": {
+            "n_samples": 102292,
+            "p50": 2.868,
+            "p95": 4.23,
+            "p99": 14.265
+          },
+          "latency_sample_count": 102292,
+          "latency_phase_completed_ops": 25400320
+        },
+        {
+          "workers": 256,
+          "throughput_phase_sec": 1.004,
+          "latency_phase_sec": 1.005,
+          "completed_ops": 53117952,
+          "achieved_throughput_ops_per_sec": 52887879.517,
+          "latency_us": {
+            "n_samples": 86689,
+            "p50": 2.503,
+            "p95": 4.799,
+            "p99": 16.016
+          },
+          "latency_sample_count": 86689,
+          "latency_phase_completed_ops": 21143808
+        }
+      ]
+    },
+    "progent_manual_check_tool_call": {
+      "available": true,
+      "points": [
+        {
+          "workers": 4,
+          "throughput_phase_sec": 1.001,
+          "latency_phase_sec": 1.001,
+          "completed_ops": 4014208,
+          "achieved_throughput_ops_per_sec": 4011520.041,
+          "latency_us": {
+            "n_samples": 8192,
+            "p50": 0.578,
+            "p95": 1.138,
+            "p99": 292.851
+          },
+          "latency_sample_count": 8192,
+          "latency_phase_completed_ops": 3282160
+        },
+        {
+          "workers": 8,
+          "throughput_phase_sec": 1.001,
+          "latency_phase_sec": 1.0,
+          "completed_ops": 8012864,
+          "achieved_throughput_ops_per_sec": 8007806.574,
+          "latency_us": {
+            "n_samples": 16384,
+            "p50": 0.576,
+            "p95": 1.18,
+            "p99": 294.685
+          },
+          "latency_sample_count": 16384,
+          "latency_phase_completed_ops": 6215552
+        },
+        {
+          "workers": 12,
+          "throughput_phase_sec": 1.001,
+          "latency_phase_sec": 1.001,
+          "completed_ops": 11944320,
+          "achieved_throughput_ops_per_sec": 11932302.763,
+          "latency_us": {
+            "n_samples": 24576,
+            "p50": 0.579,
+            "p95": 1.228,
+            "p99": 297.014
+          },
+          "latency_sample_count": 24576,
+          "latency_phase_completed_ops": 8223040
+        },
+        {
+          "workers": 16,
+          "throughput_phase_sec": 1.001,
+          "latency_phase_sec": 1.001,
+          "completed_ops": 15836608,
+          "achieved_throughput_ops_per_sec": 15822417.301,
+          "latency_us": {
+            "n_samples": 32768,
+            "p50": 0.583,
+            "p95": 1.227,
+            "p99": 294.879
+          },
+          "latency_sample_count": 32768,
+          "latency_phase_completed_ops": 10472240
+        },
+        {
+          "workers": 24,
+          "throughput_phase_sec": 1.001,
+          "latency_phase_sec": 1.001,
+          "completed_ops": 22553856,
+          "achieved_throughput_ops_per_sec": 22520180.561,
+          "latency_us": {
+            "n_samples": 49152,
+            "p50": 0.607,
+            "p95": 1.293,
+            "p99": 304.88
+          },
+          "latency_sample_count": 49152,
+          "latency_phase_completed_ops": 12821568
+        },
+        {
+          "workers": 32,
+          "throughput_phase_sec": 1.001,
+          "latency_phase_sec": 1.002,
+          "completed_ops": 29975360,
+          "achieved_throughput_ops_per_sec": 29937977.047,
+          "latency_us": {
+            "n_samples": 65536,
+            "p50": 0.638,
+            "p95": 1.335,
+            "p99": 321.348
+          },
+          "latency_sample_count": 65536,
+          "latency_phase_completed_ops": 13423280
+        },
+        {
+          "workers": 48,
+          "throughput_phase_sec": 1.002,
+          "latency_phase_sec": 1.002,
+          "completed_ops": 35194624,
+          "achieved_throughput_ops_per_sec": 35119013.046,
+          "latency_us": {
+            "n_samples": 97230,
+            "p50": 0.708,
+            "p95": 1.557,
+            "p99": 357.829
+          },
+          "latency_sample_count": 97230,
+          "latency_phase_completed_ops": 11032112
+        },
+        {
+          "workers": 64,
+          "throughput_phase_sec": 1.001,
+          "latency_phase_sec": 1.004,
+          "completed_ops": 37090496,
+          "achieved_throughput_ops_per_sec": 37039313.632,
+          "latency_us": {
+            "n_samples": 130382,
+            "p50": 0.65,
+            "p95": 1.47,
+            "p99": 344.765
+          },
+          "latency_sample_count": 130382,
+          "latency_phase_completed_ops": 10934832
+        },
+        {
+          "workers": 96,
+          "throughput_phase_sec": 1.002,
+          "latency_phase_sec": 1.003,
+          "completed_ops": 43670592,
+          "achieved_throughput_ops_per_sec": 43590101.657,
+          "latency_us": {
+            "n_samples": 79233,
+            "p50": 1.026,
+            "p95": 4.395,
+            "p99": 330.243
+          },
+          "latency_sample_count": 79233,
+          "latency_phase_completed_ops": 1244688
+        },
+        {
+          "workers": 128,
+          "throughput_phase_sec": 1.004,
+          "latency_phase_sec": 1.014,
+          "completed_ops": 4505664,
+          "achieved_throughput_ops_per_sec": 4486016.638,
+          "latency_us": {
+            "n_samples": 63873,
+            "p50": 1.29,
+            "p95": 5.111,
+            "p99": 331.758
+          },
+          "latency_sample_count": 63873,
+          "latency_phase_completed_ops": 991248
+        },
+        {
+          "workers": 192,
+          "throughput_phase_sec": 1.011,
+          "latency_phase_sec": 1.013,
+          "completed_ops": 4534528,
+          "achieved_throughput_ops_per_sec": 4485565.798,
+          "latency_us": {
+            "n_samples": 67115,
+            "p50": 1.201,
+            "p95": 5.22,
+            "p99": 333.681
+          },
+          "latency_sample_count": 67115,
+          "latency_phase_completed_ops": 1027760
+        },
+        {
+          "workers": 256,
+          "throughput_phase_sec": 1.004,
+          "latency_phase_sec": 1.032,
+          "completed_ops": 4478464,
+          "achieved_throughput_ops_per_sec": 4462223.194,
+          "latency_us": {
+            "n_samples": 69952,
+            "p50": 1.186,
+            "p95": 5.655,
+            "p99": 339.254
+          },
+          "latency_sample_count": 69952,
+          "latency_phase_completed_ops": 1057792
+        }
+      ]
+    },
+    "transformers_pi_detector": {
+      "available": true,
+      "points": [
+        {
+          "workers": 4,
+          "throughput_phase_sec": 1.001,
+          "latency_phase_sec": 1.001,
+          "completed_ops": 16,
+          "achieved_throughput_ops_per_sec": 15.991,
+          "latency_us": {
+            "n_samples": 16,
+            "p50": 237424.781,
+            "p95": 478571.896,
+            "p99": 478571.896
+          },
+          "latency_sample_count": 16,
+          "latency_phase_completed_ops": 16
+        },
+        {
+          "workers": 8,
+          "throughput_phase_sec": 1.001,
+          "latency_phase_sec": 1.001,
+          "completed_ops": 34,
+          "achieved_throughput_ops_per_sec": 33.973,
+          "latency_us": {
+            "n_samples": 34,
+            "p50": 250749.177,
+            "p95": 511978.011,
+            "p99": 520240.632
+          },
+          "latency_sample_count": 34,
+          "latency_phase_completed_ops": 34
+        },
+        {
+          "workers": 12,
+          "throughput_phase_sec": 1.001,
+          "latency_phase_sec": 1.001,
+          "completed_ops": 51,
+          "achieved_throughput_ops_per_sec": 50.959,
+          "latency_us": {
+            "n_samples": 50,
+            "p50": 237133.555,
+            "p95": 522064.349,
+            "p99": 626039.443
+          },
+          "latency_sample_count": 50,
+          "latency_phase_completed_ops": 50
+        },
+        {
+          "workers": 16,
+          "throughput_phase_sec": 1.001,
+          "latency_phase_sec": 1.002,
+          "completed_ops": 65,
+          "achieved_throughput_ops_per_sec": 64.944,
+          "latency_us": {
+            "n_samples": 66,
+            "p50": 240005.054,
+            "p95": 537308.415,
+            "p99": 877080.567
+          },
+          "latency_sample_count": 66,
+          "latency_phase_completed_ops": 66
+        },
+        {
+          "workers": 24,
+          "throughput_phase_sec": 1.001,
+          "latency_phase_sec": 1.001,
+          "completed_ops": 95,
+          "achieved_throughput_ops_per_sec": 94.879,
+          "latency_us": {
+            "n_samples": 97,
+            "p50": 224895.844,
+            "p95": 806229.468,
+            "p99": 1019801.173
+          },
+          "latency_sample_count": 97,
+          "latency_phase_completed_ops": 97
+        },
+        {
+          "workers": 32,
+          "throughput_phase_sec": 1.002,
+          "latency_phase_sec": 1.001,
+          "completed_ops": 122,
+          "achieved_throughput_ops_per_sec": 121.807,
+          "latency_us": {
+            "n_samples": 120,
+            "p50": 228730.178,
+            "p95": 897384.823,
+            "p99": 3202663.954
+          },
+          "latency_sample_count": 120,
+          "latency_phase_completed_ops": 120
+        },
+        {
+          "workers": 48,
+          "throughput_phase_sec": 1.002,
+          "latency_phase_sec": 1.002,
+          "completed_ops": 175,
+          "achieved_throughput_ops_per_sec": 174.698,
+          "latency_us": {
+            "n_samples": 177,
+            "p50": 241353.283,
+            "p95": 1048500.132,
+            "p99": 3470030.525
+          },
+          "latency_sample_count": 177,
+          "latency_phase_completed_ops": 177
+        },
+        {
+          "workers": 64,
+          "throughput_phase_sec": 1.002,
+          "latency_phase_sec": 1.002,
+          "completed_ops": 206,
+          "achieved_throughput_ops_per_sec": 205.607,
+          "latency_us": {
+            "n_samples": 207,
+            "p50": 275791.209,
+            "p95": 1207613.232,
+            "p99": 3531554.803
+          },
+          "latency_sample_count": 207,
+          "latency_phase_completed_ops": 207
+        },
+        {
+          "workers": 96,
+          "throughput_phase_sec": 1.002,
+          "latency_phase_sec": 1.001,
+          "completed_ops": 246,
+          "achieved_throughput_ops_per_sec": 245.436,
+          "latency_us": {
+            "n_samples": 251,
+            "p50": 342997.31,
+            "p95": 1741469.009,
+            "p99": 3742971.41
+          },
+          "latency_sample_count": 251,
+          "latency_phase_completed_ops": 251
+        },
+        {
+          "workers": 128,
+          "throughput_phase_sec": 1.002,
+          "latency_phase_sec": 1.003,
+          "completed_ops": 276,
+          "achieved_throughput_ops_per_sec": 275.395,
+          "latency_us": {
+            "n_samples": 275,
+            "p50": 447696.724,
+            "p95": 2619881.05,
+            "p99": 3947103.719
+          },
+          "latency_sample_count": 275,
+          "latency_phase_completed_ops": 275
+        },
+        {
+          "workers": 192,
+          "throughput_phase_sec": 1.013,
+          "latency_phase_sec": 1.002,
+          "completed_ops": 320,
+          "achieved_throughput_ops_per_sec": 316.023,
+          "latency_us": {
+            "n_samples": 320,
+            "p50": 705939.154,
+            "p95": 2483123.948,
+            "p99": 4215068.415
+          },
+          "latency_sample_count": 320,
+          "latency_phase_completed_ops": 320
+        },
+        {
+          "workers": 256,
+          "throughput_phase_sec": 1.003,
+          "latency_phase_sec": 1.006,
+          "completed_ops": 371,
+          "achieved_throughput_ops_per_sec": 369.707,
+          "latency_us": {
+            "n_samples": 354,
+            "p50": 1008377.036,
+            "p95": 3253717.264,
+            "p99": 5057442.413
+          },
+          "latency_sample_count": 354,
+          "latency_phase_completed_ops": 354
+        }
+      ]
+    }
+  },
+  "notes": [
+    "This benchmark only includes online decision methods, not prompt-rewrite defenses.",
+    "Worker counts are balanced across the four AgentDojo suites so every point preserves the same suite mix.",
+    "Throughput is measured in a separate untimed hot-loop phase to avoid per-call timer overhead dominating microsecond methods.",
+    "Latency is measured in a separate sampled phase under the same concurrency.",
+    "PI Detector is measured as local cached transformer inference; no external serving stack or remote API is used.",
+    "Tool Filter and MELON are excluded because their fair online decision path requires remote model calls."
+  ]
+}

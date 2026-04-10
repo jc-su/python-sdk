@@ -75,6 +75,7 @@ def run_single_defense(
     logdir: Path,
     force_rerun: bool,
 ) -> dict[str, Any]:
+    start = time.time()
     suite_rows: dict[str, Any] = {}
     utility_total = 0
     utility_ok = 0
@@ -86,6 +87,7 @@ def run_single_defense(
     pipeline_defense = _normalize_defense_name(defense)
 
     for suite_name in suites:
+        suite_start = time.time()
         suite = get_suite(benchmark_version, suite_name)
         pipeline = AgentPipeline.from_config(
             PipelineConfig(
@@ -132,6 +134,7 @@ def run_single_defense(
         asr_total += suite_asr_total
 
         suite_rows[suite_name] = {
+            "elapsed_sec": round(time.time() - suite_start, 1),
             "Utility": round(_avg_bool_dict(benign_results["utility_results"]) * 100, 2),
             "Utility_under_attack": round(_avg_bool_dict(attacked_results["utility_results"]) * 100, 2),
             "Targeted_ASR": round(_avg_bool_dict(attacked_results["security_results"]) * 100, 2),
@@ -154,6 +157,7 @@ def run_single_defense(
         "defense": defense,
         "attack": attack_name,
         "benchmark_version": benchmark_version,
+        "elapsed_sec": round(time.time() - start, 1),
         "Utility": round(utility, 2),
         "Utility_under_attack": round(ua, 2),
         "Targeted_ASR": round(asr, 2),

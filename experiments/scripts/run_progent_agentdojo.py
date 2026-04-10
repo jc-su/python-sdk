@@ -52,6 +52,7 @@ def _worker_result(
     logdir: str,
     force_rerun: bool,
 ) -> dict[str, Any]:
+    start = time.time()
     os.environ["SECAGENT_SUITE"] = suite
     os.environ["SECAGENT_GENERATE"] = "True" if mode == "auto" else "False"
     os.environ["SECAGENT_POLICY_MODEL"] = policy_model
@@ -110,6 +111,7 @@ def _worker_result(
     asr_values = list(attacked["security_results"].values())
     return {
         "suite": suite,
+        "elapsed_sec": round(time.time() - start, 1),
         "Utility": round(sum(1 for v in utility_values if v) / len(utility_values) * 100, 2) if utility_values else 0.0,
         "Utility_under_attack": round(sum(1 for v in ua_values if v) / len(ua_values) * 100, 2) if ua_values else 0.0,
         "Targeted_ASR": round(sum(1 for v in asr_values if v) / len(asr_values) * 100, 2) if asr_values else 0.0,
@@ -234,6 +236,13 @@ def main() -> None:
         "ASR": round(asr_ok / asr_total * 100, 2) if asr_total else 0.0,
         "TPR": None,
         "FPR": None,
+        "counts": {
+            "benign_total": utility_total,
+            "benign_success": utility_ok,
+            "attacked_total": ua_total,
+            "attacked_utility_success": ua_ok,
+            "attacked_asr_success": asr_ok,
+        },
         "suites": {row["suite"]: row for row in suite_rows},
     }
 

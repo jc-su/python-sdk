@@ -3,62 +3,62 @@
     "baseline": {
       "description": "baseline (1 tool, 1 rule, no allowlist)",
       "n_samples": 100000,
-      "mean_us": 1.114,
-      "std_us": 0.167,
-      "p50_us": 1.087,
-      "p95_us": 1.294,
-      "p99_us": 1.432,
-      "min_us": 0.964,
-      "max_us": 16.276
+      "mean_us": 1.069,
+      "std_us": 0.288,
+      "p50_us": 1.053,
+      "p95_us": 1.165,
+      "p99_us": 1.301,
+      "min_us": 0.951,
+      "max_us": 81.269
     },
     "allowlist_10": {
       "description": "10 tools, allowlist",
       "n_samples": 100000,
-      "mean_us": 1.144,
-      "std_us": 0.239,
-      "p50_us": 1.119,
-      "p95_us": 1.311,
-      "p99_us": 1.466,
-      "min_us": 1.0,
-      "max_us": 55.797
+      "mean_us": 1.108,
+      "std_us": 0.189,
+      "p50_us": 1.092,
+      "p95_us": 1.195,
+      "p99_us": 1.332,
+      "min_us": 0.984,
+      "max_us": 39.35
     },
     "allowlist_100": {
       "description": "100 tools, allowlist",
       "n_samples": 100000,
-      "mean_us": 1.15,
-      "std_us": 0.148,
-      "p50_us": 1.129,
-      "p95_us": 1.305,
-      "p99_us": 1.449,
-      "min_us": 0.987,
-      "max_us": 14.475
+      "mean_us": 1.124,
+      "std_us": 0.305,
+      "p50_us": 1.107,
+      "p95_us": 1.221,
+      "p99_us": 1.348,
+      "min_us": 0.993,
+      "max_us": 82.564
     },
     "allowlist_args_100": {
       "description": "100 tools, allowlist + arg constraints",
       "n_samples": 100000,
-      "mean_us": 1.512,
-      "std_us": 0.225,
-      "p50_us": 1.487,
-      "p95_us": 1.697,
-      "p99_us": 1.873,
-      "min_us": 1.305,
-      "max_us": 43.683
+      "mean_us": 1.494,
+      "std_us": 0.166,
+      "p50_us": 1.472,
+      "p95_us": 1.656,
+      "p99_us": 1.841,
+      "min_us": 1.296,
+      "max_us": 14.026
     },
     "rules_100": {
       "description": "100 tools, 100 rules (worst-case match)",
       "n_samples": 100000,
-      "mean_us": 27.412,
-      "std_us": 6.311,
-      "p50_us": 27.363,
-      "p95_us": 28.513,
-      "p99_us": 31.065,
-      "min_us": 25.737,
-      "max_us": 1926.84
+      "mean_us": 27.58,
+      "std_us": 3.855,
+      "p50_us": 27.58,
+      "p95_us": 28.642,
+      "p99_us": 30.808,
+      "min_us": 26.106,
+      "max_us": 1008.762
     }
   },
   "throughput": {
-    "calls_per_sec": 969204,
-    "total_calls": 1939000,
+    "calls_per_sec": 976697,
+    "total_calls": 1954000,
     "duration_sec": 2.0
   },
   "memory": {
@@ -77,22 +77,22 @@
   },
   "scalability": {
     "by_tools": {
-      "1": 1.074,
-      "5": 1.099,
-      "10": 1.088,
-      "50": 1.084,
-      "100": 1.087,
-      "500": 1.084,
-      "1000": 1.081
+      "1": 1.04,
+      "5": 1.054,
+      "10": 1.053,
+      "50": 1.056,
+      "100": 1.059,
+      "500": 1.056,
+      "1000": 1.051
     },
     "by_rules": {
-      "1": 1.046,
-      "5": 2.191,
-      "10": 3.596,
-      "50": 15.21,
-      "100": 27.707,
-      "500": 134.635,
-      "1000": 269.829
+      "1": 1.002,
+      "5": 2.113,
+      "10": 3.611,
+      "50": 14.84,
+      "100": 28.027,
+      "500": 137.214,
+      "1000": 268.608
     }
   },
   "pysa_offline": {

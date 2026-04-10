@@ -1,0 +1,14 @@
+\begin{table}[t]
+\centering
+\caption{Downstream next-LLM payload growth induced by prompt-based defenses on real cached AgentDojo traces. This captures the prompt expansion that is not visible in the local hook microbenchmark.}
+\label{tab:system-hook-payload}
+\small
+\begin{tabular}{lrrrr}
+\toprule
+\textbf{Method} & \textbf{$\Delta$ chars p50} & \textbf{$\Delta$ chars p95} & \textbf{Growth p50} & \textbf{Growth p95} \\
+\midrule
+Repeat Prompt & 131 & 514 & 1.087x & 1.348x \\
+Spotlighting & 185 & 205 & 1.112x & 1.250x \\
+\bottomrule
+\end{tabular}
+\end{table}

@@ -1,0 +1,1358 @@
+{
+  "schema_version": "system_hook_worker_load_v1",
+  "model": "gpt-4o-2024-08-06",
+  "attack": "important_instructions",
+  "worker_counts": [
+    4,
+    8,
+    16
+  ],
+  "duration_sec_per_point": 2.0,
+  "sample_limit_per_worker": 5000,
+  "methods": {
+    "repeat_user_prompt": {
+      "available": true,
+      "points": [
+        {
+          "workers": 4,
+          "duration_sec": 2.001,
+          "completed_ops": 2048335,
+          "throughput_ops_per_sec": 1023720.311,
+          "latency_us": {
+            "n_samples": 20000,
+            "p50": 1.282,
+            "p95": 1.561,
+            "p99": 1.682
+          },
+          "worker_meta": [
+            {
+              "suite": "banking",
+              "items": 250
+            },
+            {
+              "suite": "slack",
+              "items": 250
+            },
+            {
+              "suite": "travel",
+              "items": 207
+            },
+            {
+              "suite": "workspace",
+              "items": 250
+            }
+          ]
+        },
+        {
+          "workers": 8,
+          "duration_sec": 2.0,
+          "completed_ops": 1747863,
+          "throughput_ops_per_sec": 873731.746,
+          "latency_us": {
+            "n_samples": 40000,
+            "p50": 1.313,
+            "p95": 1.632,
+            "p99": 1.821
+          },
+          "worker_meta": [
+            {
+              "suite": "banking",
+              "items": 250
+            },
+            {
+              "suite": "travel",
+              "items": 207
+            },
+            {
+              "suite": "slack",
+              "items": 250
+            },
+            {
+              "suite": "workspace",
+              "items": 250
+            },
+            {
+              "suite": "travel",
+              "items": 207
+            },
+            {
+              "suite": "workspace",
+              "items": 250
+            },
+            {
+              "suite": "slack",
+              "items": 250
+            },
+            {
+              "suite": "banking",
+              "items": 250
+            }
+          ]
+        },
+        {
+          "workers": 16,
+          "duration_sec": 2.001,
+          "completed_ops": 1609983,
+          "throughput_ops_per_sec": 804672.136,
+          "latency_us": {
+            "n_samples": 80000,
+            "p50": 1.307,
+            "p95": 1.603,
+            "p99": 2.607
+          },
+          "worker_meta": [
+            {
+              "suite": "banking",
+              "items": 250
+            },
+            {
+              "suite": "slack",
+              "items": 250
+            },
+            {
+              "suite": "travel",
+              "items": 207
+            },
+            {
+              "suite": "workspace",
+              "items": 250
+            },
+            {
+              "suite": "workspace",
+              "items": 250
+            },
+            {
+              "suite": "travel",
+              "items": 207
+            },
+            {
+              "suite": "travel",
+              "items": 207
+            },
+            {
+              "suite": "banking",
+              "items": 250
+            },
+            {
+              "suite": "workspace",
+              "items": 250
+            },
+            {
+              "suite": "workspace",
+              "items": 250
+            },
+            {
+              "suite": "banking",
+              "items": 250
+            },
+            {
+              "suite": "slack",
+              "items": 250
+            },
+            {
+              "suite": "slack",
+              "items": 250
+            },
+            {
+              "suite": "travel",
+              "items": 207
+            },
+            {
+              "suite": "banking",
+              "items": 250
+            },
+            {
+              "suite": "slack",
+              "items": 250
+            }
+          ]
+        }
+      ]
+    },
+    "spotlighting_with_delimiting": {
+      "available": true,
+      "points": [
+        {
+          "workers": 4,
+          "duration_sec": 2.001,
+          "completed_ops": 2218100,
+          "throughput_ops_per_sec": 1108611.925,
+          "latency_us": {
+            "n_samples": 20000,
+            "p50": 0.158,
+            "p95": 0.28,
+            "p99": 0.379
+          },
+          "worker_meta": [
+            {
+              "suite": "banking",
+              "items": 250
+            },
+            {
+              "suite": "slack",
+              "items": 250
+            },
+            {
+              "suite": "travel",
+              "items": 191
+            },
+            {
+              "suite": "workspace",
+              "items": 250
+            }
+          ]
+        },
+        {
+          "workers": 8,
+          "duration_sec": 2.001,
+          "completed_ops": 1856586,
+          "throughput_ops_per_sec": 927975.516,
+          "latency_us": {
+            "n_samples": 40000,
+            "p50": 0.159,
+            "p95": 0.274,
+            "p99": 0.379
+          },
+          "worker_meta": [
+            {
+              "suite": "banking",
+              "items": 250
+            },
+            {
+              "suite": "slack",
+              "items": 250
+            },
+            {
+              "suite": "travel",
+              "items": 191
+            },
+            {
+              "suite": "workspace",
+              "items": 250
+            },
+            {
+              "suite": "banking",
+              "items": 250
+            },
+            {
+              "suite": "slack",
+              "items": 250
+            },
+            {
+              "suite": "workspace",
+              "items": 250
+            },
+            {
+              "suite": "travel",
+              "items": 191
+            }
+          ]
+        },
+        {
+          "workers": 16,
+          "duration_sec": 2.001,
+          "completed_ops": 1825621,
+          "throughput_ops_per_sec": 912369.25,
+          "latency_us": {
+            "n_samples": 80000,
+            "p50": 0.156,
+            "p95": 0.275,
+            "p99": 0.394
+          },
+          "worker_meta": [
+            {
+              "suite": "slack",
+              "items": 250
+            },
+            {
+              "suite": "travel",
+              "items": 191
+            },
+            {
+              "suite": "banking",
+              "items": 250
+            },
+            {
+              "suite": "travel",
+              "items": 191
+            },
+            {
+              "suite": "banking",
+              "items": 250
+            },
+            {
+              "suite": "workspace",
+              "items": 250
+            },
+            {
+              "suite": "workspace",
+              "items": 250
+            },
+            {
+              "suite": "workspace",
+              "items": 250
+            },
+            {
+              "suite": "slack",
+              "items": 250
+            },
+            {
+              "suite": "workspace",
+              "items": 250
+            },
+            {
+              "suite": "banking",
+              "items": 250
+            },
+            {
+              "suite": "slack",
+              "items": 250
+            },
+            {
+              "suite": "travel",
+              "items": 191
+            },
+            {
+              "suite": "banking",
+              "items": 250
+            },
+            {
+              "suite": "slack",
+              "items": 250
+            },
+            {
+              "suite": "travel",
+              "items": 191
+            }
+          ]
+        }
+      ]
+    },
+    "tool_filter": {
+      "available": true,
+      "points": [
+        {
+          "workers": 4,
+          "duration_sec": 2.001,
+          "completed_ops": 1754452,
+          "throughput_ops_per_sec": 876865.556,
+          "latency_us": {
+            "n_samples": 20000,
+            "p50": 2.551,
+            "p95": 2.804,
+            "p99": 3.02
+          },
+          "worker_meta": [
+            {
+              "suite": "slack",
+              "items": 126
+            },
+            {
+              "suite": "travel",
+              "items": 39
+            },
+            {
+              "suite": "workspace",
+              "items": 250
+            },
+            {
+              "suite": "banking",
+              "items": 160
+            }
+          ]
+        },
+        {
+          "workers": 8,
+          "duration_sec": 2.001,
+          "completed_ops": 1650837,
+          "throughput_ops_per_sec": 825106.677,
+          "latency_us": {
+            "n_samples": 40000,
+            "p50": 2.587,
+            "p95": 2.907,
+            "p99": 3.156
+          },
+          "worker_meta": [
+            {
+              "suite": "banking",
+              "items": 160
+            },
+            {
+              "suite": "workspace",
+              "items": 250
+            },
+            {
+              "suite": "travel",
+              "items": 39
+            },
+            {
+              "suite": "workspace",
+              "items": 250
+            },
+            {
+              "suite": "slack",
+              "items": 126
+            },
+            {
+              "suite": "banking",
+              "items": 160
+            },
+            {
+              "suite": "slack",
+              "items": 126
+            },
+            {
+              "suite": "travel",
+              "items": 39
+            }
+          ]
+        },
+        {
+          "workers": 16,
+          "duration_sec": 2.001,
+          "completed_ops": 1380450,
+          "throughput_ops_per_sec": 689896.029,
+          "latency_us": {
+            "n_samples": 80000,
+            "p50": 2.593,
+            "p95": 2.994,
+            "p99": 6.117
+          },
+          "worker_meta": [
+            {
+              "suite": "travel",
+              "items": 39
+            },
+            {
+              "suite": "slack",
+              "items": 126
+            },
+            {
+              "suite": "banking",
+              "items": 160
+            },
+            {
+              "suite": "workspace",
+              "items": 250
+            },
+            {
+              "suite": "travel",
+              "items": 39
+            },
+            {
+              "suite": "workspace",
+              "items": 250
+            },
+            {
+              "suite": "workspace",
+              "items": 250
+            },
+            {
+              "suite": "workspace",
+              "items": 250
+            },
+            {
+              "suite": "travel",
+              "items": 39
+            },
+            {
+              "suite": "banking",
+              "items": 160
+            },
+            {
+              "suite": "banking",
+              "items": 160
+            },
+            {
+              "suite": "banking",
+              "items": 160
+            },
+            {
+              "suite": "slack",
+              "items": 126
+            },
+            {
+              "suite": "slack",
+              "items": 126
+            },
+            {
+              "suite": "slack",
+              "items": 126
+            },
+            {
+              "suite": "travel",
+              "items": 39
+            }
+          ]
+        }
+      ]
+    },
+    "transformers_pi_detector": {
+      "available": true,
+      "points": [
+        {
+          "workers": 4,
+          "duration_sec": 2.001,
+          "completed_ops": 31,
+          "throughput_ops_per_sec": 15.495,
+          "latency_us": {
+            "n_samples": 31,
+            "p50": 217407.567,
+            "p95": 527729.147,
+            "p99": 543420.147
+          },
+          "worker_meta": [
+            {
+              "suite": "slack",
+              "items": 250
+            },
+            {
+              "suite": "travel",
+              "items": 191
+            },
+            {
+              "suite": "workspace",
+              "items": 250
+            },
+            {
+              "suite": "banking",
+              "items": 250
+            }
+          ]
+        },
+        {
+          "workers": 8,
+          "duration_sec": 2.001,
+          "completed_ops": 63,
+          "throughput_ops_per_sec": 31.488,
+          "latency_us": {
+            "n_samples": 63,
+            "p50": 231412.232,
+            "p95": 518640.908,
+            "p99": 573649.742
+          },
+          "worker_meta": [
+            {
+              "suite": "slack",
+              "items": 250
+            },
+            {
+              "suite": "slack",
+              "items": 250
+            },
+            {
+              "suite": "workspace",
+              "items": 250
+            },
+            {
+              "suite": "travel",
+              "items": 191
+            },
+            {
+              "suite": "workspace",
+              "items": 250
+            },
+            {
+              "suite": "travel",
+              "items": 191
+            },
+            {
+              "suite": "banking",
+              "items": 250
+            },
+            {
+              "suite": "banking",
+              "items": 250
+            }
+          ]
+        },
+        {
+          "workers": 16,
+          "duration_sec": 2.001,
+          "completed_ops": 123,
+          "throughput_ops_per_sec": 61.476,
+          "latency_us": {
+            "n_samples": 123,
+            "p50": 222975.221,
+            "p95": 562924.113,
+            "p99": 905592.968
+          },
+          "worker_meta": [
+            {
+              "suite": "slack",
+              "items": 250
+            },
+            {
+              "suite": "slack",
+              "items": 250
+            },
+            {
+              "suite": "slack",
+              "items": 250
+            },
+            {
+              "suite": "slack",
+              "items": 250
+            },
+            {
+              "suite": "workspace",
+              "items": 250
+            },
+            {
+              "suite": "workspace",
+              "items": 250
+            },
+            {
+              "suite": "workspace",
+              "items": 250
+            },
+            {
+              "suite": "workspace",
+              "items": 250
+            },
+            {
+              "suite": "travel",
+              "items": 191
+            },
+            {
+              "suite": "travel",
+              "items": 191
+            },
+            {
+              "suite": "travel",
+              "items": 191
+            },
+            {
+              "suite": "travel",
+              "items": 191
+            },
+            {
+              "suite": "banking",
+              "items": 250
+            },
+            {
+              "suite": "banking",
+              "items": 250
+            },
+            {
+              "suite": "banking",
+              "items": 250
+            },
+            {
+              "suite": "banking",
+              "items": 250
+            }
+          ]
+        }
+      ]
+    },
+    "trustfncall_trace_args": {
+      "available": true,
+      "points": [
+        {
+          "workers": 4,
+          "duration_sec": 2.001,
+          "completed_ops": 2036175,
+          "throughput_ops_per_sec": 1017715.044,
+          "latency_us": {
+            "n_samples": 20000,
+            "p50": 1.496,
+            "p95": 2.061,
+            "p99": 2.44
+          },
+          "worker_meta": [
+            {
+              "suite": "banking",
+              "items": 478,
+              "registered_tools": 11,
+              "allowed_tools": 1,
+              "arg_constraints": null
+            },
+            {
+              "suite": "slack",
+              "items": 908,
+              "registered_tools": 11,
+              "allowed_tools": 3,
+              "arg_constraints": 1
+            },
+            {
+              "suite": "travel",
+              "items": 1095,
+              "registered_tools": 28,
+              "allowed_tools": 5,
+              "arg_constraints": null
+            },
+            {
+              "suite": "workspace",
+              "items": 705,
+              "registered_tools": 24,
+              "allowed_tools": 2,
+              "arg_constraints": 1
+            }
+          ]
+        },
+        {
+          "workers": 8,
+          "duration_sec": 2.001,
+          "completed_ops": 1549219,
+          "throughput_ops_per_sec": 774285.817,
+          "latency_us": {
+            "n_samples": 40000,
+            "p50": 1.556,
+            "p95": 2.129,
+            "p99": 2.52
+          },
+          "worker_meta": [
+            {
+              "suite": "slack",
+              "items": 908,
+              "registered_tools": 11,
+              "allowed_tools": 3,
+              "arg_constraints": 1
+            },
+            {
+              "suite": "banking",
+              "items": 478,
+              "registered_tools": 11,
+              "allowed_tools": 1,
+              "arg_constraints": null
+            },
+            {
+              "suite": "slack",
+              "items": 908,
+              "registered_tools": 11,
+              "allowed_tools": 3,
+              "arg_constraints": 1
+            },
+            {
+              "suite": "travel",
+              "items": 1095,
+              "registered_tools": 28,
+              "allowed_tools": 5,
+              "arg_constraints": null
+            },
+            {
+              "suite": "banking",
+              "items": 478,
+              "registered_tools": 11,
+              "allowed_tools": 1,
+              "arg_constraints": null
+            },
+            {
+              "suite": "workspace",
+              "items": 705,
+              "registered_tools": 24,
+              "allowed_tools": 2,
+              "arg_constraints": 1
+            },
+            {
+              "suite": "travel",
+              "items": 1095,
+              "registered_tools": 28,
+              "allowed_tools": 5,
+              "arg_constraints": null
+            },
+            {
+              "suite": "workspace",
+              "items": 705,
+              "registered_tools": 24,
+              "allowed_tools": 2,
+              "arg_constraints": 1
+            }
+          ]
+        },
+        {
+          "workers": 16,
+          "duration_sec": 2.001,
+          "completed_ops": 1435944,
+          "throughput_ops_per_sec": 717659.981,
+          "latency_us": {
+            "n_samples": 80000,
+            "p50": 1.549,
+            "p95": 2.177,
+            "p99": 3.535
+          },
+          "worker_meta": [
+            {
+              "suite": "slack",
+              "items": 908,
+              "registered_tools": 11,
+              "allowed_tools": 3,
+              "arg_constraints": 1
+            },
+            {
+              "suite": "banking",
+              "items": 478,
+              "registered_tools": 11,
+              "allowed_tools": 1,
+              "arg_constraints": null
+            },
+            {
+              "suite": "slack",
+              "items": 908,
+              "registered_tools": 11,
+              "allowed_tools": 3,
+              "arg_constraints": 1
+            },
+            {
+              "suite": "banking",
+              "items": 478,
+              "registered_tools": 11,
+              "allowed_tools": 1,
+              "arg_constraints": null
+            },
+            {
+              "suite": "banking",
+              "items": 478,
+              "registered_tools": 11,
+              "allowed_tools": 1,
+              "arg_constraints": null
+            },
+            {
+              "suite": "banking",
+              "items": 478,
+              "registered_tools": 11,
+              "allowed_tools": 1,
+              "arg_constraints": null
+            },
+            {
+              "suite": "slack",
+              "items": 908,
+              "registered_tools": 11,
+              "allowed_tools": 3,
+              "arg_constraints": 1
+            },
+            {
+              "suite": "slack",
+              "items": 908,
+              "registered_tools": 11,
+              "allowed_tools": 3,
+              "arg_constraints": 1
+            },
+            {
+              "suite": "travel",
+              "items": 1095,
+              "registered_tools": 28,
+              "allowed_tools": 5,
+              "arg_constraints": null
+            },
+            {
+              "suite": "travel",
+              "items": 1095,
+              "registered_tools": 28,
+              "allowed_tools": 5,
+              "arg_constraints": null
+            },
+            {
+              "suite": "travel",
+              "items": 1095,
+              "registered_tools": 28,
+              "allowed_tools": 5,
+              "arg_constraints": null
+            },
+            {
+              "suite": "travel",
+              "items": 1095,
+              "registered_tools": 28,
+              "allowed_tools": 5,
+              "arg_constraints": null
+            },
+            {
+              "suite": "workspace",
+              "items": 705,
+              "registered_tools": 24,
+              "allowed_tools": 2,
+              "arg_constraints": 1
+            },
+            {
+              "suite": "workspace",
+              "items": 705,
+              "registered_tools": 24,
+              "allowed_tools": 2,
+              "arg_constraints": 1
+            },
+            {
+              "suite": "workspace",
+              "items": 705,
+              "registered_tools": 24,
+              "allowed_tools": 2,
+              "arg_constraints": 1
+            },
+            {
+              "suite": "workspace",
+              "items": 705,
+              "registered_tools": 24,
+              "allowed_tools": 2,
+              "arg_constraints": 1
+            }
+          ]
+        }
+      ]
+    },
+    "trustfncall_manual": {
+      "available": true,
+      "points": [
+        {
+          "workers": 4,
+          "duration_sec": 2.001,
+          "completed_ops": 1926398,
+          "throughput_ops_per_sec": 962868.67,
+          "latency_us": {
+            "n_samples": 20000,
+            "p50": 1.494,
+            "p95": 1.955,
+            "p99": 2.258
+          },
+          "worker_meta": [
+            {
+              "suite": "slack",
+              "items": 908,
+              "registered_tools": 11,
+              "allowed_tools": 11,
+              "arg_constraints": 3
+            },
+            {
+              "suite": "banking",
+              "items": 478,
+              "registered_tools": 11,
+              "allowed_tools": 11,
+              "arg_constraints": 3
+            },
+            {
+              "suite": "travel",
+              "items": 1095,
+              "registered_tools": 28,
+              "allowed_tools": 28,
+              "arg_constraints": 1
+            },
+            {
+              "suite": "workspace",
+              "items": 705,
+              "registered_tools": 24,
+              "allowed_tools": 24,
+              "arg_constraints": 4
+            }
+          ]
+        },
+        {
+          "workers": 8,
+          "duration_sec": 2.001,
+          "completed_ops": 1493191,
+          "throughput_ops_per_sec": 746294.397,
+          "latency_us": {
+            "n_samples": 40000,
+            "p50": 1.639,
+            "p95": 2.204,
+            "p99": 3.252
+          },
+          "worker_meta": [
+            {
+              "suite": "banking",
+              "items": 478,
+              "registered_tools": 11,
+              "allowed_tools": 11,
+              "arg_constraints": 3
+            },
+            {
+              "suite": "slack",
+              "items": 908,
+              "registered_tools": 11,
+              "allowed_tools": 11,
+              "arg_constraints": 3
+            },
+            {
+              "suite": "travel",
+              "items": 1095,
+              "registered_tools": 28,
+              "allowed_tools": 28,
+              "arg_constraints": 1
+            },
+            {
+              "suite": "banking",
+              "items": 478,
+              "registered_tools": 11,
+              "allowed_tools": 11,
+              "arg_constraints": 3
+            },
+            {
+              "suite": "workspace",
+              "items": 705,
+              "registered_tools": 24,
+              "allowed_tools": 24,
+              "arg_constraints": 4
+            },
+            {
+              "suite": "workspace",
+              "items": 705,
+              "registered_tools": 24,
+              "allowed_tools": 24,
+              "arg_constraints": 4
+            },
+            {
+              "suite": "travel",
+              "items": 1095,
+              "registered_tools": 28,
+              "allowed_tools": 28,
+              "arg_constraints": 1
+            },
+            {
+              "suite": "slack",
+              "items": 908,
+              "registered_tools": 11,
+              "allowed_tools": 11,
+              "arg_constraints": 3
+            }
+          ]
+        },
+        {
+          "workers": 16,
+          "duration_sec": 2.001,
+          "completed_ops": 1448666,
+          "throughput_ops_per_sec": 723976.685,
+          "latency_us": {
+            "n_samples": 80000,
+            "p50": 1.602,
+            "p95": 2.131,
+            "p99": 4.988
+          },
+          "worker_meta": [
+            {
+              "suite": "banking",
+              "items": 478,
+              "registered_tools": 11,
+              "allowed_tools": 11,
+              "arg_constraints": 3
+            },
+            {
+              "suite": "slack",
+              "items": 908,
+              "registered_tools": 11,
+              "allowed_tools": 11,
+              "arg_constraints": 3
+            },
+            {
+              "suite": "banking",
+              "items": 478,
+              "registered_tools": 11,
+              "allowed_tools": 11,
+              "arg_constraints": 3
+            },
+            {
+              "suite": "banking",
+              "items": 478,
+              "registered_tools": 11,
+              "allowed_tools": 11,
+              "arg_constraints": 3
+            },
+            {
+              "suite": "travel",
+              "items": 1095,
+              "registered_tools": 28,
+              "allowed_tools": 28,
+              "arg_constraints": 1
+            },
+            {
+              "suite": "travel",
+              "items": 1095,
+              "registered_tools": 28,
+              "allowed_tools": 28,
+              "arg_constraints": 1
+            },
+            {
+              "suite": "travel",
+              "items": 1095,
+              "registered_tools": 28,
+              "allowed_tools": 28,
+              "arg_constraints": 1
+            },
+            {
+              "suite": "banking",
+              "items": 478,
+              "registered_tools": 11,
+              "allowed_tools": 11,
+              "arg_constraints": 3
+            },
+            {
+              "suite": "slack",
+              "items": 908,
+              "registered_tools": 11,
+              "allowed_tools": 11,
+              "arg_constraints": 3
+            },
+            {
+              "suite": "slack",
+              "items": 908,
+              "registered_tools": 11,
+              "allowed_tools": 11,
+              "arg_constraints": 3
+            },
+            {
+              "suite": "slack",
+              "items": 908,
+              "registered_tools": 11,
+              "allowed_tools": 11,
+              "arg_constraints": 3
+            },
+            {
+              "suite": "workspace",
+              "items": 705,
+              "registered_tools": 24,
+              "allowed_tools": 24,
+              "arg_constraints": 4
+            },
+            {
+              "suite": "travel",
+              "items": 1095,
+              "registered_tools": 28,
+              "allowed_tools": 28,
+              "arg_constraints": 1
+            },
+            {
+              "suite": "workspace",
+              "items": 705,
+              "registered_tools": 24,
+              "allowed_tools": 24,
+              "arg_constraints": 4
+            },
+            {
+              "suite": "workspace",
+              "items": 705,
+              "registered_tools": 24,
+              "allowed_tools": 24,
+              "arg_constraints": 4
+            },
+            {
+              "suite": "workspace",
+              "items": 705,
+              "registered_tools": 24,
+              "allowed_tools": 24,
+              "arg_constraints": 4
+            }
+          ]
+        }
+      ]
+    },
+    "progent_manual_check_tool_call": {
+      "available": true,
+      "points": [
+        {
+          "workers": 4,
+          "duration_sec": 2.001,
+          "completed_ops": 485681,
+          "throughput_ops_per_sec": 242754.805,
+          "latency_us": {
+            "n_samples": 20000,
+            "p50": 0.573,
+            "p95": 307.735,
+            "p99": 629.205
+          },
+          "worker_meta": [
+            {
+              "suite": "banking",
+              "items": 478,
+              "available_tools": 11,
+              "policy_entries": 10
+            },
+            {
+              "suite": "slack",
+              "items": 908,
+              "available_tools": 11,
+              "policy_entries": 13
+            },
+            {
+              "suite": "workspace",
+              "items": 705,
+              "available_tools": 24,
+              "policy_entries": 21
+            },
+            {
+              "suite": "travel",
+              "items": 1095,
+              "available_tools": 28,
+              "policy_entries": 23
+            }
+          ]
+        },
+        {
+          "workers": 8,
+          "duration_sec": 2.001,
+          "completed_ops": 925753,
+          "throughput_ops_per_sec": 462677.303,
+          "latency_us": {
+            "n_samples": 40000,
+            "p50": 0.601,
+            "p95": 310.197,
+            "p99": 635.244
+          },
+          "worker_meta": [
+            {
+              "suite": "banking",
+              "items": 478,
+              "available_tools": 11,
+              "policy_entries": 10
+            },
+            {
+              "suite": "banking",
+              "items": 478,
+              "available_tools": 11,
+              "policy_entries": 10
+            },
+            {
+              "suite": "slack",
+              "items": 908,
+              "available_tools": 11,
+              "policy_entries": 13
+            },
+            {
+              "suite": "slack",
+              "items": 908,
+              "available_tools": 11,
+              "policy_entries": 13
+            },
+            {
+              "suite": "workspace",
+              "items": 705,
+              "available_tools": 24,
+              "policy_entries": 21
+            },
+            {
+              "suite": "workspace",
+              "items": 705,
+              "available_tools": 24,
+              "policy_entries": 21
+            },
+            {
+              "suite": "travel",
+              "items": 1095,
+              "available_tools": 28,
+              "policy_entries": 23
+            },
+            {
+              "suite": "travel",
+              "items": 1095,
+              "available_tools": 28,
+              "policy_entries": 23
+            }
+          ]
+        },
+        {
+          "workers": 16,
+          "duration_sec": 2.001,
+          "completed_ops": 1496427,
+          "throughput_ops_per_sec": 747894.741,
+          "latency_us": {
+            "n_samples": 80000,
+            "p50": 0.638,
+            "p95": 317.195,
+            "p99": 653.704
+          },
+          "worker_meta": [
+            {
+              "suite": "banking",
+              "items": 478,
+              "available_tools": 11,
+              "policy_entries": 10
+            },
+            {
+              "suite": "banking",
+              "items": 478,
+              "available_tools": 11,
+              "policy_entries": 10
+            },
+            {
+              "suite": "banking",
+              "items": 478,
+              "available_tools": 11,
+              "policy_entries": 10
+            },
+            {
+              "suite": "banking",
+              "items": 478,
+              "available_tools": 11,
+              "policy_entries": 10
+            },
+            {
+              "suite": "slack",
+              "items": 908,
+              "available_tools": 11,
+              "policy_entries": 13
+            },
+            {
+              "suite": "slack",
+              "items": 908,
+              "available_tools": 11,
+              "policy_entries": 13
+            },
+            {
+              "suite": "slack",
+              "items": 908,
+              "available_tools": 11,
+              "policy_entries": 13
+            },
+            {
+              "suite": "workspace",
+              "items": 705,
+              "available_tools": 24,
+              "policy_entries": 21
+            },
+            {
+              "suite": "travel",
+              "items": 1095,
+              "available_tools": 28,
+              "policy_entries": 23
+            },
+            {
+              "suite": "workspace",
+              "items": 705,
+              "available_tools": 24,
+              "policy_entries": 21
+            },
+            {
+              "suite": "travel",
+              "items": 1095,
+              "available_tools": 28,
+              "policy_entries": 23
+            },
+            {
+              "suite": "workspace",
+              "items": 705,
+              "available_tools": 24,
+              "policy_entries": 21
+            },
+            {
+              "suite": "travel",
+              "items": 1095,
+              "available_tools": 28,
+              "policy_entries": 23
+            },
+            {
+              "suite": "workspace",
+              "items": 705,
+              "available_tools": 24,
+              "policy_entries": 21
+            },
+            {
+              "suite": "slack",
+              "items": 908,
+              "available_tools": 11,
+              "policy_entries": 13
+            },
+            {
+              "suite": "travel",
+              "items": 1095,
+              "available_tools": 28,
+              "policy_entries": 23
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "notes": [
+    "These figures are real offline closed-loop worker-count benchmarks on cached real AgentDojo artifacts.",
+    "Each worker initializes the actual local hook, waits on a start barrier, then executes until the stop signal.",
+    "Worker counts are balanced across the four AgentDojo suites so every point preserves the same suite mix.",
+    "No remote LLM/API latency is included; Tool Filter remains local request-prep only, and MELON is excluded.",
+    "Observed p95 latency is estimated from per-worker reservoir samples collected during the load run."
+  ]
+}

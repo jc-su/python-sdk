@@ -1,0 +1,14 @@
+\begin{table}[t]
+\centering
+\caption{Remote-LLM-driven hook cost for Tool Filter on real cached AgentDojo tasks. Local latency measures only request construction; the actual hook also incurs one extra OpenAI API call per scenario.}
+\label{tab:system-hook-remote-llm}
+\small
+\begin{tabular}{lrrrrr}
+\toprule
+\textbf{Method} & \textbf{Extra LLM Calls} & \textbf{Prep p50} & \textbf{Prep p95} & \textbf{Req. p50} & \textbf{Req. p95} \\
+ & \textbf{/ scenario} & ($\mu$s) & ($\mu$s) & (chars) & (chars) \\
+\midrule
+Tool Filter & 1 & 2.38 & 2.52 & 14340 & 17289 \\
+\bottomrule
+\end{tabular}
+\end{table}

@@ -46,6 +46,7 @@ CONFIGS = [
     ("trustfncall_trace_args", True, True, "trace"),
     ("trustfncall_trace_hybrid", True, False, "trace_hybrid"),
     ("trustfncall_trace_hybrid_args", True, True, "trace_hybrid"),
+    ("trustfncall_manual", True, True, "manual"),
 ]
 
 

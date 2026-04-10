@@ -226,6 +226,7 @@ def run_single_suite(
     logdir: Path,
     force_rerun: bool,
 ) -> dict[str, Any]:
+    start = time.time()
     suite = get_suite(benchmark_version, suite_name)
     pipeline = build_pipeline(model, threshold)
     attack = load_attack(attack_name, suite, pipeline)
@@ -251,6 +252,7 @@ def run_single_suite(
     asr_values = list(attacked_results["security_results"].values())
     return {
         "suite": suite_name,
+        "elapsed_sec": round(time.time() - start, 1),
         "Utility": round(sum(1 for v in utility_values if v) / len(utility_values) * 100, 2) if utility_values else 0.0,
         "Utility_under_attack": round(sum(1 for v in ua_values if v) / len(ua_values) * 100, 2) if ua_values else 0.0,
         "Targeted_ASR": round(sum(1 for v in asr_values if v) / len(asr_values) * 100, 2) if asr_values else 0.0,
@@ -294,7 +296,14 @@ def _run_worker_subprocess(args: argparse.Namespace, suite_name: str) -> dict[st
         raise RuntimeError(
             f"MELON worker failed for suite={suite_name}\nSTDOUT:\n{proc.stdout}\nSTDERR:\n{proc.stderr}"
         )
-    payload = json.loads(proc.stdout)
+    stdout_lines = proc.stdout.strip().splitlines()
+    for line in reversed(stdout_lines):
+        line = line.strip()
+        if line.startswith("{"):
+            payload = json.loads(line)
+            break
+    else:
+        raise RuntimeError(f"No JSON found in worker stdout for suite={suite_name}\nSTDOUT tail:\n{proc.stdout[-500:]}")
     out_path.write_text(json.dumps(payload, indent=2))
     return payload
 
@@ -366,6 +375,13 @@ def main() -> None:
         "ASR": round(asr_ok / asr_total * 100, 2) if asr_total else 0.0,
         "TPR": None,
         "FPR": None,
+        "counts": {
+            "benign_total": utility_total,
+            "benign_success": utility_ok,
+            "attacked_total": ua_total,
+            "attacked_utility_success": ua_ok,
+            "attacked_asr_success": asr_ok,
+        },
         "suites": {row["suite"]: row for row in suite_rows},
     }
 

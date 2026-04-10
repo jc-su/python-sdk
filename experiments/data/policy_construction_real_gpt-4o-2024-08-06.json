@@ -1,0 +1,109 @@
+{
+  "schema_version": "policy_construction_real_v1",
+  "model": "gpt-4o-2024-08-06",
+  "attack": "important_instructions",
+  "pysa_offline": {
+    "elapsed_sec": 329.701,
+    "n_tool_rows": 84,
+    "stdout_tail": [
+      "=== web ===",
+      "  standardize_url                          \u2192 (none)",
+      "  post_webpage                             \u2192 (none)",
+      "  get_webpage                              \u2192 (none)",
+      "  download_file                            \u2192 (none)",
+      "",
+      "================================================================================",
+      "PYSA ANALYSIS: 0/84 tools with capabilities detected (329.6s)",
+      "================================================================================",
+      "Saved to /home/jcsu/Dev/tee-mcp/mcp-sdk-fork/experiments/pysa_agentdojo_results.json"
+    ]
+  },
+  "policy_materialization": {
+    "trace_policy_ms": {
+      "n_samples": 97,
+      "mean": 0.079,
+      "std": 0.041,
+      "p50": 0.073,
+      "p95": 0.119,
+      "p99": 0.347,
+      "min": 0.024,
+      "max": 0.347
+    },
+    "suite_policy_ms": {
+      "n_samples": 4,
+      "mean": 0.493,
+      "std": 0.244,
+      "p50": 0.601,
+      "p95": 0.771,
+      "p99": 0.771,
+      "min": 0.214,
+      "max": 0.771
+    },
+    "manual_policy_ms": {
+      "n_samples": 4,
+      "mean": 0.045,
+      "std": 0.017,
+      "p50": 0.057,
+      "p95": 0.062,
+      "p99": 0.062,
+      "min": 0.029,
+      "max": 0.062
+    },
+    "n_baseline_task_files": 97
+  },
+  "preflight_trace_proxy": {
+    "note": "This uses real baseline task files and normalizes by scenario count to estimate the cost of one clean preflight scenario. Dedicated benign-only reruns can replace it.",
+    "per_scenario_elapsed_sec_proxy": {
+      "n_samples": 97,
+      "mean": 4.278,
+      "std": 1.817,
+      "p50": 3.983,
+      "p95": 7.675,
+      "p99": 9.412,
+      "min": 1.429,
+      "max": 9.412
+    },
+    "by_suite_elapsed_sec_proxy": {
+      "banking": {
+        "n_samples": 16,
+        "mean": 3.382,
+        "std": 1.072,
+        "p50": 3.41,
+        "p95": 5.9,
+        "p99": 5.9,
+        "min": 1.62,
+        "max": 5.9
+      },
+      "slack": {
+        "n_samples": 21,
+        "mean": 4.627,
+        "std": 1.349,
+        "p50": 4.1,
+        "p95": 6.733,
+        "p99": 7.267,
+        "min": 2.283,
+        "max": 7.267
+      },
+      "travel": {
+        "n_samples": 20,
+        "mean": 6.226,
+        "std": 1.568,
+        "p50": 6.225,
+        "p95": 9.412,
+        "p99": 9.412,
+        "min": 4.263,
+        "max": 9.412
+      },
+      "workspace": {
+        "n_samples": 40,
+        "mean": 3.478,
+        "std": 1.598,
+        "p50": 3.2,
+        "p95": 7.371,
+        "p99": 8.071,
+        "min": 1.429,
+        "max": 8.071
+      }
+    }
+  }
+}

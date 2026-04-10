@@ -99,29 +99,51 @@ CAP_MAP = {c.value: c for c in TC}
 pysa_raw = json.loads((ROOT / "pysa_agentdojo_results.json").read_text())
 PYSA_CAPS: dict[str, set[TC]] = {tool: {CAP_MAP[c] for c in caps if c in CAP_MAP} for tool, caps in pysa_raw.items()}
 
-SENSITIVE_PARAMS: dict[str, list[str]] = {
-    "send_money": ["recipient"],
-    "schedule_transaction": ["recipient"],
-    "update_scheduled_transaction": ["recipient"],
-    "send_email": ["recipients"],
-    "send_direct_message": ["recipient"],
-    "send_channel_message": ["channel"],
-    "share_file": ["email"],
-    "reserve_hotel": ["hotel"],
-    "reserve_restaurant": ["restaurant_name"],
-    "reserve_car_rental": ["car_rental_company"],
-    "get_webpage": ["url"],
-    "post_webpage": ["url"],
-    "create_calendar_event": ["participants"],
-    "update_password": ["password"],
-    "delete_file": ["file_id"],
-    "delete_email": ["email_id"],
+# ---------------------------------------------------------------------------
+# Pysa-driven sensitive parameter selection
+#
+# Each capability category maps to argument names that carry security impact.
+# When Pysa identifies a tool as having a certain capability, we automatically
+# constrain the corresponding params — no per-tool hand-crafting needed.
+# ---------------------------------------------------------------------------
+
+CAPABILITY_SENSITIVE_ARGS: dict[TC, list[str]] = {
+    TC.CROSS_BOUNDARY_EGRESS: ["recipients", "recipient", "url", "email", "channel", "participants"],
+    TC.VALUE_TRANSFER: ["recipient", "amount", "hotel", "restaurant_name", "car_rental_company"],
+    TC.IDENTITY_ADMIN: ["user_email", "user", "email"],
+    TC.DATA_DESTRUCTION: ["file_id", "email_id", "event_id", "user"],
+    TC.CREDENTIAL_ACCESS: ["password"],
+    TC.WRITE_MUTATE: ["participants"],
+    TC.EXTERNAL_INGESTION: ["url"],
 }
 
 READ_ONLY_CAPS = {
     TC.READ_PRIVATE,
     TC.READ_PUBLIC,
     TC.READ_IDENTITY,
+}
+
+
+def _get_sensitive_params(tool_name: str) -> list[str]:
+    """Derive which params to constrain from the tool's Pysa capability categories.
+
+    This replaces a hand-written per-tool mapping: Pysa tells us the tool has
+    CROSS_BOUNDARY_EGRESS, so we automatically constrain recipients/url/body.
+    """
+    caps = PYSA_CAPS.get(tool_name, set())
+    params: list[str] = []
+    seen: set[str] = set()
+    for cap in caps:
+        for param in CAPABILITY_SENSITIVE_ARGS.get(cap, []):
+            if param not in seen:
+                params.append(param)
+                seen.add(param)
+    return params
+
+
+# Build the full SENSITIVE_PARAMS table from Pysa results (computed, not hand-crafted)
+SENSITIVE_PARAMS: dict[str, list[str]] = {
+    tool: _get_sensitive_params(tool) for tool in PYSA_CAPS if _get_sensitive_params(tool)
 }
 
 
@@ -291,6 +313,133 @@ class AuthorizedTraceExecutor(BasePipelineElement):
             )
 
         return query, runtime, env, [*messages, *tool_call_results], extra_args
+
+
+MANUAL_POLICIES: dict[str, dict[str, dict[str, frozenset[str]]]] = {
+    "banking": {
+        "send_money": {
+            "recipient": frozenset([
+                "UK12345678901234567890", "GB29NWBK60161331926819",
+                "SE3550000000054910000003", "US122000000121212121212",
+                "CA133012400231215421872",
+            ]),
+        },
+        "schedule_transaction": {
+            "recipient": frozenset([
+                "UK12345678901234567890", "GB29NWBK60161331926819",
+                "SE3550000000054910000003", "US122000000121212121212",
+                "CA133012400231215421872",
+            ]),
+        },
+        "update_scheduled_transaction": {
+            "recipient": frozenset([
+                "UK12345678901234567890", "GB29NWBK60161331926819",
+                "SE3550000000054910000003", "US122000000121212121212",
+                "CA133012400231215421872",
+            ]),
+        },
+    },
+    "workspace": {
+        "send_email": {
+            "recipients": frozenset([
+                "john.mitchell@gmail.com", "david.smith@bluesparrowtech.com",
+                "david.lee@bluesparrowtech.com", "linda.green@luesparrowtech.com",
+                "mark.roberts@luesparrowtech.com", "sarah.connor@gmail.com",
+                "emma.johnson@bluesparrowtech.com", "martha.raynolds@gmail.com",
+                "mark.davies@hotmail.com", "sarah.baker@gmail.com",
+                "john.doe@clientcorp.com", "maria.garcia@bluesparrowtech.com",
+                "john.doe@gmail.com", "james.miller@yahoo.com",
+            ]),
+        },
+        "create_calendar_event": {
+            "participants": frozenset([
+                "john.mitchell@gmail.com", "david.smith@bluesparrowtech.com",
+                "david.lee@bluesparrowtech.com", "linda.green@luesparrowtech.com",
+                "mark.roberts@luesparrowtech.com", "sarah.connor@gmail.com",
+                "emma.johnson@bluesparrowtech.com", "martha.raynolds@gmail.com",
+                "mark.davies@hotmail.com", "sarah.baker@gmail.com",
+                "john.doe@clientcorp.com", "maria.garcia@bluesparrowtech.com",
+                "john.doe@gmail.com", "james.miller@yahoo.com",
+                "mark.black-2134@gmail.com",
+            ]),
+        },
+        "add_calendar_event_participants": {
+            "participants": frozenset([
+                "john.mitchell@gmail.com", "david.smith@bluesparrowtech.com",
+                "david.lee@bluesparrowtech.com", "linda.green@luesparrowtech.com",
+                "mark.roberts@luesparrowtech.com", "sarah.connor@gmail.com",
+                "emma.johnson@bluesparrowtech.com", "martha.raynolds@gmail.com",
+                "mark.davies@hotmail.com", "sarah.baker@gmail.com",
+                "john.doe@clientcorp.com", "maria.garcia@bluesparrowtech.com",
+                "john.doe@gmail.com", "james.miller@yahoo.com",
+            ]),
+        },
+        "share_file": {
+            "email": frozenset([
+                "john.mitchell@gmail.com", "david.smith@bluesparrowtech.com",
+                "david.lee@bluesparrowtech.com", "linda.green@luesparrowtech.com",
+                "mark.roberts@luesparrowtech.com", "sarah.connor@gmail.com",
+                "emma.johnson@bluesparrowtech.com", "martha.raynolds@gmail.com",
+                "mark.davies@hotmail.com", "sarah.baker@gmail.com",
+                "john.doe@clientcorp.com", "maria.garcia@bluesparrowtech.com",
+                "john.doe@gmail.com", "james.miller@yahoo.com",
+            ]),
+        },
+    },
+    "slack": {
+        "invite_user_to_slack": {
+            "user_email": frozenset(["dora@gmail.com"]),
+        },
+        "get_webpage": {
+            "url": frozenset([
+                "www.informations.com", "www.dora-website.com",
+                "www.our-company.com", "www.eve-blog.com",
+                "www.restaurant-zurich.com", "www.company-todo-list.com",
+            ]),
+        },
+        "post_webpage": {
+            "url": frozenset([
+                "www.informations.com", "www.dora-website.com",
+                "www.our-company.com", "www.eve-blog.com",
+                "www.restaurant-zurich.com", "www.company-todo-list.com",
+            ]),
+        },
+    },
+    "travel": {
+        "send_email": {
+            "recipients": frozenset(["janeLong@google.com", "janelong@google.com"]),
+        },
+    },
+}
+
+
+def build_manual_policy(suite, env) -> AuthorizationManager:
+    """Build a manual per-suite policy with domain-specific argument constraints.
+
+    These policies reflect the security requirements of each application domain:
+    banking restricts recipients to known accounts, workspace restricts email
+    to known contacts, slack restricts URLs to known domains, etc.
+
+    This is equivalent to Progent's manually-written policies (Section 5.2).
+    """
+    suite_name = suite.name
+    all_tools = {t.name for t in suite.tools}
+    benign_caps = frozenset().union(*(PYSA_CAPS.get(t, set()) for t in all_tools))
+
+    mgr = AuthorizationManager()
+    for tool in suite.tools:
+        mgr.register_tool(tool.name, tool.description or tool.name,
+                          capabilities_override=PYSA_CAPS.get(tool.name, set()))
+
+    arg_constraints = MANUAL_POLICIES.get(suite_name, {})
+
+    mgr.add_rule(AccessRule(
+        subject_pattern="*",
+        allowed_capabilities=benign_caps,
+        allowed_tools=frozenset(all_tools),
+        argument_constraints=arg_constraints if arg_constraints else None,
+    ))
+    return mgr
 
 
 def build_policy(suite, user_task, env, use_args: bool, policy_scope: str) -> AuthorizationManager:
@@ -470,7 +619,9 @@ def run_attacked(
 
             for injection_task_id, injection_task in suite.injection_tasks.items():
                 if use_defense:
-                    if policy_scope in {"trace", "trace_hybrid"}:
+                    if policy_scope == "manual":
+                        mgr = build_manual_policy(suite, env)
+                    elif policy_scope in {"trace", "trace_hybrid"}:
                         trace_events = (preflight_trace_map or {}).get((suite_name, user_task.ID), [])
                         mgr = build_policy_from_trace(suite, env, trace_events, use_args, policy_scope)
                     else:
@@ -531,7 +682,9 @@ def run_benign_no_attack(
         print(f"\n=== Benign {suite_name} ===")
         for user_task in selected_tasks:
             if use_defense:
-                if policy_scope in {"trace", "trace_hybrid"}:
+                if policy_scope == "manual":
+                    mgr = build_manual_policy(suite, env)
+                elif policy_scope in {"trace", "trace_hybrid"}:
                     trace_events = (preflight_trace_map or {}).get((suite_name, user_task.ID), [])
                     mgr = build_policy_from_trace(suite, env, trace_events, use_args, policy_scope)
                 else:
@@ -626,7 +779,7 @@ def main() -> None:
     parser.add_argument("--suites", nargs="+", default=["banking", "workspace", "slack", "travel"])
     parser.add_argument("--no-defense", action="store_true")
     parser.add_argument("--use-args", action="store_true")
-    parser.add_argument("--policy-scope", choices=["task", "suite", "trace", "trace_hybrid"], default="task")
+    parser.add_argument("--policy-scope", choices=["task", "suite", "trace", "trace_hybrid", "manual"], default="task")
     parser.add_argument("--user-tasks", nargs="+", default=None)
     parser.add_argument("--logdir", default=None)
     args = parser.parse_args()

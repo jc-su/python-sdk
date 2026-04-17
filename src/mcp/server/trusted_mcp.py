@@ -62,7 +62,7 @@ class TrustedMCP(MCPServer):
             allowed_client_rtmr3: Allowed RTMR3 patterns for MCP Client
             rtmr3_transition_policy: Policy for RTMR3 changes: accept/reject/log_and_accept
             policy_registry: PolicyRegistry for per-workload attestation policies
-            authority_subject: Override attestation authority subject (default: cgroup://<cgroup>)
+            authority_subject: Override attestation authority subject (default: workload://<workload_id> if set, else cgroup://<cgroup>)
             authorization_manager: AuthorizationManager for semantic tool authorization
             **kwargs: Additional MCPServer arguments
         """

@@ -115,6 +115,44 @@ class TrustdClient:
         """
         return self._call("RestartContainer", {"cgroup_path": cgroup_path})
 
+    def attest_workload(
+        self,
+        workload_id: str,
+        nonce: bytes,
+        peer_pk: bytes = b"",
+    ) -> dict[str, Any]:
+        """Produce a canonical attestation bundle for `workload_id`.
+
+        Mirrors trustd.AttestWorkload gRPC: looks up the current cgroup from
+        the workload's stable name, reads the kernel's per-container event
+        log, and generates a TDX quote whose report_data binds `nonce` and
+        (optionally) `peer_pk`. The fork's process cannot read securityfs
+        directly (root-only, 0440), so this hop via the privileged trustd
+        daemon is the only path to assemble verifier-ready evidence.
+
+        Returns a dict with the exact fields of AttestWorkloadResponse:
+            workload_id, cgroup_path, nonce_hex, td_quote (bytes),
+            event_log (bytes), report_data_hex, timestamp.
+        """
+        import base64
+
+        if not workload_id:
+            raise ValueError("workload_id is required")
+        if not nonce:
+            raise ValueError("nonce is required")
+
+        params: dict[str, Any] = {
+            "workload_id": workload_id,
+            "nonce_hex": nonce.hex(),
+        }
+        if peer_pk:
+            params["peer_pk"] = base64.b64encode(peer_pk).decode()
+
+        result = self._call("AttestWorkload", params)
+        result["td_quote"] = base64.b64decode(result.get("td_quote", ""))
+        result["event_log"] = base64.b64decode(result.get("event_log", ""))
+        return result
+
     def ping(self) -> dict[str, Any]:
         """Ping trustd. Returns version, uptime_seconds, containers_tracked."""
         return self._call("Ping", {})

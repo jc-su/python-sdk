@@ -64,21 +64,66 @@ def subject_for_cgroup(cgroup: str | None) -> str:
 
 
 def cgroup_from_subject(subject: str | None) -> str:
-    """Extract canonical cgroup path from cgroup:// subject."""
+    """Extract canonical cgroup path from cgroup:// subject.
+
+    Returns "" for any other scheme (including the canonical workload://).
+    """
     raw_subject = (subject or "").strip()
     if not raw_subject.startswith("cgroup://"):
         return ""
     return normalize_cgroup_path(raw_subject)
 
 
-def normalize_authority_subject(subject: str | None, *, cgroup: str) -> str:
-    """Normalize authority subject, defaulting to canonical cgroup subject."""
+def subject_for_workload(workload_id: str | None) -> str:
+    """Build canonical attestation subject for a stable workload identity.
+
+    `workload://<id>` is the canonical subject used by the new AS.VerifyWorkload
+    RPC and by trustd.AttestWorkload — stable across container restarts,
+    unlike `cgroup://` which is tied to an ephemeral cgroup path.
+    """
+    identity = (workload_id or "").strip()
+    if not identity:
+        return ""
+    if identity.startswith("workload://"):
+        identity = identity[len("workload://") :]
+    return f"workload://{identity}"
+
+
+def workload_from_subject(subject: str | None) -> str:
+    """Extract the workload identity from a workload:// subject.
+
+    Returns "" for any other scheme.
+    """
     raw_subject = (subject or "").strip()
-    if not raw_subject:
-        return subject_for_cgroup(cgroup)
-    if raw_subject.startswith("cgroup://") or raw_subject.startswith("/"):
-        return subject_for_cgroup(raw_subject)
-    return raw_subject
+    if not raw_subject.startswith("workload://"):
+        return ""
+    return raw_subject[len("workload://") :]
+
+
+def normalize_authority_subject(
+    subject: str | None,
+    *,
+    cgroup: str = "",
+    workload_id: str = "",
+) -> str:
+    """Normalize an authority subject.
+
+    Resolution order:
+      1. Explicit `subject` — passed through if already a `workload://` or
+         `cgroup://` URL, rewritten to `cgroup://` when a bare path is given.
+      2. Fall back to `workload_id` (preferred, stable identity) → `workload://`.
+      3. Fall back to `cgroup` (legacy, ephemeral) → `cgroup://`.
+    """
+    raw_subject = (subject or "").strip()
+    if raw_subject:
+        if raw_subject.startswith("workload://"):
+            return subject_for_workload(raw_subject)
+        if raw_subject.startswith("cgroup://") or raw_subject.startswith("/"):
+            return subject_for_cgroup(raw_subject)
+        return raw_subject
+    if workload_id:
+        return subject_for_workload(workload_id)
+    return subject_for_cgroup(cgroup)
 
 
 @dataclass

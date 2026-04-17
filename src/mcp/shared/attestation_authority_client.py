@@ -211,9 +211,9 @@ class AttestationAuthorityClient:
         if channel is None:
             return None
         return channel.unary_unary(
-            "/attestation.v1.AttestationService/VerifyContainerEvidence",
-            request_serializer=self._pb2.VerifyRequest.SerializeToString,
-            response_deserializer=self._pb2.VerifyResponse.FromString,
+            "/attestation.v1.AttestationService/VerifyWorkload",
+            request_serializer=self._pb2.VerifyWorkloadRequest.SerializeToString,
+            response_deserializer=self._pb2.VerifyWorkloadResponse.FromString,
         )
 
     def _get_health_rpc(self) -> Any | None:
@@ -281,18 +281,26 @@ class AttestationAuthorityClient:
 
         return self._to_authority_verdict(response)
 
-    def verify_mcp_evidence(
+    def verify_workload_evidence(
         self,
         *,
-        cgroup_path: str,
-        rtmr3: bytes,
+        workload_id: str,
+        td_quote: bytes,
+        event_log: bytes,
         nonce: bytes,
-        quote: bytes,
-        quote_report_data: bytes,
-        public_key_bytes: bytes,
-        initial_rtmr3: bytes | None = None,
+        peer_pk: bytes,
     ) -> AuthorityEvidenceResult | None:
-        """Verify MCP quote evidence through attestation-service."""
+        """Verify per-workload evidence through attestation-service.
+
+        Mirrors the trustd.AttestWorkload → AttestationService.VerifyWorkload
+        pipeline. Caller assembles evidence (td_quote + kernel per-container
+        event_log) and submits it under the stable `workload_id` identity.
+
+        Returns None when:
+          - the client is disabled (no TEE_MCP_ATTESTATION_SERVICE_ADDR),
+          - grpc is unavailable,
+          - the RPC fails (e.g. network, backend error).
+        """
         if not self.enabled:
             return None
 
@@ -300,31 +308,28 @@ class AttestationAuthorityClient:
         if rpc is None:
             return None
 
-        if len(rtmr3) != 48:
-            logger.warning("verify_mcp_evidence invalid RTMR3 length: %d", len(rtmr3))
+        if not workload_id:
+            logger.warning("verify_workload_evidence missing workload_id")
             return None
-        if len(quote_report_data) != 64:
-            logger.warning("verify_mcp_evidence invalid reportdata length: %d", len(quote_report_data))
+        if not nonce:
+            logger.warning("verify_workload_evidence missing nonce")
             return None
 
-        pubkey_hash_hex = hashlib.sha256(public_key_bytes).hexdigest()
-        request = self._pb2.VerifyRequest(
-            cgroup_path=cgroup_path or "unknown",
-            rtmr3=rtmr3.hex(),
-            initial_rtmr3=(initial_rtmr3.hex() if initial_rtmr3 is not None else ("00" * 48)),
-            nonce=nonce.hex(),
-            report_data=quote_report_data.hex(),
-            td_quote=quote,
-            container_image=f"{MCP_PUBKEY_HASH_PREFIX}{pubkey_hash_hex}",
+        request = self._pb2.VerifyWorkloadRequest(
+            workload_id=workload_id,
+            td_quote=td_quote,
+            event_log=event_log,
+            nonce_hex=nonce.hex(),
+            peer_pk=peer_pk,
         )
 
         try:
             response = rpc(request, timeout=self._timeout_s)
         except self._grpc.RpcError as error:  # type: ignore[union-attr]
-            logger.warning("VerifyContainerEvidence failed for cgroup=%s: %s", cgroup_path, error)
+            logger.warning("VerifyWorkload failed for workload=%s: %s", workload_id, error)
             return None
         except Exception:
-            logger.warning("VerifyContainerEvidence failed for cgroup=%s", cgroup_path, exc_info=True)
+            logger.warning("VerifyWorkload failed for workload=%s", workload_id, exc_info=True)
             return None
 
         return self._to_evidence_result(response)

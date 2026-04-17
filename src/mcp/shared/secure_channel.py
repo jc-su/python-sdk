@@ -38,6 +38,7 @@ import enum
 import hashlib
 import hmac
 import logging
+import os
 import secrets
 import time
 from dataclasses import dataclass, field
@@ -80,15 +81,22 @@ class AttestationResult:
 @dataclass
 class AttestationEvidence:
     """TEE attestation evidence for a single party.
+
+    The canonical subject is `workload_id` (stable across restarts). `cgroup`
+    is retained for audit / legacy ingestion paths but is NOT used for trust
+    decisions. `event_log` carries the kernel's per-container IMA log bytes
+    that the verifier replays against reference values.
     """
 
     quote: bytes  # TDX quote
     public_key: bytes  # X25519 raw public key (32 bytes)
     nonce: bytes  # Nonce this evidence responds to
-    cgroup: str  # Container cgroup
-    rtmr3: bytes  # Container's virtual RTMR3
+    cgroup: str  # Container cgroup (audit/trace only)
+    rtmr3: bytes  # Container's virtual RTMR3 (audit/trace only)
     timestamp_ms: int
     role: str = ""  # Role: "client", "server"
+    workload_id: str = ""  # Stable workload identity (primary subject)
+    event_log: bytes = b""  # Kernel per-container event log bytes
 
     def to_dict(self) -> dict[str, Any]:
         evidence_dict = {
@@ -99,11 +107,15 @@ class AttestationEvidence:
             "rtmr3": self.rtmr3.hex(),
             "timestamp_ms": self.timestamp_ms,
             "role": self.role,
+            "workload_id": self.workload_id,
+            "event_log": base64.b64encode(self.event_log).decode(),
         }
         return evidence_dict
 
     @classmethod
     def from_dict(cls, data: dict) -> AttestationEvidence:
+        event_log_b64 = data.get("event_log", "")
+        event_log = base64.b64decode(event_log_b64) if event_log_b64 else b""
         return cls(
             quote=base64.b64decode(data["quote"]),
             public_key=base64.b64decode(data["public_key"]),
@@ -112,6 +124,8 @@ class AttestationEvidence:
             rtmr3=bytes.fromhex(data["rtmr3"]),
             timestamp_ms=data["timestamp_ms"],
             role=data.get("role", ""),
+            workload_id=data.get("workload_id", ""),
+            event_log=event_log,
         )
 
 
@@ -170,7 +184,14 @@ def _verify_quote_via_authority(
     expected_nonce: bytes,
     quote_reportdata: bytes,
 ) -> tuple[bool, str]:
-    """Verify quote through attestation-service (when configured)."""
+    """Verify quote through attestation-service (when configured).
+
+    Migrated to the canonical `VerifyWorkload` RPC. Evidence is keyed by the
+    stable `workload_id` (from AttestationEvidence.workload_id; falls back
+    to the cgroup path only if the evidence predates the migration, which
+    will fail verification and is the intended "loud break" signal).
+    """
+    del quote_reportdata  # bound into the quote by trustd; AS re-derives
     try:
         from mcp.shared.attestation_authority_client import get_default_attestation_authority_client
     except Exception:
@@ -180,13 +201,15 @@ def _verify_quote_via_authority(
     if client is None or not client.enabled:
         return False, "Authority verifier not configured"
 
-    result = client.verify_mcp_evidence(
-        cgroup_path=evidence.cgroup,
-        rtmr3=evidence.rtmr3,
+    workload_id = getattr(evidence, "workload_id", "") or evidence.cgroup
+    event_log = getattr(evidence, "event_log", b"") or b""
+
+    result = client.verify_workload_evidence(
+        workload_id=workload_id,
+        td_quote=evidence.quote,
+        event_log=event_log,
         nonce=expected_nonce,
-        quote=evidence.quote,
-        quote_report_data=quote_reportdata,
-        public_key_bytes=evidence.public_key,
+        peer_pk=evidence.public_key,
     )
     if result is None:
         return False, "Authority verifier request failed"
@@ -508,14 +531,56 @@ class SecureEndpoint:
     def create_attestation(self, peer_nonce: bytes) -> AttestationEvidence:
         """Create attestation evidence responding to peer's nonce.
 
-        The quote binds: SHA256(peer_nonce) || SHA256(my_public_key).
+        Prefers the canonical trustd.AttestWorkload path when a workload_id
+        is configured (env `TEE_MCP_WORKLOAD_ID` or pre-set on the channel):
+        trustd bundles the TDX quote with the kernel's per-container event
+        log in a single call, which is the only path that populates
+        `event_log` correctly — the fork process cannot read securityfs
+        directly (root-only 0440).
+
+        Falls back to the legacy (quote-only, no event_log) path when no
+        workload_id is available; AS.VerifyWorkload will then return
+        Untrusted, which is the intended "loud break" signal.
         """
+        workload_id = (getattr(self, "workload_id", "") or os.environ.get("TEE_MCP_WORKLOAD_ID", "")).strip()
+        if workload_id:
+            from mcp.shared.trustd_client import get_trustd_client
+
+            client = get_trustd_client()
+            if client is not None:
+                try:
+                    bundle = client.attest_workload(
+                        workload_id=workload_id,
+                        nonce=peer_nonce,
+                        peer_pk=self.public_key_bytes,
+                    )
+                except Exception as e:
+                    logger.warning("trustd.AttestWorkload failed; falling back: %s", e)
+                else:
+                    quote_bytes: bytes = bundle["td_quote"]
+                    event_log: bytes = bundle.get("event_log", b"")
+                    cgroup = bundle.get("cgroup_path", "")
+                    rtmr3 = bytes(48)
+                    parsed = parse_quote(quote_bytes)
+                    if parsed is not None:
+                        rtmr3 = parsed.measurements.rtmr3
+                    return AttestationEvidence(
+                        quote=quote_bytes,
+                        public_key=self.public_key_bytes,
+                        nonce=peer_nonce,
+                        cgroup=cgroup,
+                        rtmr3=rtmr3,
+                        timestamp_ms=int(time.time() * 1000),
+                        role=self.role,
+                        workload_id=workload_id,
+                        event_log=event_log,
+                    )
+
+        # Legacy / fallback: quote-only (no event_log).
         reportdata = _bind_nonce_and_key(peer_nonce, self.public_key_bytes)
         quote = generate_quote(reportdata)
         cgroup = get_current_cgroup()
         rtmr3 = get_container_rtmr3(cgroup)
-
-        # Bind reported RTMR3 to the quote measurement
         parsed = parse_quote(quote)
         if parsed is not None:
             rtmr3 = parsed.measurements.rtmr3

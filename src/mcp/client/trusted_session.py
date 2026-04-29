@@ -89,6 +89,10 @@ class TrustedClientSession(ClientSession):
         tee_enabled: bool = True,
         allowed_server_rtmr3: list[str] | None = None,
         workload_id: str | None = None,
+        # Skip the authority hop on bootstrap-envelope verify (F1/F2/F3
+        # ablation parity with TEE_MCP_AUTHORITY_ENABLED=false on the server).
+        # Auto-resolves from TEE_MCP_AUTHORITY_ENABLED env var when None.
+        authority_enabled: bool | None = None,
         # JWT verification
         jwt_verifier: AuthorityJWTVerifier | None = None,
         require_valid_jwt: bool = False,
@@ -113,6 +117,17 @@ class TrustedClientSession(ClientSession):
         self._tee_enabled = tee_enabled
         self._allowed_server_rtmr3 = allowed_server_rtmr3
         self._workload_id = workload_id
+
+        # Resolve authority_enabled: explicit ctor arg > env > True (default).
+        if authority_enabled is None:
+            import os as _os
+            v = _os.environ.get("TEE_MCP_AUTHORITY_ENABLED")
+            if v is None:
+                self._authority_enabled = True
+            else:
+                self._authority_enabled = v.strip().lower() not in ("0", "false", "no", "off")
+        else:
+            self._authority_enabled = authority_enabled
 
         # TEE state
         self._endpoint: SecureEndpoint | None = None
@@ -203,8 +218,8 @@ class TrustedClientSession(ClientSession):
             types.InitializeResult,
         )
 
-        if result.protocolVersion not in SUPPORTED_PROTOCOL_VERSIONS:
-            raise RuntimeError(f"Unsupported protocol version: {result.protocolVersion}")
+        if result.protocol_version not in SUPPORTED_PROTOCOL_VERSIONS:
+            raise RuntimeError(f"Unsupported protocol version: {result.protocol_version}")
 
         self._server_capabilities = result.capabilities
 
@@ -304,6 +319,7 @@ class TrustedClientSession(ClientSession):
             valid, error = verify_bootstrap_envelope(
                 self._endpoint, server_tee,
                 peer_role="server", allowed_rtmr3=self._allowed_server_rtmr3,
+                authority_enabled=self._authority_enabled,
             )
             if not valid:
                 logger.error("Server per-call attestation failed: %s", error)
@@ -316,6 +332,7 @@ class TrustedClientSession(ClientSession):
             valid, error = verify_bootstrap_envelope(
                 self._endpoint, server_tee,
                 peer_role="server", allowed_rtmr3=self._allowed_server_rtmr3,
+                authority_enabled=self._authority_enabled,
             )
             if valid:
                 self._server_attested = True

@@ -31,8 +31,9 @@ def _make_evidence(nonce: bytes, rtmr3: bytes = RTMR3_A, cgroup: str = CGROUP_A)
     )
 
 
-def _always_valid(evidence, expected_nonce, allowed_rtmr3=None):
+def _always_valid(evidence, expected_nonce, allowed_rtmr3=None, *, authority_enabled=True):
     """Stub for _verify_attestation_evidence that always succeeds."""
+    del authority_enabled
     return True, "", evidence.public_key
 
 

@@ -47,6 +47,8 @@ class TrustedMCP(MCPServer):
         allowed_client_rtmr3: list[str] | None = None,
         rtmr3_transition_policy: str = "log_and_accept",
         policy_registry: Any = None,
+        quote_mode: str = "session",
+        authority_enabled: bool = True,
         authority_subject: str | None = None,
         authorization_manager: Any = None,
         **kwargs: Any,
@@ -62,16 +64,42 @@ class TrustedMCP(MCPServer):
             allowed_client_rtmr3: Allowed RTMR3 patterns for MCP Client
             rtmr3_transition_policy: Policy for RTMR3 changes: accept/reject/log_and_accept
             policy_registry: PolicyRegistry for per-workload attestation policies
+            quote_mode: Cadence of attestation evidence:
+                          - "none": skip all attestation (same as tee_enabled=False for tool calls)
+                          - "session": one quote at init, reused for the session (default)
+                          - "per_tool_first": RTMR3 verified on first call per tool, cached
+                          - "per_tool_every": RTMR3 verified before every tool call
+            authority_enabled: Consult the attestation-authority service for tool trust
+                               verdicts (default True when the service addr is set).
             authority_subject: Override attestation authority subject (default: workload://<workload_id> if set, else cgroup://<cgroup>)
             authorization_manager: AuthorizationManager for semantic tool authorization
             **kwargs: Additional MCPServer arguments
+
+        Env-var overrides (ablation): see mcp.server.tee_config. When set,
+        TEE_MCP_ENABLED, TEE_MCP_REQUIRE_CLIENT_ATTESTATION, TEE_MCP_QUOTE_MODE,
+        TEE_MCP_AUTHORITY_ENABLED, TEE_MCP_RTMR3_POLICY,
+        TEE_MCP_POLICY_REGISTRY, TEE_MCP_ALLOWED_CLIENT_RTMR3 each override
+        the matching ctor arg without requiring a code edit.
         """
-        # Store TEE settings before calling super().__init__
-        self._tee_enabled = tee_enabled
-        self._require_client_attestation = require_client_attestation
-        self._allowed_client_rtmr3 = allowed_client_rtmr3
-        self._rtmr3_transition_policy = rtmr3_transition_policy
-        self._policy_registry = policy_registry
+        from mcp.server.tee_config import resolve_from_env
+
+        _resolved = resolve_from_env(
+            tee_enabled=tee_enabled,
+            require_client_attestation=require_client_attestation,
+            quote_mode=quote_mode,
+            authority_enabled=authority_enabled,
+            rtmr3_transition_policy=rtmr3_transition_policy,
+            policy_registry=policy_registry,
+            allowed_client_rtmr3=allowed_client_rtmr3,
+        )
+        # Store TEE settings (env-resolved) before calling super().__init__
+        self._tee_enabled = _resolved["tee_enabled"]
+        self._require_client_attestation = _resolved["require_client_attestation"]
+        self._allowed_client_rtmr3 = _resolved["allowed_client_rtmr3"]
+        self._rtmr3_transition_policy = _resolved["rtmr3_transition_policy"]
+        self._policy_registry = _resolved["policy_registry"]
+        self._quote_mode = _resolved["quote_mode"]
+        self._authority_enabled = _resolved["authority_enabled"]
 
         self._authority_subject = authority_subject
         self._authorization_manager = authorization_manager
@@ -89,8 +117,21 @@ class TrustedMCP(MCPServer):
             from mcp.server.trusted_server import TrustedServer
             from mcp.server.trusted_session import TrustedServerSession
 
-            # Create ToolTrustManager for whitelist/blacklist fast-path
-            tool_trust_manager = self._create_tool_trust_manager()
+            # Create ToolTrustManager for whitelist/blacklist fast-path.
+            # When authority is disabled (F1/F2/F3 ablation), skip the
+            # manager: it requires either an authority client or a trustd
+            # fallback, and would set _configuration_error → fail-closed
+            # on every tool call.  TrustedServerSession's per-tool branch
+            # already guards on `_tool_trust_manager is not None`.
+            if self._authority_enabled:
+                tool_trust_manager = self._create_tool_trust_manager()
+            else:
+                tool_trust_manager = None
+                logger.info(
+                    "TEE_MCP_AUTHORITY_ENABLED=false: skipping ToolTrustManager "
+                    "(F1/F2/F3 ablation mode — bootstrap envelope still "
+                    "verifies RTMR3 + reportdata locally)"
+                )
 
             # Create JWT verifier for upstream token verification
             from mcp.shared.authority_jwt import get_default_jwt_verifier
@@ -104,6 +145,8 @@ class TrustedMCP(MCPServer):
                 "allowed_client_rtmr3": self._allowed_client_rtmr3,
                 "rtmr3_transition_policy": self._rtmr3_transition_policy,
                 "policy_registry": self._policy_registry,
+                "quote_mode": self._quote_mode,
+                "authority_enabled": self._authority_enabled,
                 "tool_trust_manager": tool_trust_manager,
                 "jwt_verifier": jwt_verifier,
                 "authorization_manager": self._authorization_manager,

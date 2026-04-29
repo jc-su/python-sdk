@@ -88,7 +88,11 @@ class MockSecureEndpoint:
         expected_nonce: bytes | None = None,
         peer_role: str = "default",
         allowed_rtmr3: list[str] | None = None,
+        *,
+        authority_enabled: bool = True,
     ) -> MockVerifyResult:
+        # Mock ignores authority_enabled — its verify is purely deterministic.
+        del authority_enabled
         if self._verify_valid:
             self.peers[peer_role] = MockPeer(cgroup=evidence.cgroup, rtmr3=evidence.rtmr3, role=evidence.role)
         return MockVerifyResult(valid=self._verify_valid, error=self._verify_error)
@@ -362,6 +366,119 @@ class TestBootstrapChallenge:
         assert "challenge" in tee_dict
         decoded = base64.b64decode(tee_dict["challenge"])
         assert decoded == challenge
+
+
+class TestAuthorityEnabledFlag:
+    """`authority_enabled` plumbs through the verify chain.
+
+    This is the F1/F2/F3 ablation switch — when False, the authority
+    quote-verification hop must be skipped (RTMR3 / report-data / parse
+    checks still apply).
+    """
+
+    def test_verify_attestation_evidence_skips_authority_when_disabled(self):
+        """_verify_attestation_evidence must NOT call _verify_quote_via_authority
+        when authority_enabled=False.  We assert the function never even
+        reaches the authority-call branch by patching it to fail loudly."""
+        from unittest.mock import patch as _patch
+
+        from mcp.shared.secure_channel import _verify_attestation_evidence
+
+        # Force-fail the authority call: if it gets called, the test fails.
+        def boom(*_, **__):
+            raise AssertionError("authority called despite authority_enabled=False")
+
+        # Build evidence that would otherwise pass everything except authority.
+        # We can't easily pre-build a real TDX quote; the test relies on the
+        # function bailing earlier on parse_quote, but we still want to prove
+        # the code path doesn't reach _verify_quote_via_authority. Use a fake
+        # AttestationEvidence + monkey-patch parse_quote to return a synthetic
+        # quote whose RTMR3 + reportdata match our nonce/key.
+        import time as _time
+
+        from mcp.shared.secure_channel import AttestationEvidence
+
+        nonce = b"\xab" * 32
+        pk = b"\xcd" * 32
+
+        class FakeMeasurements:
+            rtmr3 = b"\x11" * 48
+
+        class FakeQuote:
+            measurements = FakeMeasurements()
+            # reportdata = SHA384(nonce)[:32] || SHA384(pk)[:32]
+            import hashlib as _h
+
+            reportdata = _h.sha384(nonce).digest()[:32] + _h.sha384(pk).digest()[:32]
+
+        evidence = AttestationEvidence(
+            quote=b"<not-real-bytes>",
+            public_key=pk,
+            nonce=nonce,
+            cgroup="/test",
+            rtmr3=FakeMeasurements.rtmr3,
+            timestamp_ms=int(_time.time() * 1000),
+            role="server",
+        )
+
+        with (
+            _patch("mcp.shared.secure_channel.parse_quote", return_value=FakeQuote),
+            _patch("mcp.shared.secure_channel._verify_quote_via_authority", side_effect=boom),
+        ):
+            valid, err, pubkey = _verify_attestation_evidence(
+                evidence, nonce, authority_enabled=False
+            )
+        assert valid is True, f"expected valid; got {err!r}"
+        assert pubkey == pk
+
+    def test_verify_attestation_evidence_calls_authority_when_enabled(self):
+        """Sanity-check the contrapositive: authority_enabled=True must call
+        _verify_quote_via_authority."""
+        from unittest.mock import patch as _patch
+
+        from mcp.shared.secure_channel import _verify_attestation_evidence
+
+        called = {"n": 0}
+
+        def stub(*_, **__):
+            called["n"] += 1
+            return True, ""
+
+        import time as _time
+
+        from mcp.shared.secure_channel import AttestationEvidence
+
+        nonce = b"\xab" * 32
+        pk = b"\xcd" * 32
+
+        class FakeMeasurements:
+            rtmr3 = b"\x11" * 48
+
+        class FakeQuote:
+            measurements = FakeMeasurements()
+            import hashlib as _h
+
+            reportdata = _h.sha384(nonce).digest()[:32] + _h.sha384(pk).digest()[:32]
+
+        evidence = AttestationEvidence(
+            quote=b"<not-real-bytes>",
+            public_key=pk,
+            nonce=nonce,
+            cgroup="/test",
+            rtmr3=FakeMeasurements.rtmr3,
+            timestamp_ms=int(_time.time() * 1000),
+            role="server",
+        )
+
+        with (
+            _patch("mcp.shared.secure_channel.parse_quote", return_value=FakeQuote),
+            _patch("mcp.shared.secure_channel._verify_quote_via_authority", side_effect=stub),
+        ):
+            valid, _err, _pk = _verify_attestation_evidence(
+                evidence, nonce, authority_enabled=True
+            )
+        assert valid is True
+        assert called["n"] == 1
 
     def test_no_challenge_by_default(self):
         """No challenge field when not provided."""

@@ -118,6 +118,8 @@ class TrustedServerSession(ServerSession):
         allowed_client_rtmr3: list[str] | None = None,
         rtmr3_transition_policy: str = "log_and_accept",
         policy_registry: PolicyRegistry | None = None,
+        quote_mode: str = "session",
+        authority_enabled: bool = True,
         tool_trust_manager: ToolTrustManager | None = None,
         # JWT verification for upstream tokens
         jwt_verifier: AuthorityJWTVerifier | None = None,
@@ -127,17 +129,40 @@ class TrustedServerSession(ServerSession):
     ) -> None:
         super().__init__(read_stream, write_stream, init_options, stateless)
 
+        # Env-var overrides for ablation studies. See mcp.server.tee_config.
+        # Import here to keep module-load order clean.
+        from mcp.server.tee_config import resolve_from_env
+
+        _resolved = resolve_from_env(
+            tee_enabled=tee_enabled,
+            require_client_attestation=require_client_attestation,
+            quote_mode=quote_mode,
+            authority_enabled=authority_enabled,
+            rtmr3_transition_policy=rtmr3_transition_policy,
+            policy_registry=policy_registry,
+            allowed_client_rtmr3=allowed_client_rtmr3,
+        )
+
         # TEE settings
-        self._tee_enabled = tee_enabled
-        self._require_client_attestation = require_client_attestation
-        self._allowed_client_rtmr3 = allowed_client_rtmr3
-        self._rtmr3_transition_policy = rtmr3_transition_policy
-        self._policy_registry = policy_registry
+        self._tee_enabled = _resolved["tee_enabled"]
+        self._require_client_attestation = _resolved["require_client_attestation"]
+        self._allowed_client_rtmr3 = _resolved["allowed_client_rtmr3"]
+        self._rtmr3_transition_policy = _resolved["rtmr3_transition_policy"]
+        self._policy_registry = _resolved["policy_registry"]
+        self._quote_mode = _resolved["quote_mode"]
+        self._authority_enabled = _resolved["authority_enabled"]
+
         self._active_policy: AttestationPolicy | None = None
         self._tool_trust_manager: ToolTrustManager | None = tool_trust_manager
         self._jwt_verifier: AuthorityJWTVerifier | None = jwt_verifier
         self._require_upstream_jwt = require_upstream_jwt
         self._authorization_manager: AuthorizationManager | None = authorization_manager
+
+        # Per-tool RTMR3 cache for quote_mode in {per_tool_first, per_tool_every}.
+        # Key: tool_name; value: last-verified RTMR3 hex (96 chars). Used to
+        # detect drift between the session-init quote and subsequent tool
+        # dispatches without regenerating a full TDX quote each time.
+        self._tool_rtmr3_cache: dict[str, str] = {}
 
         # TEE state
         self._endpoint: SecureEndpoint | None = None
@@ -331,6 +356,23 @@ class TrustedServerSession(ServerSession):
                             )
                         return
 
+                # quote_mode per-tool policy: snapshot/verify RTMR3 via trustd.
+                # This runs BEFORE the encrypted-envelope decrypt below so an
+                # RTMR3-reject short-circuits before we pay AES-GCM cost.
+                if self._tee_enabled and self._quote_mode in ("per_tool_first", "per_tool_every"):
+                    ok, err = self._check_tool_rtmr3_policy(tool_name)
+                    if not ok:
+                        logger.error("Tool '%s' blocked by quote_mode=%s: %s",
+                                     tool_name, self._quote_mode, err)
+                        with responder:
+                            await responder.respond(
+                                ErrorData(
+                                    code=INVALID_REQUEST,
+                                    message=f"RTMR3 policy violation for tool '{tool_name}': {err}",
+                                )
+                            )
+                        return
+
                 # Tool calls get per-call TEE attestation + encryption
                 if self._tee_enabled and self._endpoint is not None:
                     if not self._verify_and_decrypt_request(responder):
@@ -340,6 +382,82 @@ class TrustedServerSession(ServerSession):
             case _:
                 # All other requests pass through without TEE
                 await super()._received_request(responder)
+
+    def _check_tool_rtmr3_policy(self, tool_name: str) -> tuple[bool, str | None]:
+        """Enforce quote_mode per-tool RTMR3 check via trustd.
+
+        Only called when self._quote_mode ∈ {per_tool_first, per_tool_every}.
+        Behaviour:
+
+          - per_tool_first: on first call per tool, snapshot current RTMR3
+            into self._tool_rtmr3_cache. Subsequent calls skip the RPC.
+          - per_tool_every: on every call, RPC to trustd.VerifyRtmr3 against
+            the cached (first-call) RTMR3. Mismatch goes through
+            self._rtmr3_transition_policy (accept / reject / log_and_accept).
+
+        Returns (ok, err_msg). `ok=False` blocks the tool call.
+
+        Graceful degradation: if trustd socket is unreachable or the
+        workload id isn't set (non-TD environments), the check is a
+        passthrough — we don't block the request; the ablation just
+        measures "no-op overhead" in that case.
+        """
+        # Soft import — avoids pulling trustd client at module load time.
+        import os
+
+        from mcp.shared.trustd_client import get_trustd_client
+
+        client = get_trustd_client()
+        if client is None:
+            return True, None  # no trustd socket — can't check, passthrough
+        workload_id = os.environ.get("TEE_MCP_WORKLOAD_ID", "")
+        if not workload_id:
+            return True, None  # not running under trustd — passthrough
+
+        cached = self._tool_rtmr3_cache.get(tool_name)
+
+        # per_tool_first short-circuits as soon as we have a snapshot.
+        if self._quote_mode == "per_tool_first" and cached:
+            return True, None
+
+        # Need an RPC. If we don't have a cached "expected" yet, use a
+        # sentinel of all-zeros so trustd's response `current_rtmr3_hex`
+        # becomes our snapshot. Subsequent per_tool_every calls then
+        # verify against that cached value.
+        expected = cached if cached else "0" * 96
+
+        try:
+            result = client.verify_rtmr3(workload_id, expected)
+        except Exception as exc:  # noqa: BLE001 — transport errors shouldn't block the request
+            logger.warning("verify_rtmr3 failed for %s: %s", tool_name, exc)
+            return True, None
+
+        current = result.get("current_rtmr3_hex", "")
+
+        # First-call snapshot: record and accept.
+        if not cached:
+            if current:
+                self._tool_rtmr3_cache[tool_name] = current
+            return True, None
+
+        # Subsequent call: compare.
+        if result.get("match", False):
+            return True, None
+
+        policy = self._rtmr3_transition_policy
+        msg = (
+            f"RTMR3 drift (tool={tool_name}): "
+            f"expected={expected[:16]}..., current={current[:16]}..."
+        )
+        if policy == "reject":
+            return False, msg
+        # accept / log_and_accept: permit the call; update cache so repeated
+        # drifts of the same magnitude don't spam logs.
+        if policy == "log_and_accept":
+            logger.warning(msg)
+        if current:
+            self._tool_rtmr3_cache[tool_name] = current
+        return True, None
 
     def _verify_and_decrypt_request(self, responder: RequestResponder[types.ClientRequest, types.ServerResult]) -> bool:
         """Verify client's _meta.tee from request and optionally decrypt params.
@@ -559,7 +677,7 @@ class TrustedServerSession(ServerSession):
         """Handle initialize request with TEE attestation via _meta.tee."""
         from mcp.shared.version import SUPPORTED_PROTOCOL_VERSIONS
 
-        requested_version = params.protocolVersion
+        requested_version = params.protocol_version
         self._initialization_state = InitializationState.Initializing
         self._client_params = params
 
@@ -603,7 +721,13 @@ class TrustedServerSession(ServerSession):
     def _verify_client_bootstrap(self, params: types.InitializeRequestParams) -> tuple[bytes, bytes] | None:
         """Verify client's _meta.tee from initialize request.
 
-        Returns (client_init_nonce, client_pubkey_raw) on success, or None.
+        Returns (client_init_nonce, client_pubkey_raw) when the client carried
+        valid bootstrap material that we can derive a session key from. We
+        still return the binding when authority verification of the client
+        fails as long as `require_client_attestation` is False — otherwise the
+        server's session KEK never gets established and every subsequent
+        encrypted tools/call decrypt fails. The strict-attestation check is
+        enforced separately via `_client_attested` on the InitializedNotification.
         """
         if not self._tee_enabled or self._endpoint is None:
             return None
@@ -628,18 +752,24 @@ class TrustedServerSession(ServerSession):
             tee_dict,
             peer_role="client",
             allowed_rtmr3=allowed_rtmr3,
+            authority_enabled=self._authority_enabled,
         )
         if valid:
             self._client_attested = True
             self._peer_verified = True
             logger.info("Client attested via initialize request")
-
-            client_init_nonce = base64.b64decode(tee_dict["sig_data"])
-            client_pubkey_raw = base64.b64decode(tee_dict["public_key"])
-            return (client_init_nonce, client_pubkey_raw)
         else:
             logger.warning("Client TEE verification failed in initialize: %s", error)
+            if self._require_client_attestation:
+                return None
+
+        try:
+            client_init_nonce = base64.b64decode(tee_dict["sig_data"])
+            client_pubkey_raw = base64.b64decode(tee_dict["public_key"])
+        except (KeyError, ValueError, TypeError) as binding_err:
+            logger.warning("Cannot extract client binding from tee_dict: %s", binding_err)
             return None
+        return (client_init_nonce, client_pubkey_raw)
 
     def _build_server_bootstrap(self, result_data: dict, client_binding: tuple[bytes, bytes] | None) -> None:
         """Create server TEE evidence, generate challenge, establish session.

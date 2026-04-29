@@ -168,14 +168,25 @@ class PeerStateChange:
 def _bind_nonce_and_key(nonce: bytes, public_key_raw: bytes) -> bytes:
     """Compute reportdata binding nonce and public key.
 
+    Must match trustd's `build_attest_bundle` layout (infra/trustd/src/
+    service.rs): first 32 bytes = SHA384(nonce)[:32], second 32 bytes =
+    SHA384(pk)[:32] if pk present, else zeros. Previous SHA256 form
+    disagreed with the bytes trustd actually embeds in the TDX quote, so
+    every client-side verify_peer_attestation hit "Reportdata mismatch".
+
     Args:
         nonce: Random nonce bytes.
         public_key_raw: Raw X25519 public key bytes (32 bytes).
 
     Returns:
-        64 bytes: SHA256(nonce) || SHA256(public_key_raw)
+        64 bytes: SHA384(nonce)[:32] || SHA384(public_key_raw)[:32]
     """
-    return hashlib.sha256(nonce).digest() + hashlib.sha256(public_key_raw).digest()
+    nonce_hash = hashlib.sha384(nonce).digest()[:32]
+    if public_key_raw:
+        pk_hash = hashlib.sha384(public_key_raw).digest()[:32]
+    else:
+        pk_hash = b"\x00" * 32
+    return nonce_hash + pk_hash
 
 
 def _verify_quote_via_authority(
@@ -225,12 +236,16 @@ def _verify_attestation_evidence(
     evidence: AttestationEvidence,
     expected_nonce: bytes,
     allowed_rtmr3: list[str] | None = None,
+    *,
+    authority_enabled: bool = True,
 ) -> tuple[bool, str, bytes | None]:
     """Verify attestation evidence.
 
-    Authority-only mode:
-    - reportdata = SHA256(nonce) || SHA256(pubkey)
-    - quote is always verified via attestation-service.
+    When `authority_enabled=True` (the production default), the TDX quote
+    signature is verified via attestation-service.  When False (F1/F2/F3
+    ablation), the authority hop is skipped — RTMR3 binding, reportdata
+    binding, and freshness still apply, so the call is not "unverified",
+    just "not authority-verified".
 
     Returns: (valid, error, public_key_raw)
     """
@@ -256,13 +271,14 @@ def _verify_attestation_evidence(
     if not hmac.compare_digest(quote.reportdata, expected_reportdata):
         return False, "Reportdata mismatch - nonce/key not bound correctly", None
 
-    valid, err = _verify_quote_via_authority(
-        evidence,
-        expected_nonce=expected_nonce,
-        quote_reportdata=quote.reportdata,
-    )
-    if not valid:
-        return False, f"Authority quote verification failed: {err}", None
+    if authority_enabled:
+        valid, err = _verify_quote_via_authority(
+            evidence,
+            expected_nonce=expected_nonce,
+            quote_reportdata=quote.reportdata,
+        )
+        if not valid:
+            return False, f"Authority quote verification failed: {err}", None
 
     # Check RTMR3 patterns (ALWAYS checked)
     if allowed_rtmr3:
@@ -601,10 +617,16 @@ class SecureEndpoint:
         expected_nonce: bytes | None = None,
         peer_role: str = "default",
         allowed_rtmr3: list[str] | None = None,
+        *,
+        authority_enabled: bool = True,
     ) -> AttestationResult:
         """Verify peer's attestation evidence.
 
         On success, stores peer's info for session key derivation.
+
+        `authority_enabled` is forwarded to `_verify_attestation_evidence` —
+        callers in TEE_MCP_AUTHORITY_ENABLED=false ablation modes pass
+        False to skip the attestation-service hop.
         """
         if expected_nonce is None:
             expected_nonce = self._pending_nonces.get(peer_role)
@@ -615,6 +637,7 @@ class SecureEndpoint:
             evidence,
             expected_nonce,
             allowed_rtmr3,
+            authority_enabled=authority_enabled,
         )
         if not valid:
             return AttestationResult(valid=False, error=err)

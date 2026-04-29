@@ -105,7 +105,10 @@ class MockSecureEndpoint:
         expected_nonce: bytes | None = None,
         peer_role: str = "server",
         allowed_rtmr3: list[str] | None = None,
+        *,
+        authority_enabled: bool = True,
     ) -> MockVerifyResult:
+        del authority_enabled
         self._peers[peer_role] = MockPeer(
             cgroup=evidence.cgroup,
             rtmr3=evidence.rtmr3,

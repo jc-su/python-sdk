@@ -153,6 +153,53 @@ class TrustdClient:
         result["event_log"] = base64.b64decode(result.get("event_log", ""))
         return result
 
+    def verify_rtmr3(
+        self,
+        workload_id: str,
+        expected_rtmr3: str | bytes,
+    ) -> dict[str, Any]:
+        """Fast per-tool RTMR3 verification without quote regeneration.
+
+        Calls trustd.VerifyRtmr3 — trustd reads the current RTMR3 from
+        /sys/kernel/security/ima/container_rtmr/<cgroup> (cached for the
+        workload_id) and compares to `expected_rtmr3`. No QGS round-trip.
+        Used by the per-tool attestation path where we only need to
+        detect container drift mid-session, not produce verifier-ready
+        evidence.
+
+        Args:
+            workload_id: stable workload name (as passed to AttestWorkload).
+            expected_rtmr3: hex string or 48-byte digest to compare against.
+
+        Returns:
+            {"match": bool, "current_rtmr3_hex": str, "workload_id": str}
+            When match=False, `current_rtmr3_hex` tells the caller what the
+            container actually measures as; callers apply their
+            rtmr3_transition_policy to decide whether to accept/reject/log.
+        """
+        if not workload_id:
+            raise ValueError("workload_id is required")
+
+        if isinstance(expected_rtmr3, bytes):
+            if len(expected_rtmr3) != 48:
+                raise ValueError(
+                    f"expected_rtmr3 bytes must be exactly 48, got {len(expected_rtmr3)}"
+                )
+            expected_hex = expected_rtmr3.hex()
+        else:
+            expected_hex = expected_rtmr3.strip().lower()
+            # light sanity-check so a 32-hex PCR doesn't silently compare
+            # against a 48-hex RTMR3 and look "not matching".
+            if len(expected_hex) != 96:
+                raise ValueError(
+                    f"expected_rtmr3 hex must be 96 chars (48 bytes), got {len(expected_hex)}"
+                )
+
+        return self._call(
+            "VerifyRtmr3",
+            {"workload_id": workload_id, "expected_rtmr3_hex": expected_hex},
+        )
+
     def ping(self) -> dict[str, Any]:
         """Ping trustd. Returns version, uptime_seconds, containers_tracked."""
         return self._call("Ping", {})

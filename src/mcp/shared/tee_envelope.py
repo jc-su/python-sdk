@@ -130,8 +130,14 @@ def verify_bootstrap_envelope(
     allowed_rtmr3: list[str] | None = None,
     *,
     allow_missing_for_challenge: bool = False,
+    authority_enabled: bool = True,
 ) -> tuple[bool, str]:
     """Verify a bootstrap envelope's TDX quote and key binding.
+
+    `authority_enabled` is plumbed through to
+    `endpoint.verify_peer_attestation` and ultimately
+    `_verify_attestation_evidence`. Set False on F1/F2/F3 ablation paths
+    where the authority hop is intentionally skipped.
 
     Returns:
         (valid, error).
@@ -157,7 +163,11 @@ def verify_bootstrap_envelope(
 
     evidence = AttestationEvidence.from_dict(tee_dict)
     result = endpoint.verify_peer_attestation(
-        evidence, expected_nonce=nonce, peer_role=peer_role, allowed_rtmr3=allowed_rtmr3,
+        evidence,
+        expected_nonce=nonce,
+        peer_role=peer_role,
+        allowed_rtmr3=allowed_rtmr3,
+        authority_enabled=authority_enabled,
     )
     if not result.valid:
         return False, result.error

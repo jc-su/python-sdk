@@ -129,6 +129,14 @@ class TrustedClientSession(ClientSession):
         else:
             self._authority_enabled = authority_enabled
 
+        # PSK-MCP / "noattest" comparator: when TEE_MCP_BOOTSTRAP_QUOTE=skip,
+        # the client both sends and accepts bootstrap envelopes without a
+        # TDX quote (just the X25519 public key + nonce). Both peers must
+        # agree on the mode for the handshake to complete.
+        import os as _os2
+        _bq = _os2.environ.get("TEE_MCP_BOOTSTRAP_QUOTE", "full").strip().lower()
+        self._skip_bootstrap_quote = (_bq == "skip")
+
         # TEE state
         self._endpoint: SecureEndpoint | None = None
         self._server_attested = False
@@ -246,7 +254,11 @@ class TrustedClientSession(ClientSession):
 
         if method == "initialize":
             self._tee_request_kinds[request_id] = "initialize"
-            tee_dict = create_bootstrap_envelope(self._endpoint, workload_id=self._workload_id)
+            tee_dict = create_bootstrap_envelope(
+                self._endpoint,
+                workload_id=self._workload_id,
+                skip_quote=self._skip_bootstrap_quote,
+            )
             inject_tee(request_data, tee_dict, params_level=True)
             self._init_nonce_by_request[request_id] = base64.b64decode(tee_dict["sig_data"])
             logger.info("Added TEE evidence to initialize request")
@@ -268,7 +280,9 @@ class TrustedClientSession(ClientSession):
                 inject_tee(request_data, tee_dict, params_level=True)
                 request_data["params"] = {"_meta": params_dict["_meta"]}
             else:
-                tee_dict = create_bootstrap_envelope(self._endpoint)
+                tee_dict = create_bootstrap_envelope(
+                    self._endpoint, skip_quote=self._skip_bootstrap_quote
+                )
                 inject_tee(request_data, tee_dict, params_level=True)
 
         return request_data
@@ -320,6 +334,7 @@ class TrustedClientSession(ClientSession):
                 self._endpoint, server_tee,
                 peer_role="server", allowed_rtmr3=self._allowed_server_rtmr3,
                 authority_enabled=self._authority_enabled,
+                skip_quote=self._skip_bootstrap_quote,
             )
             if not valid:
                 logger.error("Server per-call attestation failed: %s", error)
@@ -333,6 +348,7 @@ class TrustedClientSession(ClientSession):
                 self._endpoint, server_tee,
                 peer_role="server", allowed_rtmr3=self._allowed_server_rtmr3,
                 authority_enabled=self._authority_enabled,
+                skip_quote=self._skip_bootstrap_quote,
             )
             if valid:
                 self._server_attested = True

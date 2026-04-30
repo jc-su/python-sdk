@@ -79,7 +79,8 @@ class MockSecureEndpoint:
         self._verify_valid = True
         self._verify_error = ""
 
-    def create_attestation(self, nonce: bytes) -> MockAttestationEvidence:
+    def create_attestation(self, nonce: bytes, *, skip_quote: bool = False) -> MockAttestationEvidence:
+        del skip_quote  # mock returns same shape regardless
         return MockAttestationEvidence(role=self.role, nonce=nonce)
 
     def verify_peer_attestation(
@@ -90,9 +91,10 @@ class MockSecureEndpoint:
         allowed_rtmr3: list[str] | None = None,
         *,
         authority_enabled: bool = True,
+        skip_quote: bool = False,
     ) -> MockVerifyResult:
-        # Mock ignores authority_enabled — its verify is purely deterministic.
-        del authority_enabled
+        # Mock ignores both flags — its verify is purely deterministic.
+        del authority_enabled, skip_quote
         if self._verify_valid:
             self.peers[peer_role] = MockPeer(cgroup=evidence.cgroup, rtmr3=evidence.rtmr3, role=evidence.role)
         return MockVerifyResult(valid=self._verify_valid, error=self._verify_error)

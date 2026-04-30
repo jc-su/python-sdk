@@ -101,14 +101,19 @@ def create_bootstrap_envelope(
     *,
     challenge: bytes | None = None,
     workload_id: str | None = None,
+    skip_quote: bool = False,
 ) -> dict[str, Any]:
     """Create a bootstrap _meta.tee with TDX quote + X25519 key.
 
     Used for initialize request (Message 1) and initialize response (Message 2).
     Plaintext only — no encryption (peer key not yet known).
+
+    `skip_quote=True` (PSK-MCP comparator) builds an envelope without a TDX
+    quote — only the X25519 public key + nonce. Saves ~13 ms of trustd
+    AttestWorkload work per bootstrap.
     """
     nonce = secrets.token_bytes(NONCE_SIZE)
-    evidence = endpoint.create_attestation(nonce)
+    evidence = endpoint.create_attestation(nonce, skip_quote=skip_quote)
 
     envelope: dict[str, Any] = {
         **evidence.to_dict(),
@@ -131,6 +136,7 @@ def verify_bootstrap_envelope(
     *,
     allow_missing_for_challenge: bool = False,
     authority_enabled: bool = True,
+    skip_quote: bool = False,
 ) -> tuple[bool, str]:
     """Verify a bootstrap envelope's TDX quote and key binding.
 
@@ -168,6 +174,7 @@ def verify_bootstrap_envelope(
         peer_role=peer_role,
         allowed_rtmr3=allowed_rtmr3,
         authority_enabled=authority_enabled,
+        skip_quote=skip_quote,
     )
     if not result.valid:
         return False, result.error

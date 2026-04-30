@@ -151,6 +151,14 @@ class TrustedServerSession(ServerSession):
         self._policy_registry = _resolved["policy_registry"]
         self._quote_mode = _resolved["quote_mode"]
         self._authority_enabled = _resolved["authority_enabled"]
+        # PSK-MCP / "noattest" comparator: when TEE_MCP_BOOTSTRAP_QUOTE=skip,
+        # bootstrap envelopes carry no TDX quote on either side. KEK still
+        # derives from raw X25519 ECDH; AES-GCM envelope still applies per
+        # tool call. Used to isolate the per-call TEE-binding cost from
+        # the per-call AES-GCM cost in the F0..F4 evaluation.
+        import os as _os
+        _bq = _os.environ.get("TEE_MCP_BOOTSTRAP_QUOTE", "full").strip().lower()
+        self._skip_bootstrap_quote = (_bq == "skip")
 
         self._active_policy: AttestationPolicy | None = None
         self._tool_trust_manager: ToolTrustManager | None = tool_trust_manager
@@ -657,7 +665,9 @@ class TrustedServerSession(ServerSession):
                 result_dict = {"_meta": {"tee": tee_dict}}
             else:
                 # Bootstrap response (no KEK yet — plaintext + evidence)
-                tee_dict = create_bootstrap_envelope(self._endpoint)
+                tee_dict = create_bootstrap_envelope(
+                    self._endpoint, skip_quote=self._skip_bootstrap_quote
+                )
                 inject_tee(result_dict, tee_dict)
 
             jsonrpc_response = JSONRPCResponse(
@@ -753,6 +763,7 @@ class TrustedServerSession(ServerSession):
             peer_role="client",
             allowed_rtmr3=allowed_rtmr3,
             authority_enabled=self._authority_enabled,
+            skip_quote=self._skip_bootstrap_quote,
         )
         if valid:
             self._client_attested = True
@@ -782,6 +793,7 @@ class TrustedServerSession(ServerSession):
         tee_dict = create_bootstrap_envelope(
             self._endpoint,
             challenge=bootstrap_challenge,
+            skip_quote=self._skip_bootstrap_quote,
         )
 
         # Establish session binding if client was attested (ECDH + HKDF)

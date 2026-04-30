@@ -96,7 +96,8 @@ class MockSecureEndpoint:
         self._nonces[peer_role] = nonce
         return nonce
 
-    def create_attestation(self, nonce: bytes) -> MockAttestationEvidence:
+    def create_attestation(self, nonce: bytes, *, skip_quote: bool = False) -> MockAttestationEvidence:
+        del skip_quote
         return MockAttestationEvidence(role=self.role, nonce=nonce)
 
     def verify_peer_attestation(
@@ -107,8 +108,9 @@ class MockSecureEndpoint:
         allowed_rtmr3: list[str] | None = None,
         *,
         authority_enabled: bool = True,
+        skip_quote: bool = False,
     ) -> MockVerifyResult:
-        del authority_enabled
+        del authority_enabled, skip_quote
         self._peers[peer_role] = MockPeer(
             cgroup=evidence.cgroup,
             rtmr3=evidence.rtmr3,

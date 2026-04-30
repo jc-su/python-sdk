@@ -238,6 +238,7 @@ def _verify_attestation_evidence(
     allowed_rtmr3: list[str] | None = None,
     *,
     authority_enabled: bool = True,
+    skip_quote: bool = False,
 ) -> tuple[bool, str, bytes | None]:
     """Verify attestation evidence.
 
@@ -247,6 +248,12 @@ def _verify_attestation_evidence(
     binding, and freshness still apply, so the call is not "unverified",
     just "not authority-verified".
 
+    `skip_quote=True` (PSK-MCP / "noattest" comparator only) skips quote
+    parsing, RTMR3 binding, reportdata binding, and authority verify — the
+    bootstrap-handshake reduces to a plain X25519 ECDH key exchange, which
+    is the commodity "AES-GCM RPC without TEE" baseline.  Freshness is
+    still checked.  Use exclusively for the encryption-only baseline.
+
     Returns: (valid, error, public_key_raw)
     """
     # Check evidence freshness
@@ -255,6 +262,12 @@ def _verify_attestation_evidence(
         return False, f"Evidence too old: {age}ms", None
     if age < -MAX_AGE_MS:
         return False, f"Evidence timestamp in future: {-age}ms ahead", None
+
+    if skip_quote:
+        # PSK-MCP comparator: bootstrap envelope carries only public_key +
+        # nonce; no TDX quote, no RTMR3 binding, no reportdata check, no
+        # authority verify. KEK derives from raw ECDH on the public keys.
+        return True, "", evidence.public_key
 
     # Parse quote
     quote = parse_quote(evidence.quote)
@@ -544,7 +557,7 @@ class SecureEndpoint:
     # Attestation evidence (bootstrap only)
     # =========================================================================
 
-    def create_attestation(self, peer_nonce: bytes) -> AttestationEvidence:
+    def create_attestation(self, peer_nonce: bytes, *, skip_quote: bool = False) -> AttestationEvidence:
         """Create attestation evidence responding to peer's nonce.
 
         Prefers the canonical trustd.AttestWorkload path when a workload_id
@@ -557,7 +570,23 @@ class SecureEndpoint:
         Falls back to the legacy (quote-only, no event_log) path when no
         workload_id is available; AS.VerifyWorkload will then return
         Untrusted, which is the intended "loud break" signal.
+
+        `skip_quote=True` (PSK-MCP / "noattest" comparator) returns evidence
+        with empty quote bytes — the bootstrap reduces to a public-key
+        exchange. The peer must also be in skip-quote mode or it will
+        reject the empty quote.
         """
+        if skip_quote:
+            return AttestationEvidence(
+                quote=b"",
+                public_key=self.public_key_bytes,
+                nonce=peer_nonce,
+                cgroup="",
+                rtmr3=bytes(48),
+                timestamp_ms=int(time.time() * 1000),
+                role=self.role,
+            )
+
         workload_id = (getattr(self, "workload_id", "") or os.environ.get("TEE_MCP_WORKLOAD_ID", "")).strip()
         if workload_id:
             from mcp.shared.trustd_client import get_trustd_client
@@ -619,6 +648,7 @@ class SecureEndpoint:
         allowed_rtmr3: list[str] | None = None,
         *,
         authority_enabled: bool = True,
+        skip_quote: bool = False,
     ) -> AttestationResult:
         """Verify peer's attestation evidence.
 
@@ -638,6 +668,7 @@ class SecureEndpoint:
             expected_nonce,
             allowed_rtmr3,
             authority_enabled=authority_enabled,
+            skip_quote=skip_quote,
         )
         if not valid:
             return AttestationResult(valid=False, error=err)
